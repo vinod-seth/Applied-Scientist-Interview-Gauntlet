@@ -1,0 +1,54 @@
+{
+  "title": "The Gauntlet: Applied Scientist Interview Prep (M.Tech Fresher Edition)",
+  "domain": "Machine Learning Interview Preparation",
+  "tech_stack": ["Python", "PyTorch", "Hugging Face", "PEFT", "FAISS", "C++"],
+  "difficulty": "advanced",
+  "prerequisites": [
+    "M.Tech-level ML and deep learning theory",
+    "Hands-on experience with the four resume projects this course defends",
+    "Comfort with PyTorch and C++ DSA"
+  ],
+  "estimated_hours": 45,
+  "modules": 9,
+  "lessons": 27,
+  "version": "1.1",
+  "delivery_note": "Sessions are generated one at a time on learner request. The curriculum below lists ONLY delivered sessions so the portal never points at a file that does not exist yet. Each new session appends its module here. The full 9-session plan lives in README.md.",
+  "curriculum": [
+    {
+      "module_id": "module_01",
+      "title": "Session 1: Project Deep-Dives — Fine-Tuning & Architecture",
+      "lessons": [
+        {
+          "id": "m1_l1",
+          "title": "Defending QLoRA on ESCI: Quantization, Memory, and Metrics",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/01_finetuning_and_architecture/01_defending_qlora_on_esci.md",
+            "notebook": "tutorial/01_finetuning_and_architecture/01_memory_budget_verifier.ipynb",
+            "interview": "tutorial/01_finetuning_and_architecture/01_defending_qlora_on_esci_interview_questions.json"
+          }
+        },
+        {
+          "id": "m1_l2",
+          "title": "Defending the From-Scratch RoPE Transformer",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/01_finetuning_and_architecture/02_defending_the_rope_transformer.md",
+            "notebook": "tutorial/01_finetuning_and_architecture/02_architecture_unit_tests.ipynb",
+            "interview": "tutorial/01_finetuning_and_architecture/02_defending_the_rope_transformer_interview_questions.json"
+          }
+        },
+        {
+          "id": "m1_l3",
+          "title": "Tiered Challenges & Boss Fight: Architecture Bar Raiser",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/01_finetuning_and_architecture/03_tiered_challenges_and_boss_fight.md",
+            "notebook": "tutorial/01_finetuning_and_architecture/03_metric_vault_extractor.ipynb",
+            "interview": "tutorial/01_finetuning_and_architecture/quiz_interview_questions.json"
+          }
+        }
+      ]
+    }
+  ]
+}
