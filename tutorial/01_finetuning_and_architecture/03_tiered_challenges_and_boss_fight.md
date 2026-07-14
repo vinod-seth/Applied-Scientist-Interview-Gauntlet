@@ -7,7 +7,7 @@
 | **Domain tag** | Assessment / Interview Simulation |
 | **Objective** | Reach Gold on all 8 core topics to unlock Session 2 |
 
-**🔬 Interactive companion — *Metric Vault Extractor* (run this to fill the vault before the boss fight):** &nbsp; ▶ **[Open in Colab](https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/01_finetuning_and_architecture/03_metric_vault_extractor.ipynb)** &nbsp; [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/01_finetuning_and_architecture/03_metric_vault_extractor.ipynb)
+🔬 **Interactive companion** (run this to fill the vault before the boss fight): [▶ Open the Metric Vault Extractor notebook in Colab](https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/01_finetuning_and_architecture/03_metric_vault_extractor.ipynb)
 
 > 📍 **Roadmap:** Tiered drills first (self-score honestly), then the Boss Fight. The boss fight is a scripted Bar Raiser interrogation — five levels deep on the session's core topics. Clearing it = Gold on every topic = Session 2 unlocked.
 

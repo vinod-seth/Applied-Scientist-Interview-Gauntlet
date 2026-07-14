@@ -7,7 +7,7 @@
 | **Domain tag** | Transformers / Embeddings / Contrastive Learning |
 | **Resume line under fire** | "Built a Transformer encoder from scratch with Rotary Position Embeddings, Pre-LayerNorm, and Multi-Head Attention; trained with a custom contrastive loss on Quora Question Pairs" |
 
-**🔬 Interactive companion — *Architecture Unit Tests* (CPU-only, runs instantly):** &nbsp; ▶ **[Open in Colab](https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/01_finetuning_and_architecture/02_architecture_unit_tests.ipynb)** &nbsp; [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/01_finetuning_and_architecture/02_architecture_unit_tests.ipynb)
+🔬 **Interactive companion** (CPU-only, runs instantly): [▶ Open the Architecture Unit Tests notebook in Colab](https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/01_finetuning_and_architecture/02_architecture_unit_tests.ipynb)
 
 > 📍 **Roadmap:** 🟢 sections rebuild the defense-level intuition; 🔷 sections carry the derivations and the model answers. Same rule as Lesson 1: every number comes from your logs. `[FILL]` or silence — never an invented figure.
 
