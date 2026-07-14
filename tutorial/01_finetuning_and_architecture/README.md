@@ -61,11 +61,14 @@ Before lesson 3, fill the **Metric Vault** in [PROGRESS.md](../../PROGRESS.md) f
 
 Three Colab-ready notebooks accompany this session. They are the **armory, not a track**: they produce the evidence you defend in drills, and award **0 XP** themselves — defense remains the only paid currency.
 
-| Notebook | Pairs with | What it produces |
-|---|---|---|
-| [01_memory_budget_verifier.ipynb](01_memory_budget_verifier.ipynb) | Lesson 1 | Your paper memory budget confronted with real `torch.cuda` allocator numbers for Qwen2.5-1.5B in NF4; your true trainable-param count (GPU runtime: Colab T4) |
-| [02_architecture_unit_tests.ipynb](02_architecture_unit_tests.ipynb) | Lesson 2 | Five executable claims: RoPE shift invariance, why V is never rotated, padding-mask equivalence, the last-token indexing bug live, and the 1/√d_k variance measurement (CPU-fine) |
-| [03_metric_vault_extractor.ipynb](03_metric_vault_extractor.ipynb) | Lesson 3 | Per-class F1, confusion structure, and alignment/uniformity diagnostics from **your** artifacts — the fill pipeline for the Metric Vault (runs in clearly-labeled demo mode until you point it at real prediction dumps) |
+| Notebook | Launch | Pairs with | What it produces |
+|---|---|---|---|
+| Memory Budget Verifier | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/01_finetuning_and_architecture/01_memory_budget_verifier.ipynb) | Lesson 1 | Your paper memory budget confronted with real `torch.cuda` allocator numbers for Qwen2.5-1.5B in NF4; your true trainable-param count (GPU runtime: Colab T4) |
+| Architecture Unit Tests | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/01_finetuning_and_architecture/02_architecture_unit_tests.ipynb) | Lesson 2 | Five executable claims: RoPE shift invariance, why V is never rotated, padding-mask equivalence, the last-token indexing bug live, and the 1/√d_k variance measurement (CPU-fine) |
+| Metric Vault Extractor | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/01_finetuning_and_architecture/03_metric_vault_extractor.ipynb) | Lesson 3 | Per-class F1, confusion structure, and alignment/uniformity diagnostics from **your** artifacts — the fill pipeline for the Metric Vault (runs in clearly-labeled demo mode until you point it at real prediction dumps) |
+
+> [!NOTE]
+> **Colab badges open GitHub-hosted notebooks — click them from a real browser signed into a Google account, not from inside VS Code** (VS Code routes the click to its internal browser, which can't run Colab). If a badge says "notebook not found," it's push-propagation lag — wait a minute and retry.
 
 > [!IMPORTANT]
 > Notebook 3's demo mode exists so you can see the machinery — demo numbers never enter the vault, the pitch, or the resume. Only REAL-mode outputs, with their source paths recorded, count.
