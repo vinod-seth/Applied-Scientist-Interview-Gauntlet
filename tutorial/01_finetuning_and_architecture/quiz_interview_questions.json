@@ -1,0 +1,119 @@
+{
+  "lesson_title": "Tiered Challenges & Boss Fight: Architecture Bar Raiser",
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "q_019",
+        "question": "Explain the 1/√d_k scaling factor in scaled dot-product attention. What happens if you remove it?",
+        "complexity": "Easy",
+        "companies": ["General"],
+        "core_intent": "Tests understanding of attention mechanics and numerical stability",
+        "preparation_guide": "Derive the variance argument: if q and k entries are iid with unit variance, their dot product has variance d_k. Scaling by 1/√d_k restores unit variance, keeping softmax in its informative range.",
+        "explanation": "Without scaling, dot products grow proportionally with d_k (the head dimension). Large dot products push softmax into saturation — near-one-hot distributions with near-zero gradients for all but the winning position. The 1/√d_k factor normalizes the variance of dot products to approximately 1, keeping softmax in its sigmoid-like regime where it produces informative, differentiable distributions. Removing the scaling causes attention to collapse to hard attention (single-position focus) early in training, preventing the model from learning soft compositional patterns.",
+        "star_framework_tip": "Frame as a first-principles derivation you can do at the whiteboard: assumption → variance calculation → consequence for softmax.",
+        "common_pitfalls": ["Saying 'it normalizes' without explaining why or deriving the variance", "Not connecting to softmax saturation and gradient flow"],
+        "references": ["Vaswani et al. 2017, Attention Is All You Need, arXiv:1706.03762"]
+      },
+      {
+        "id": "q_020",
+        "question": "What is embedding collapse in contrastive learning, and how would you detect it during training?",
+        "complexity": "Easy",
+        "companies": ["General"],
+        "core_intent": "Tests awareness of a critical failure mode in contrastive training",
+        "preparation_guide": "Know the symptoms: uniform high cosine similarity, low loss but random downstream performance, low embedding variance. Know prevention: batch size, temperature tuning, batch normalization.",
+        "explanation": "Embedding collapse occurs when the encoder maps all inputs to near-identical embeddings (a single point or narrow cone in the embedding space). The contrastive loss can be low because all similarities are equal, but the representations carry zero discriminative information. Detection: monitor (1) cosine similarity distribution — if all pairs (positive and negative) cluster near 1.0, collapse is occurring; (2) embedding variance across the batch — near-zero variance means collapse; (3) downstream task performance — random performance despite low training loss. Prevention: large batch sizes (more diverse negatives), appropriate temperature, batch normalization on embeddings, and hard-negative mining.",
+        "star_framework_tip": "Describe this as a debugging scenario: what you'd check if loss looks normal but downstream metrics are poor.",
+        "common_pitfalls": ["Confusing embedding collapse with overfitting", "Not knowing specific detection metrics"],
+        "references": ["Chen et al. 2020, SimCLR, arXiv:2002.05709"]
+      },
+      {
+        "id": "q_021",
+        "question": "What is gradient checkpointing, and what trade-off does it make?",
+        "complexity": "Easy",
+        "companies": ["General"],
+        "core_intent": "Tests understanding of a key memory optimization technique",
+        "preparation_guide": "Know the mechanism: store only checkpoint activations, recompute intermediates during backward pass. Understand the compute/memory trade-off.",
+        "explanation": "During normal backpropagation, all intermediate activations are stored during the forward pass for use in gradient computation. Gradient checkpointing stores only the activations at segment boundaries (e.g., every N transformer blocks) and discards the rest. During the backward pass, the forward pass for each segment is recomputed from its checkpoint to regenerate the needed intermediates. Trade-off: reduces activation memory from O(L) to O(√L) (where L is the number of layers) at the cost of ~30% extra compute (one additional forward pass per segment). This is the standard technique for fitting longer sequences or larger batches on limited GPU memory.",
+        "star_framework_tip": "Present as the solution you used (or would use) when activation memory was the binding constraint.",
+        "common_pitfalls": ["Confusing gradient checkpointing with weight checkpointing (saving model weights)", "Not knowing the compute overhead is ~30%", "Saying it 'saves memory' without specifying what kind (activations, not parameters)"],
+        "references": ["Chen et al. 2016, Training Deep Nets with Sublinear Memory Cost, arXiv:1604.06174"]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "q_022",
+        "question": "Compare three approaches to handling class imbalance in a 4-class classification task: class-weighted cross-entropy, focal loss, and minority oversampling. When does each work best, and what are the failure modes?",
+        "complexity": "Medium",
+        "companies": ["Amazon", "Google", "General"],
+        "core_intent": "Tests nuanced understanding of imbalance mitigation strategies and their trade-offs",
+        "preparation_guide": "Know each method's mechanism, when it helps, and when it fails. Be ready to reason about which is best for a specific dataset size and imbalance ratio.",
+        "explanation": "Class-weighted CE: multiplies loss per class by inverse frequency. Equivalent to oversampling in expectation but differs in optimization dynamics (one pass through data vs. duplicated samples). Failure: extreme weights can cause the model to over-fire minority predictions, hurting majority-class precision. Focal loss: down-weights easy (well-classified) examples regardless of class, focusing on hard examples. Best when the majority class has many easy examples. Failure: if minority-class examples are inherently ambiguous (label noise), focal loss amplifies noise. Oversampling: duplicates minority samples. Risk: at small scales (20K), memorization of duplicated examples. Works better with augmentation. For ESCI: class-weighted CE is the simplest first step; focal loss addresses easy-majority examples; oversampling risks memorization at the dataset's scale. The ordinal structure of ESCI labels suggests none of these is ideal — an ordinal-aware loss would be more principled.",
+        "star_framework_tip": "Present as a decision framework: evaluated options in order of simplicity, chose based on dataset properties.",
+        "common_pitfalls": ["Listing all three without analyzing trade-offs", "Not mentioning that oversampling and weighted loss are equivalent in expectation", "Missing the ordinal structure argument for ESCI"],
+        "references": ["Lin et al. 2017, Focal Loss, arXiv:1708.02002"]
+      },
+      {
+        "id": "q_023",
+        "question": "You're comparing two models on a classification task. One has higher macro-F1 but lower accuracy. The other has higher accuracy but lower macro-F1. How do you decide which is better, and what additional information would you need?",
+        "complexity": "Medium",
+        "companies": ["Amazon", "General"],
+        "core_intent": "Tests metric reasoning and decision-making under trade-offs",
+        "preparation_guide": "Understand the relationship between macro-F1 and accuracy under imbalance. Consider the business context: does each class matter equally, or does traffic volume determine impact?",
+        "explanation": "Higher accuracy / lower macro-F1: the model does well on the majority class but fails on minorities. Higher macro-F1 / lower accuracy: the model treats classes more equally, sacrificing some majority-class performance for better minority coverage. Decision factors: (1) Does each class carry equal business value? If yes (e.g., safety-critical minority classes), prefer macro-F1. (2) Does traffic volume matter? If 90% of queries are Exact, a 1% accuracy drop on Exact affects far more users than a 5% improvement on Complement. (3) Per-class F1 breakdown: which specific classes improved vs. degraded? (4) Error asymmetry: is an Exact→Irrelevant error (catastrophic) being traded for a Substitute→Complement error (mild)? The per-class confusion matrix is the deciding artifact.",
+        "star_framework_tip": "Frame as a product-science decision: technical metric choice driven by business impact analysis.",
+        "common_pitfalls": ["Automatically picking the higher macro-F1 without considering context", "Not asking for the per-class breakdown", "Not considering asymmetric error costs"],
+        "references": ["Reddy et al. 2022, Shopping Queries Dataset, arXiv:2206.06588"]
+      },
+      {
+        "id": "q_024",
+        "question": "Walk through the forward and backward pass of a single transformer block with Pre-LayerNorm and RoPE. Specify what is stored for backpropagation.",
+        "complexity": "Medium",
+        "companies": ["Amazon", "Google"],
+        "core_intent": "Tests detailed understanding of transformer computation and backprop mechanics",
+        "preparation_guide": "Trace the computation graph: input → LN → QKV projections → RoPE on Q,K → attention scores → softmax → weighted sum of V → output projection → residual add → LN → FFN → residual add. For backprop, identify which activations must be stored.",
+        "explanation": "Forward: (1) x_in enters, Pre-LN applied: x_norm = LayerNorm(x_in). (2) Q, K, V projections from x_norm. (3) RoPE rotation applied to Q and K (position-dependent, no learnable params). (4) Attention scores: QKᵀ/√d_head, softmax. (5) Weighted sum of V. (6) Output projection W_O. (7) Residual: x_mid = x_in + attn_output. (8) Pre-LN on x_mid. (9) FFN (linear → activation → linear). (10) Residual: x_out = x_mid + ffn_output. Stored for backprop: x_in (for residual gradient), x_norm (for projection gradients), Q, K, V (for attention gradient), attention weights (for value gradient), x_mid (for second residual), FFN intermediate activations. With gradient checkpointing: store only x_in, recompute everything else during backward.",
+        "star_framework_tip": "Practice tracing this end-to-end at the whiteboard. The ability to walk through computation graphs is a core AS skill.",
+        "common_pitfalls": ["Forgetting the residual connections", "Not knowing that attention weights must be stored for backprop", "Confusing what gradient checkpointing saves vs. recomputes"],
+        "references": ["Vaswani et al. 2017, Attention Is All You Need, arXiv:1706.03762", "Xiong et al. 2020, arXiv:2002.04745"]
+      }
+    ],
+    "senior": [
+      {
+        "id": "q_025",
+        "question": "Design a complete training pipeline for a sentence-similarity model that handles false negatives in the contrastive loss, adapts to class imbalance in downstream classification, and includes proper evaluation. Specify architecture, loss, data handling, and metrics.",
+        "complexity": "System Design",
+        "companies": ["Amazon", "Google", "Meta"],
+        "core_intent": "Tests end-to-end system design combining multiple concepts from the session",
+        "preparation_guide": "Synthesize knowledge across all session topics: transformer architecture choices, contrastive loss design, data quality handling, metric selection. Present as a coherent system.",
+        "explanation": "Architecture: Pre-LN transformer encoder with RoPE (or GQA if targeting production inference), d_model/n_heads chosen based on parameter budget. Loss: debiased InfoNCE with label-aware negative filtering — compute the within-batch duplicate closure and exclude known positives from the negative set. Temperature: sweep 0.05–0.2, monitor embedding variance for collapse. Data: QQP with cluster-based train/test split to prevent transitivity leakage. Oversample minority classes for downstream classification or use class-weighted CE. Evaluation: macro-F1 and per-class F1 for classification; retrieval recall@k and MRR for embedding quality; length-stratified analysis to detect shortcut learning. Ablations: rank sweep for LoRA (if applicable), temperature sweep, block size sweep for quantization. The pipeline should log every metric to reproduce results.",
+        "star_framework_tip": "Structure as: requirements analysis → design choices with justification → evaluation plan → known limitations.",
+        "common_pitfalls": ["Designing components in isolation without showing how they interact", "Not including an evaluation plan", "Ignoring data quality issues"],
+        "references": ["Chen et al. 2020, SimCLR, arXiv:2002.05709", "Su et al. 2021, RoFormer, arXiv:2104.09864"]
+      },
+      {
+        "id": "q_026",
+        "question": "RoPE frequencies are typically fixed by the formula θᵢ = 10000^(-2i/d). What would happen if you made them learnable? Design an experiment to test whether learnable frequencies improve performance on your task.",
+        "complexity": "Hard",
+        "companies": ["Amazon", "Google", "Anthropic"],
+        "core_intent": "Tests ability to extend beyond standard approaches and design experiments for novel ideas",
+        "preparation_guide": "Consider: what do fixed frequencies assume, what would learnable frequencies optimize, what are the risks (overfitting, training instability), and how would you evaluate the difference.",
+        "explanation": "Fixed frequencies assume the geometric spacing is optimal for all tasks and sequence lengths. Learnable frequencies would let the model adapt its position resolution spectrum to the task — potentially allocating more resolution to the position ranges that matter most. Experiment: (1) Baseline: standard RoPE with fixed frequencies. (2) Treatment: initialize frequencies at the standard values but make them trainable parameters with a small learning rate (to prevent them from diverging). (3) Compare on QQP: accuracy/F1, attention pattern visualization, and learned frequency values. Risks: with only d/2 frequency parameters, overfitting is unlikely, but training instability is possible if frequencies change too rapidly (the position encoding changes meaning mid-training). Mitigation: small LR for frequency params, or periodic freezing. Expected outcome: for short-sequence tasks like QQP, the improvement is likely minimal (most of the frequency spectrum is irrelevant for sequences under 512 tokens). For long-context tasks, the potential gain is larger.",
+        "star_framework_tip": "Present as a hypothesis-driven experiment: state what you expect, why, and what each outcome would tell you.",
+        "common_pitfalls": ["Not considering training instability", "Not having an expected outcome", "Making learnable frequencies seem like an obvious improvement without acknowledging the risks"],
+        "references": ["Su et al. 2021, RoFormer, arXiv:2104.09864"]
+      },
+      {
+        "id": "q_027",
+        "question": "You have two project pitches: QLoRA on ESCI and the from-scratch RoPE transformer. The interviewer says 'pick one.' How do you decide, and how does the choice change the trajectory of the round?",
+        "complexity": "Hard",
+        "companies": ["Amazon"],
+        "core_intent": "Tests interview meta-strategy — understanding how project selection shapes the interrogation",
+        "preparation_guide": "Map your Gold coverage across both projects. The pitch with deeper Gold coverage across more topics is the safer lead. Understand that the project you lead with determines the interrogation surface.",
+        "explanation": "Decision framework: (1) Inventory your Gold-tier topics in each project. Lead with the one that has broader Gold coverage — more defensible hooks mean more follow-up chains you survive. (2) Consider the role: an NLP/LLM-focused role values the QLoRA project's PEFT/quantization depth more; a research-focused role values the from-scratch project's first-principles understanding more. (3) The choice sets the interrogation trajectory: QLoRA leads to memory math, experimental design (comparison fairness), and metric reasoning. RoPE leads to derivations, architecture decisions, and contrastive learning dynamics. Pick the trajectory where you're strongest to the floor. (4) Regardless of which you lead with, be ready for 'now tell me about the other one' with a shorter, pivot-optimized version. (5) Strategic consideration: the QLoRA pitch includes a concrete, quantifiable result (macro-F1 on a benchmark dataset), which is stronger for the 'result first' beat. The RoPE pitch requires the mastery-demonstration framing, which is honest but requires more setup.",
+        "star_framework_tip": "This is meta-strategy, not a STAR question. Frame as: deliberate preparation before the loop — you chose your lead project based on a self-assessment of your depth coverage.",
+        "common_pitfalls": ["Picking 'the coolest one' instead of the most defensible one", "Not having both pitches prepared and practiced", "Not realizing that project choice shapes the entire round's territory"],
+        "references": []
+      }
+    ]
+  }
+}

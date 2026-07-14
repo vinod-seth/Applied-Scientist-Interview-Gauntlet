@@ -1,0 +1,119 @@
+{
+  "lesson_title": "Defending the From-Scratch RoPE Transformer",
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "q_010",
+        "question": "What are Rotary Position Embeddings and why are they applied to queries and keys but not values?",
+        "complexity": "Easy",
+        "companies": ["Amazon", "Google", "General"],
+        "core_intent": "Tests basic understanding of RoPE's purpose and scope within attention",
+        "preparation_guide": "Understand that RoPE encodes relative position by making the dot product between rotated q and k depend on their position difference. Values carry content, not positional relevance.",
+        "explanation": "RoPE applies a rotation matrix to query and key vectors, where the rotation angle is proportional to the token's position. The key property: since rotation matrices are orthogonal, the dot product between a rotated query at position m and a rotated key at position n depends only on (m-n), the relative distance. Values are not rotated because they carry content information that gets aggregated after attention — rotating them would distort the content signal without improving position-aware attention.",
+        "star_framework_tip": "Situation: building a transformer from scratch. Task: chose a position encoding scheme. Action: selected RoPE for its relative-position property. Result: model correctly captured position-dependent attention patterns.",
+        "common_pitfalls": ["Saying RoPE just 'adds position information' without explaining the relative-position mechanism", "Not knowing why values are excluded"],
+        "references": ["Su et al. 2021, RoFormer, arXiv:2104.09864"]
+      },
+      {
+        "id": "q_011",
+        "question": "What is the difference between Pre-LayerNorm and Post-LayerNorm in a transformer, and why does Pre-LN train more stably?",
+        "complexity": "Easy",
+        "companies": ["General"],
+        "core_intent": "Tests understanding of normalization placement and its impact on gradient flow",
+        "preparation_guide": "Know the residual path in both variants. Pre-LN normalizes inside the sublayer branch, keeping the residual stream clean. Post-LN normalizes after the residual addition.",
+        "explanation": "Post-LN (original Vaswani): x → sublayer(x) → x + sublayer(x) → LayerNorm. The normalization sits after the residual addition, so gradients pass through LayerNorm at every layer, causing rescaling that can degrade gradient quality in deep models. Pre-LN: x → LayerNorm(x) → sublayer(LayerNorm(x)) → x + sublayer(LayerNorm(x)). The normalization is inside the sublayer branch. The residual stream is a clean sum, so gradients flow through without normalization-induced rescaling. This eliminates the need for careful learning-rate warmup.",
+        "star_framework_tip": "Frame as a design decision: evaluated both options, chose Pre-LN for training stability given your compute constraints.",
+        "common_pitfalls": ["Mixing up which variant has normalization where", "Not explaining the gradient-flow consequence"],
+        "references": ["Xiong et al. 2020, On Layer Normalization in the Transformer Architecture, arXiv:2002.04745"]
+      },
+      {
+        "id": "q_012",
+        "question": "What is contrastive learning, and what role does the temperature parameter play in a contrastive loss function?",
+        "complexity": "Easy",
+        "companies": ["General"],
+        "core_intent": "Tests foundational understanding of contrastive objectives and their key hyperparameter",
+        "preparation_guide": "Know the InfoNCE/NT-Xent loss structure and how temperature controls the sharpness of the softmax over similarities.",
+        "explanation": "Contrastive learning trains an encoder to produce similar embeddings for positive pairs and dissimilar embeddings for negative pairs. The temperature τ in the loss (e.g., InfoNCE: -log(exp(sim(a,p)/τ) / Σ exp(sim(a,n)/τ))) controls the softmax sharpness. Low τ concentrates gradient on the hardest negatives (most similar to the anchor among negatives), accelerating learning but amplifying the impact of false negatives. High τ distributes gradient uniformly across negatives — safer but slower to learn fine distinctions.",
+        "star_framework_tip": "Describe the trade-off you navigated when selecting temperature for your QQP task.",
+        "common_pitfalls": ["Not knowing the mathematical mechanism by which τ affects gradients", "Confusing temperature in contrastive loss with temperature in softmax sampling"],
+        "references": ["Chen et al. 2020, SimCLR, arXiv:2002.05709"]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "q_013",
+        "question": "Derive the RoPE encoding for 2D vectors. Start from the requirement that the query-key dot product should depend only on relative position.",
+        "complexity": "Medium",
+        "companies": ["Amazon", "Google", "Meta"],
+        "core_intent": "Tests ability to derive the RoPE mechanism from first principles",
+        "preparation_guide": "Practice the derivation: state the requirement formally, show that rotation matrices satisfy it via the orthogonality property, then extend to d dimensions with the frequency schedule.",
+        "explanation": "Requirement: ⟨f(q,m), f(k,n)⟩ = g(q,k,m-n). Let f(x,m) = R(mθ)x where R is a 2D rotation by angle mθ. Then ⟨R(mθ)q, R(nθ)k⟩ = qᵀR(mθ)ᵀR(nθ)k = qᵀR((n-m)θ)k, since rotation matrices are orthogonal (Rᵀ(a)R(b) = R(b-a)). The result depends only on (n-m). For d-dimensional heads: pair dimensions into d/2 subspaces, each with frequency θᵢ = 10000^(-2i/d). Low-index pairs rotate fast (local position), high-index pairs rotate slow (global position). This creates a multi-resolution position spectrum.",
+        "star_framework_tip": "Walk through the derivation step by step, emphasizing the orthogonality insight as the key mathematical fact.",
+        "common_pitfalls": ["Skipping the orthogonality step that makes the proof work", "Not explaining the frequency schedule's multi-resolution interpretation", "Confusing the base (10000) with the dimension index"],
+        "references": ["Su et al. 2021, RoFormer, arXiv:2104.09864"]
+      },
+      {
+        "id": "q_014",
+        "question": "You used Multi-Head Attention in your from-scratch transformer. Compare MHA with Multi-Query Attention and Grouped-Query Attention. When would you switch?",
+        "complexity": "Medium",
+        "companies": ["Amazon", "Google", "Meta"],
+        "core_intent": "Tests awareness of the attention-variant design space and ability to reason about trade-offs",
+        "preparation_guide": "Know the KV-cache reduction mechanism: MQA shares one K/V head across all query heads; GQA groups query heads with shared K/V per group. Understand when the KV-cache bottleneck matters.",
+        "explanation": "MQA (Shazeer 2019) shares a single K/V head across all query heads, reducing KV-cache by n_heads×. GQA (Agarwal et al. 2023) groups query heads into g groups, each sharing one K/V head. MHA keeps independent K/V per head — maximum representational power but largest KV-cache. For a learning project with no inference serving, MHA is correct: every head is independently inspectable. For production autoregressive inference where KV-cache is the memory bottleneck, GQA (g=2 or 4) matches MHA quality while halving/quartering the cache. MQA is more aggressive but can lose quality. The switch point: when you're serving the model at scale and KV-cache determines your batch size or latency.",
+        "star_framework_tip": "Frame as 'chose MHA deliberately for a learning project; would switch to GQA for production' — shows you know both the design space and the project's purpose.",
+        "common_pitfalls": ["Not knowing what the KV-cache is or why it matters", "Claiming MHA is always best", "Not knowing that GQA models can be initialized from MHA checkpoints"],
+        "references": ["Shazeer 2019, Fast Transformer Decoding, arXiv:1911.02150", "Agarwal et al. 2023, GQA, arXiv:2305.13245"]
+      },
+      {
+        "id": "q_015",
+        "question": "Quora Question Pairs has known dataset pitfalls: label noise, transitivity leakage, and length artifacts. How do each of these affect model training and evaluation, and what mitigations exist?",
+        "complexity": "Medium",
+        "companies": ["Amazon", "General"],
+        "core_intent": "Tests data quality awareness — a core AS skill for any project built on public datasets",
+        "preparation_guide": "Know each pitfall mechanism and its impact. Transitivity leakage: if (A,B) and (B,C) are duplicates, (A,C) should be too — random splits can leak this. Length artifacts: short pairs are easier, creating a spurious feature.",
+        "explanation": "Label noise: crowd-sourced binary labels on borderline pairs produce disagreement. The model's error floor is bounded by annotator agreement (~90%). Mitigation: label-smoothing or noise-robust losses. Transitivity leakage: random train/test splits can place transitive-closure pairs across both, inflating test metrics because the model memorizes the equivalence through the bridge question. Mitigation: split by question cluster, not by pair. Length artifacts: short question pairs have less ambiguity and are easier to classify. A model that learns a length heuristic performs well on average but fails on long, nuanced pairs. Mitigation: stratified evaluation by length bucket.",
+        "star_framework_tip": "Present as data diligence: describe which pitfalls you checked for and which you identified as future work.",
+        "common_pitfalls": ["Not knowing about transitivity leakage", "Claiming the dataset is clean because it's widely used", "Not having checked their own split strategy"],
+        "references": ["Wang et al. 2018, GLUE Benchmark"]
+      }
+    ],
+    "senior": [
+      {
+        "id": "q_016",
+        "question": "Compare RoPE with ALiBi for position encoding. Under what conditions would you choose one over the other, and what are the failure modes of each?",
+        "complexity": "Hard",
+        "companies": ["Amazon", "Google", "Meta", "Anthropic"],
+        "core_intent": "Tests depth of knowledge across position encoding design space",
+        "preparation_guide": "Study both approaches: RoPE uses rotation in embedding space; ALiBi adds a linear bias to attention scores that increases with distance. Know their extrapolation properties and computational costs.",
+        "explanation": "RoPE: multiplicative (rotates q/k), preserves dot-product magnitude, encodes relative position via rotation angle. Extrapolation: smooth degradation — unseen rotation angles produce attention patterns the model hasn't trained on. Mitigation: NTK-aware scaling or YaRN to rescale frequency spectrum. ALiBi (Press et al. 2021): additive — subtracts a linearly increasing penalty from attention scores based on position distance. No learned or computed position embeddings at all. Extrapolation: inherently linear, so the penalty function extends naturally. However, ALiBi forces attention to decay monotonically with distance, which prevents the model from learning long-range patterns that 'skip' nearby context. Choice: RoPE for tasks requiring flexible attention patterns (LLMs, code generation); ALiBi for tasks where recency bias is safe (summarization, some classification). For your QQP task with short sequences, either works — the difference is minimal within training-length positions.",
+        "star_framework_tip": "Structure as a design analysis: requirements → candidates → trade-offs → decision.",
+        "common_pitfalls": ["Claiming one is strictly better", "Not knowing ALiBi's monotonic-decay limitation", "Not addressing extrapolation behavior"],
+        "references": ["Su et al. 2021, RoFormer, arXiv:2104.09864", "Press et al. 2021, ALiBi, arXiv:2108.12409"]
+      },
+      {
+        "id": "q_017",
+        "question": "Your contrastive loss uses in-batch negatives on QQP, which has ~37% positive pairs. Quantify the false-negative contamination and design a mitigation strategy that doesn't require additional data.",
+        "complexity": "Hard",
+        "companies": ["Amazon", "Google"],
+        "core_intent": "Tests ability to reason quantitatively about training dynamics and propose solutions",
+        "preparation_guide": "Calculate false-negative rates in a concrete batch. Understand how false negatives affect gradients in InfoNCE and propose mitigations: label-aware filtering, debiased contrastive loss, or noise-tolerant temperature schedules.",
+        "explanation": "In a batch of N pairs (2N embeddings), each anchor has 2N-2 negatives. With 37% positive rate, a substantial fraction of those negatives are actually semantically equivalent questions from other pairs. For N=64: ~47 of the 126 negatives per anchor are potentially false negatives (rough estimate based on cluster structure). These false negatives produce repulsive gradients on embeddings that should attract, degrading the embedding space. Mitigations without extra data: (1) Label-aware filtering: use the label matrix to remove known duplicates from the negative set — requires computing a within-batch transitivity closure. (2) Debiased contrastive loss (Chuang et al. 2020): adjust the denominator to subtract an estimate of the false-negative contribution. (3) Higher temperature: reduces gradient concentration on hard negatives, which are most likely to be false negatives, at the cost of slower learning. (4) Memory bank: maintain a queue of recent embeddings as negatives (MoCo-style), increasing effective batch size and diluting false-negative concentration.",
+        "star_framework_tip": "Present as a quantitative analysis: state the problem with numbers, then evaluate mitigations with trade-offs.",
+        "common_pitfalls": ["Dismissing false negatives as insignificant", "Not quantifying the contamination rate", "Proposing solutions without analyzing their trade-offs"],
+        "references": ["Chen et al. 2020, SimCLR, arXiv:2002.05709", "Chuang et al. 2020, Debiased Contrastive Learning, arXiv:2007.00224"]
+      },
+      {
+        "id": "q_018",
+        "question": "You built a transformer from scratch rather than fine-tuning a pretrained sentence-transformer. Design a rigorous experiment to quantify what was lost and what was gained by this choice.",
+        "complexity": "Hard",
+        "companies": ["Amazon", "Google", "Meta"],
+        "core_intent": "Tests experimental design skills and intellectual honesty about trade-offs",
+        "preparation_guide": "Consider what a pretrained baseline gains (pretraining knowledge, better features) and what your from-scratch model gains (full architectural control, understanding of every component). Design an experiment that measures both.",
+        "explanation": "Experiment: train three models on QQP: (a) your from-scratch RoPE transformer with contrastive loss; (b) a pretrained sentence-transformer (e.g., all-MiniLM-L6-v2) fine-tuned with the same contrastive loss; (c) a pretrained model of the same architecture and size as yours, fine-tuned identically. Compare: QQP accuracy/F1, embedding quality (retrieval recall@k, clustering quality), training compute (GPU-hours to convergence), and sample efficiency (performance at 10%, 25%, 50% of training data). The from-scratch model will almost certainly lose on final metrics and sample efficiency — pretrained models have seen billions of tokens. The gain is architectural: you have full control over every component and can modify any part. The experimental design itself demonstrates the scientific rigor that justifies the project's existence.",
+        "star_framework_tip": "Frame the experiment design as evidence of your scientific thinking — the ability to evaluate your own work critically.",
+        "common_pitfalls": ["Claiming from-scratch can match pretrained", "Not controlling for model size and training budget", "Missing sample-efficiency as a comparison axis"],
+        "references": ["Reimers & Gurevych 2019, Sentence-BERT, arXiv:1908.10084"]
+      }
+    ]
+  }
+}

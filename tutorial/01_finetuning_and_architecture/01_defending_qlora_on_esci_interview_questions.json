@@ -1,0 +1,119 @@
+{
+  "lesson_title": "Defending QLoRA on ESCI: Quantization, Memory, and Metrics",
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "q_001",
+        "question": "Explain the difference between NF4 and uniform int4 quantization. When is NF4 preferred?",
+        "complexity": "Easy",
+        "companies": ["Amazon", "General"],
+        "core_intent": "Tests understanding of quantile-based quantization vs. uniform spacing",
+        "preparation_guide": "Study the NF4 paper's normality assumption and blockwise scaling mechanism. Be ready to explain why equal-mass bins minimize expected error for normally distributed weights.",
+        "explanation": "NF4 places its 16 quantization levels at the quantiles of a standard normal distribution, so each level covers equal probability mass. Uniform int4 spaces levels evenly, wasting capacity in sparse regions of the weight distribution. NF4 is preferred when weight distributions are approximately normal (which pretrained LLM weights empirically are). The optimality is conditional on that normality assumption — state the caveat.",
+        "star_framework_tip": "Situation: needed to fit a 1.5B model on 16GB. Task: chose a quantization scheme that minimized quality loss. Action: selected NF4 based on the weight-distribution match. Result: model fit within budget with acceptable quality.",
+        "common_pitfalls": ["Saying NF4 is universally optimal without mentioning the normality assumption", "Confusing NF4 (storage format) with quantization-aware training"],
+        "references": ["Dettmers et al. 2023, QLoRA, arXiv:2305.14314"]
+      },
+      {
+        "id": "q_002",
+        "question": "Why are optimizer states kept in fp32 during mixed-precision training?",
+        "complexity": "Easy",
+        "companies": ["General"],
+        "core_intent": "Tests understanding of numerical precision in optimization",
+        "preparation_guide": "Understand the second-moment EMA in Adam/AdamW and why limited mantissa precision causes instability in running averages of small gradients.",
+        "explanation": "The second-moment estimate in Adam involves squaring gradients (which can be very small) and maintaining a running average. In fp16/bf16, the limited mantissa (10 bits for fp16, 7 for bf16) causes precision loss in these running averages, leading to unstable updates — especially for parameters with consistently small gradients. fp32's 23-bit mantissa keeps the optimization numerically stable.",
+        "star_framework_tip": "Frame as a debugging story: noticed training instability, traced it to optimizer precision, understood the underlying numerical cause.",
+        "common_pitfalls": ["Saying 'fp32 is more accurate' without explaining the specific mechanism", "Not distinguishing between forward-pass precision and optimizer-state precision"],
+        "references": ["Micikevicius et al. 2017, Mixed Precision Training, arXiv:1710.03740"]
+      },
+      {
+        "id": "q_003",
+        "question": "What is macro-F1, and why is it preferred over accuracy for imbalanced classification tasks?",
+        "complexity": "Easy",
+        "companies": ["Amazon", "General"],
+        "core_intent": "Tests understanding of evaluation metric selection under class imbalance",
+        "preparation_guide": "Be ready to contrast macro-F1 (unweighted class average) with micro-F1 (instance-level aggregate) and accuracy, using a concrete example with skewed class distributions.",
+        "explanation": "Macro-F1 computes F1 per class and averages with equal weight, regardless of class size. A majority-class-only predictor scores high accuracy and high micro-F1 but near-zero macro-F1, because collapsed minority classes each contribute ~0 to the average. Macro-F1 catches this failure. The trade-off: it can over-reward tiny-class gains (a 2-point Complement improvement counts as much as 2 points on Exact, despite vastly different sample sizes).",
+        "star_framework_tip": "Situation: ESCI dataset heavily skewed toward Exact. Task: chose a metric that would expose class-collapse failures. Action: used macro-F1 with per-class F1 breakdown. Result: identified that the model struggled most on the Substitute/Complement boundary.",
+        "common_pitfalls": ["Confusing macro and micro averaging", "Not mentioning what macro-F1 hides (which class fails, asymmetric error costs)"],
+        "references": ["Reddy et al. 2022, Shopping Queries Dataset, arXiv:2206.06588"]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "q_004",
+        "question": "Walk through the complete GPU memory budget for fine-tuning a 1.5B parameter model with mixed-precision AdamW. Then show how QLoRA changes that budget.",
+        "complexity": "Medium",
+        "companies": ["Amazon", "Google", "General"],
+        "core_intent": "Tests ability to perform live memory arithmetic and understand where QLoRA saves memory",
+        "preparation_guide": "Practice the derivation: bf16 weights (2 B/param), bf16 gradients (2 B/param), fp32 master weights (4 B/param), fp32 first+second moments (8 B/param). Then show QLoRA: NF4 base (~0.5 B/param + constants), adapter-only optimizer states.",
+        "explanation": "Full FT: bf16 weights ≈ 3.0 GB, bf16 gradients ≈ 3.0 GB, fp32 master weights ≈ 6.0 GB, fp32 moments ≈ 12.0 GB = ~24 GB optimizer state alone, before activations. QLoRA: NF4 weights ≈ 0.78 GB + ~0.127 bits/param constants, adapters (tens of millions of params) with their own optimizer states (a few hundred MB). The binding constraint shifts from parameters to activations, which scale with batch × sequence × hidden × layers and are managed with gradient checkpointing.",
+        "star_framework_tip": "Present as a decision tree: started with the memory constraint (16GB GPU), computed that full FT was impossible, evaluated QLoRA as the solution that fit within budget.",
+        "common_pitfalls": ["Forgetting that mixed-precision still needs fp32 master weights", "Not knowing what gradient checkpointing trades (compute for memory)", "Omitting activations from the budget"],
+        "references": ["Dettmers et al. 2023, QLoRA, arXiv:2305.14314"]
+      },
+      {
+        "id": "q_005",
+        "question": "You compared a 1.5B decoder model with LoRA adapters to a 184M fully fine-tuned encoder (DeBERTa-v3). What are the confounds in this comparison, and how would you design a controlled experiment?",
+        "complexity": "Medium",
+        "companies": ["Amazon", "Google", "Meta"],
+        "core_intent": "Tests experimental design judgment — the core AS skill",
+        "preparation_guide": "List every variable that differs between the two setups: architecture type (causal vs. bidirectional), parameter count, adaptation method, pretraining data/objective, hyperparameter tuning budget, sequence length. Then propose a controlled design.",
+        "explanation": "Confounds: (1) architecture — causal attention restricts pair interaction vs. bidirectional cross-attention; (2) adaptation method — LoRA vs. full FT; (3) model capacity — 1.5B vs. 184M; (4) pretraining objective — causal LM vs. ELECTRA-style; (5) tuning budget — different LR/epochs/schedules. A controlled experiment would add at least two arms: QLoRA on DeBERTa (if possible), and full FT on a similarly-sized decoder. Frame the existing comparison as an engineering result — best achievable under a 16GB budget — not a scientific ablation.",
+        "star_framework_tip": "Frame as intellectual honesty: acknowledged the limitations of your own experimental design and proposed improvements.",
+        "common_pitfalls": ["Claiming the comparison is fair", "Listing only 'different model sizes' as the confound", "Not proposing the controlled design"],
+        "references": ["He et al. 2021, DeBERTaV3, arXiv:2111.09543", "Biderman et al. 2024, LoRA Learns Less, arXiv:2405.09673"]
+      },
+      {
+        "id": "q_006",
+        "question": "How does a causal language model produce a fixed set of class labels for sequence classification? Describe both the classification-head and verbalizer approaches, including failure modes.",
+        "complexity": "Medium",
+        "companies": ["Amazon", "Google", "General"],
+        "core_intent": "Tests understanding of LM adaptation for classification and awareness of implementation pitfalls",
+        "preparation_guide": "Know both approaches cold. For the head approach: understand why the last non-padding token is used, the padding-side bug, and Qwen's missing pad token. For verbalizer: template sensitivity, multi-token labels, calibration.",
+        "explanation": "Classification head: a linear layer on the last non-padding token's hidden state (causal attention means only that token attends to the full input). Failure mode: with right-padding and naive last-position indexing, the head reads the pad embedding at eval time when batch padding exceeds sequence length, producing constant (majority-class) predictions. Verbalizer: score logits of label-word tokens in a prompt template ('Exact', 'Substitute', etc.). Failure modes: template sensitivity (small wording changes shift performance), multi-token labels require aggregation, and calibration across label tokens may be biased. The head approach requires training; the verbalizer works zero-shot but is less robust.",
+        "star_framework_tip": "Present as a debugging story if you encountered the padding bug during development.",
+        "common_pitfalls": ["Not knowing which approach you used in your own project", "Not being able to explain the padding-side failure mode", "Confusing pooling strategies between encoder and decoder models"],
+        "references": ["Wolf et al. 2020, HuggingFace Transformers"]
+      }
+    ],
+    "senior": [
+      {
+        "id": "q_007",
+        "question": "Design an experiment to measure the accuracy cost of NF4 quantization on a specific downstream task. What controls, metrics, and ablations would you include?",
+        "complexity": "Hard",
+        "companies": ["Amazon", "Google", "Meta"],
+        "core_intent": "Tests ability to design a rigorous ablation study isolating quantization effects",
+        "preparation_guide": "Think through three conditions: (a) full-precision inference with merged adapters, (b) NF4 inference, (c) NF4 training + NF4 inference. Consider per-class metrics, statistical significance, and confounds.",
+        "explanation": "Three-arm study: (a) train with QLoRA, merge adapters into dequantized fp16 base, evaluate in fp16 — this is the 'best-case' quality; (b) evaluate in NF4 (merge adapter, requantize to NF4) — isolates inference-time quantization cost; (c) evaluate the model as-trained in NF4 — captures accumulated training-time effects. Compare macro-F1 and per-class F1 across all three. The (a)-(b) gap measures inference quantization error; the (a)-(c) gap captures training-time adaptation to quantized weights. Controls: identical hyperparameters, data splits, random seeds (run ≥3 seeds for significance). Additional ablation: vary block size (32, 64, 128) to measure outlier-isolation sensitivity.",
+        "star_framework_tip": "This is a system design question. Structure as: hypothesis → experimental design → expected outcomes → what each outcome would tell you.",
+        "common_pitfalls": ["Comparing only final metrics without isolating training vs. inference effects", "Not running multiple seeds", "Forgetting to control for hyperparameter differences"],
+        "references": ["Dettmers et al. 2023, QLoRA, arXiv:2305.14314"]
+      },
+      {
+        "id": "q_008",
+        "question": "LoRA underperforms full fine-tuning in some regimes. When, why, and how would you detect whether the low-rank constraint is the bottleneck on a new task?",
+        "complexity": "Hard",
+        "companies": ["Amazon", "Google", "Meta", "Anthropic"],
+        "core_intent": "Tests nuanced understanding of LoRA's limitations and ability to design diagnostic experiments",
+        "preparation_guide": "Study Biderman et al. 2024 (LoRA Learns Less and Forgets Less). Understand the intrinsic dimensionality argument and when it breaks down.",
+        "explanation": "LoRA underperforms when the target task demands genuinely new capabilities not present in the base model's pretrained representations — the adaptation requires a high-rank update, but LoRA constrains it to rank r. Detection: run a rank sweep (r ∈ {4, 8, 16, 32, 64}), keeping all else fixed. If macro-F1 plateaus early (e.g., by r=16), the task fits in a low-rank subspace and LoRA is not the bottleneck. If performance improves monotonically up to r=64, the constraint is binding. Additional diagnostic: compare LoRA to full FT on the same model — the gap is the adaptation cost. For tasks that are primarily reweighting existing features (classification over familiar text), LoRA is usually sufficient. For tasks requiring new knowledge or capabilities, full FT wins.",
+        "star_framework_tip": "Structure as a diagnostic framework that applies to any new task, not just your specific project.",
+        "common_pitfalls": ["Claiming LoRA always matches full FT", "Not knowing the rank-sweep diagnostic", "Confusing the architecture bottleneck with the data bottleneck"],
+        "references": ["Biderman et al. 2024, LoRA Learns Less and Forgets Less, arXiv:2405.09673", "Aghajanyan et al. 2020, Intrinsic Dimensionality, arXiv:2012.13255"]
+      },
+      {
+        "id": "q_009",
+        "question": "ESCI labels are roughly ordinal (Exact > Substitute > Complement ≈ Irrelevant). Your cross-entropy loss treats them as unordered categories. Design a loss function that exploits the ordinal structure, and analyze its trade-offs.",
+        "complexity": "Hard",
+        "companies": ["Amazon"],
+        "core_intent": "Tests ability to go beyond standard approaches and design task-specific solutions",
+        "preparation_guide": "Study ordinal regression approaches: cumulative-link models, soft ordinal labels, and distance-weighted cross-entropy. Consider how each interacts with macro-F1 optimization.",
+        "explanation": "Options: (1) Distance-weighted cross-entropy: multiply the loss by the ordinal distance between predicted and true class, e.g., E→I costs 3× more than E→S. Simple but ad-hoc. (2) Soft ordinal labels: instead of one-hot targets, distribute mass across adjacent classes with exponential decay from the true label. Smoother gradients but introduces a temperature hyperparameter. (3) Cumulative-link / ordinal regression: model P(Y ≥ k) for each threshold k, enforcing the ordinal constraint via shared thresholds. Principled but harder to integrate with a transformer classifier head. Trade-off for all: ordinal losses may improve ranking quality but can hurt macro-F1 on the minority classes (Complement), because smoothing the boundary between S and C makes the model less decisive on the hardest class.",
+        "star_framework_tip": "This is an 'Invent and Simplify' question. Present multiple options with trade-offs, recommend one, and explain why.",
+        "common_pitfalls": ["Only suggesting class weights without addressing ordinality", "Not analyzing how ordinal loss interacts with the macro-F1 objective", "Proposing a complex solution without discussing simpler baselines first"],
+        "references": ["Reddy et al. 2022, Shopping Queries Dataset, arXiv:2206.06588"]
+      }
+    ]
+  }
+}
