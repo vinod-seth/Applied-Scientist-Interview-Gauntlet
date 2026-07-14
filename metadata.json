@@ -11,13 +11,43 @@
   "estimated_hours": 45,
   "modules": 9,
   "lessons": 27,
-  "version": "1.1",
-  "delivery_note": "Sessions are generated one at a time on learner request. The curriculum below lists ONLY delivered sessions so the portal never points at a file that does not exist yet. Each new session appends its module here. The full 9-session plan lives in README.md.",
+  "version": "1.2",
+  "delivery_note": "Sessions are generated one at a time. The curriculum lists ONLY delivered content so the portal never points at a file that does not exist yet. Each new session appends a module here. The full 9-session plan lives in README.md.",
   "curriculum": [
+    {
+      "module_id": "module_00_start_here",
+      "title": "Start Here: How the Gauntlet Works",
+      "lessons": [
+        {
+          "id": "m0_l1",
+          "title": "Course Overview & Game Rules",
+          "defaultMode": "mdx",
+          "modes": { "mdx": "README.md" }
+        },
+        {
+          "id": "m0_l2",
+          "title": "Progress, Skill Tree & Metric Vault",
+          "defaultMode": "mdx",
+          "modes": { "mdx": "PROGRESS.md" }
+        },
+        {
+          "id": "m0_l3",
+          "title": "The Round Playbook: Four AS Round Types",
+          "defaultMode": "mdx",
+          "modes": { "mdx": "playbooks/round_playbook.md" }
+        }
+      ]
+    },
     {
       "module_id": "module_01",
       "title": "Session 1: Project Deep-Dives — Fine-Tuning & Architecture",
       "lessons": [
+        {
+          "id": "m1_l0",
+          "title": "Session 1 Overview & Scope Brief",
+          "defaultMode": "mdx",
+          "modes": { "mdx": "tutorial/01_finetuning_and_architecture/README.md" }
+        },
         {
           "id": "m1_l1",
           "title": "Defending QLoRA on ESCI: Quantization, Memory, and Metrics",
@@ -44,7 +74,15 @@
           "defaultMode": "mdx",
           "modes": {
             "mdx": "tutorial/01_finetuning_and_architecture/03_tiered_challenges_and_boss_fight.md",
-            "notebook": "tutorial/01_finetuning_and_architecture/03_metric_vault_extractor.ipynb",
+            "notebook": "tutorial/01_finetuning_and_architecture/03_metric_vault_extractor.ipynb"
+          }
+        },
+        {
+          "id": "m1_l4",
+          "title": "Session 1 Chapter Quiz",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/01_finetuning_and_architecture/quiz.md",
             "interview": "tutorial/01_finetuning_and_architecture/quiz_interview_questions.json"
           }
         }
