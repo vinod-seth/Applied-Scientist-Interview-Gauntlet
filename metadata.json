@@ -87,6 +87,62 @@
           }
         }
       ]
+    },
+    {
+      "module_id": "module_02",
+      "title": "🔒 Session 2: Project Deep-Dives — Systems & Evaluation",
+      "lessons": [
+        { "id": "m2_locked", "title": "Locked — clear the Session 1 boss fight", "defaultMode": "mdx", "modes": { "mdx": "tutorial/02_systems_and_evaluation/00_locked.md" } }
+      ]
+    },
+    {
+      "module_id": "module_03",
+      "title": "🔒 Session 3: ML Fundamentals — Core Theory",
+      "lessons": [
+        { "id": "m3_locked", "title": "Locked — clear the Session 2 boss fight", "defaultMode": "mdx", "modes": { "mdx": "tutorial/03_core_theory/00_locked.md" } }
+      ]
+    },
+    {
+      "module_id": "module_04",
+      "title": "🔒 Session 4: ML Fundamentals — Deep Learning & Transformers",
+      "lessons": [
+        { "id": "m4_locked", "title": "Locked — clear the Session 3 boss fight", "defaultMode": "mdx", "modes": { "mdx": "tutorial/04_deep_learning_transformers/00_locked.md" } }
+      ]
+    },
+    {
+      "module_id": "module_05",
+      "title": "🔒 Session 5: LLMs, Fine-Tuning & Retrieval",
+      "lessons": [
+        { "id": "m5_locked", "title": "Locked — clear the Session 4 boss fight", "defaultMode": "mdx", "modes": { "mdx": "tutorial/05_llms_finetuning_retrieval/00_locked.md" } }
+      ]
+    },
+    {
+      "module_id": "module_06",
+      "title": "🔒 Session 6: Coding — DSA & Algorithms",
+      "lessons": [
+        { "id": "m6_locked", "title": "Locked — clear the Session 5 boss fight", "defaultMode": "mdx", "modes": { "mdx": "tutorial/06_dsa_algorithms/00_locked.md" } }
+      ]
+    },
+    {
+      "module_id": "module_07",
+      "title": "🔒 Session 7: Coding — ML From Scratch",
+      "lessons": [
+        { "id": "m7_locked", "title": "Locked — clear the Session 6 boss fight", "defaultMode": "mdx", "modes": { "mdx": "tutorial/07_ml_from_scratch/00_locked.md" } }
+      ]
+    },
+    {
+      "module_id": "module_08",
+      "title": "🔒 Session 8: Behavioral — Leadership Principles & STAR",
+      "lessons": [
+        { "id": "m8_locked", "title": "Locked — clear the Session 7 boss fight", "defaultMode": "mdx", "modes": { "mdx": "tutorial/08_leadership_principles_star/00_locked.md" } }
+      ]
+    },
+    {
+      "module_id": "module_09",
+      "title": "🔒 Session 9: Mock Loop & Integration",
+      "lessons": [
+        { "id": "m9_locked", "title": "Locked — clear the Session 8 boss fight", "defaultMode": "mdx", "modes": { "mdx": "tutorial/09_mock_loop_integration/00_locked.md" } }
+      ]
     }
   ]
 }
