@@ -7,7 +7,11 @@
 | **Domain tag** | PEFT / NLP / Evaluation |
 | **Resume line under fire** | "Fine-tuned Qwen2.5-1.5B with QLoRA (4-bit NF4 + LoRA adapters), training <2% of parameters on a single 16GB GPU" |
 
-**🔬 Interactive companion:** [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/01_finetuning_and_architecture/01_memory_budget_verifier.ipynb) — *Memory Budget Verifier*. Open in a real browser (signed into Google); clicking inside VS Code may fail to launch Colab.
+**🔬 Interactive companion — *Memory Budget Verifier*.** [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/01_finetuning_and_architecture/01_memory_budget_verifier.ipynb)
+
+> [!NOTE]
+> The badge above is an image VS Code's preview can't load or click. **Copy this URL into a real browser (Chrome/Edge) signed into Google:**
+> `https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/01_finetuning_and_architecture/01_memory_budget_verifier.ipynb`
 
 > 📍 **Roadmap:** 🟢 sections rebuild the defense-level intuition; 🔷 sections carry the derivations and the model answers. Everything here is technical-track — there is no non-technical audience in an AS loop.
 
