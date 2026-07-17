@@ -1,0 +1,139 @@
+{
+  "lesson_title": "Defending Calibration Under Distribution Shift",
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "cal_j1",
+        "question": "What does it mean for a classifier to be calibrated, and how does Expected Calibration Error measure the departure from it?",
+        "complexity": "Medium",
+        "companies": ["General", "Google"],
+        "core_intent": "Checks the base definition and the binning estimator behind ECE.",
+        "preparation_guide": "State the calibration property (among predictions at confidence p, accuracy is p), then the binned gap estimator, then note ECE depends on the binning scheme.",
+        "explanation": "Calibration means predicted confidence matches empirical accuracy: of all predictions made at confidence 0.8, about 80% should be correct. ECE partitions predictions into confidence bins, takes the absolute gap between mean confidence and accuracy in each bin, and averages weighted by bin population. Because it is a binned estimator, the reported number depends on bin count and whether bins are fixed-width or equal-mass.",
+        "star_framework_tip": "Define the property, then the estimator, then immediately flag that the estimator has knobs.",
+        "common_pitfalls": ["Confusing calibration with accuracy", "Quoting an ECE value without stating the binning scheme"],
+        "references": [
+          { "title": "Guo et al. 2017 — On Calibration of Modern Neural Networks", "url": "https://arxiv.org/abs/1706.04599" }
+        ]
+      },
+      {
+        "id": "cal_j2",
+        "question": "What is temperature scaling, and why does it never change a model's top-1 accuracy?",
+        "complexity": "Easy",
+        "companies": ["General", "Meta"],
+        "core_intent": "Tests understanding of the mechanism and the monotonicity argument.",
+        "preparation_guide": "Dividing logits by a positive scalar is a strictly monotone per-example transform, so the argmax is preserved; only the confidence distribution changes.",
+        "explanation": "Temperature scaling divides all logits by a single learned scalar T before softmax, fit by minimizing negative log-likelihood on held-out in-distribution data. Because dividing by T>0 preserves logit ordering within every example, the predicted class never changes — only the sharpness of the probability distribution does. T>1 softens overconfident predictions.",
+        "star_framework_tip": "Lead with the one-line monotonicity proof; it is the crispest possible answer.",
+        "common_pitfalls": ["Claiming it improves accuracy", "Fitting T on the training set, where logits are already overfit"],
+        "references": [
+          { "title": "Guo et al. 2017 — On Calibration of Modern Neural Networks", "url": "https://arxiv.org/abs/1706.04599" }
+        ]
+      },
+      {
+        "id": "cal_j3",
+        "question": "How do you read a reliability diagram, and what does a bar sitting below the diagonal indicate?",
+        "complexity": "Easy",
+        "companies": ["General"],
+        "core_intent": "Checks fluency with the standard calibration visualization.",
+        "preparation_guide": "Axes are per-bin confidence versus per-bin accuracy; the diagonal is perfect calibration; below-diagonal bars mean overconfidence. Always read alongside the bin-population histogram.",
+        "explanation": "A reliability diagram plots accuracy against confidence per bin. Points on the diagonal are calibrated; bars below the diagonal mean confidence exceeds accuracy (overconfidence), bars above mean underconfidence. A large gap in a nearly empty bin is noise, so the diagram must be read together with how much prediction mass each bin holds.",
+        "star_framework_tip": "Mention the companion histogram — it signals you know sparse bins mislead.",
+        "common_pitfalls": ["Over-interpreting gaps in low-population bins", "Forgetting that modern nets concentrate mass in the top confidence bins"],
+        "references": [
+          { "title": "Guo et al. 2017 — On Calibration of Modern Neural Networks", "url": "https://arxiv.org/abs/1706.04599" }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "cal_m1",
+        "question": "ECE can be near zero for a model that is useless. Explain how, and what you report alongside ECE to prevent being fooled.",
+        "complexity": "Hard",
+        "companies": ["OpenAI", "Google"],
+        "core_intent": "Tests awareness of ECE's blind spots: top-label only, gameable, within-bin cancellation.",
+        "preparation_guide": "A model predicting the marginal class distribution with matching confidences scores low ECE while carrying no discriminative power. Report NLL and Brier (proper scoring rules) and classwise calibration.",
+        "explanation": "ECE only checks top-label confidence against accuracy in aggregate. A classifier that always outputs the base rates as confidences, with accuracy equal to those rates, is calibrated by ECE yet has zero skill. Within-bin cancellation and top-label-only scope compound the problem. Proper scoring rules — NLL, Brier — penalize both calibration and sharpness, so reporting them alongside ECE guards against the degenerate case.",
+        "star_framework_tip": "Give the degenerate example first; it is the most memorable way to make the point.",
+        "common_pitfalls": ["Treating low ECE as sufficient evidence of a good probabilistic model", "Ignoring classwise calibration entirely"],
+        "references": [
+          { "title": "Guo et al. 2017 — On Calibration of Modern Neural Networks", "url": "https://arxiv.org/abs/1706.04599" }
+        ]
+      },
+      {
+        "id": "cal_m2",
+        "question": "Why is negative log-likelihood, not ECE, used as the objective when fitting a temperature parameter?",
+        "complexity": "Medium",
+        "companies": ["Anthropic", "Google"],
+        "core_intent": "Tests optimization-level understanding of the calibration procedure.",
+        "preparation_guide": "ECE is piecewise-constant in T because bin memberships jump discretely; NLL is smooth and convex in T for fixed logits and is a proper scoring rule.",
+        "explanation": "As T varies continuously, examples cross bin boundaries only at discrete points, so ECE is a step function — flat gradients almost everywhere and undefined at jumps, hostile to optimization. NLL as a function of T (logits fixed) is smooth and convex, giving a clean one-dimensional minimization, and because NLL is a proper scoring rule its minimizer improves calibration as a byproduct.",
+        "star_framework_tip": "Contrast smoothness explicitly: step function versus convex curve.",
+        "common_pitfalls": ["Trying to directly minimize ECE and reporting unstable T", "Assuming NLL and ECE share the same minimizer exactly"],
+        "references": [
+          { "title": "Guo et al. 2017 — On Calibration of Modern Neural Networks", "url": "https://arxiv.org/abs/1706.04599" }
+        ]
+      },
+      {
+        "id": "cal_m3",
+        "question": "You observe accuracy collapsing under corruption while mean confidence stays high. Give the mechanism, not just the observation.",
+        "complexity": "Hard",
+        "companies": ["Google", "OpenAI"],
+        "core_intent": "Separates candidates who cite the phenomenon from those who can explain why overconfidence persists off-distribution.",
+        "preparation_guide": "Shifted inputs move off the training manifold; features land where the linear classifier head extrapolates to large-margin logits; softmax saturates. Overconfidence is no longer a uniform inflation.",
+        "explanation": "Corruptions push activations into feature-space regions unseen in training. The classification head is a linear map that extrapolates without bound, assigning large-margin logits to off-manifold features, and softmax turns large margins into near-certain probabilities regardless of correctness. The model has no mechanism to know it left familiar territory, so confidence stays high while accuracy falls.",
+        "star_framework_tip": "Use the phrase 'off-manifold features meet a linear head that extrapolates confidently' — it compresses the whole mechanism.",
+        "common_pitfalls": ["Restating that overconfidence happens without a mechanism", "Assuming the model 'knows' it is uncertain under shift"],
+        "references": [
+          { "title": "Ovadia et al. 2019 — Can You Trust Your Model's Uncertainty?", "url": "https://arxiv.org/abs/1906.02530" }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "cal_s1",
+        "question": "Explain precisely why a temperature fit on clean validation data fails to transfer to shifted inputs, and design the experiment that demonstrates it.",
+        "complexity": "Hard",
+        "companies": ["Google", "Anthropic", "OpenAI"],
+        "core_intent": "Tests the central negative result at mechanism level plus the ability to design its demonstration.",
+        "preparation_guide": "One scalar corrects the clean distribution's logit geometry; under shift the miscalibration grows with severity and varies by corruption, so it is no longer a uniform inflation. Demonstrate by fitting an oracle temperature per severity and showing it increases monotonically.",
+        "explanation": "Temperature scaling assumes miscalibration is a single global logit-scale factor, which holds approximately in-distribution. Under covariate shift the required correction becomes severity- and corruption-dependent, so no clean-fitted scalar fits the family of shifted distributions. The demonstration fits an oracle T separately at each corruption severity: T*(severity) rising monotonically is direct evidence that one temperature cannot serve all severities, and applying the clean T shows ECE degrading as severity grows.",
+        "star_framework_tip": "State the assumption temperature scaling makes, then show shift violates it, then the oracle-T exhibit.",
+        "common_pitfalls": ["Reporting that TS fails without the oracle-T control", "Assuming severity is observable at deployment so per-severity T is deployable"],
+        "references": [
+          { "title": "Ovadia et al. 2019 — Can You Trust Your Model's Uncertainty?", "url": "https://arxiv.org/abs/1906.02530" },
+          { "title": "Hendrycks & Dietterich 2019 — Benchmarking Neural Network Robustness", "url": "https://arxiv.org/abs/1903.12261" }
+        ]
+      },
+      {
+        "id": "cal_s2",
+        "question": "A team wants to deploy a classifier into a setting with expected distribution shift and asks how to make its confidences trustworthy. What do you recommend building, and what do you refuse to promise?",
+        "complexity": "System Design",
+        "companies": ["Anthropic", "Google", "General"],
+        "core_intent": "Tests translation of a calibration finding into deployment engineering and honest scoping.",
+        "preparation_guide": "Layer selective prediction (risk-coverage), shift detection (feature-space distance/energy), and ensembles if budget allows. Refuse to promise restored accuracy — calibration management is not accuracy recovery.",
+        "explanation": "Selective prediction sets a confidence threshold on the calibrated model and abstains below it, trading coverage for correctness with a reportable risk-coverage curve. Shift detection monitors feature-space distance or energy scores to flag inputs where confidence is untrustworthy regardless of its value. Deep ensembles give the most shift-robust uncertainty at N-times inference cost. The honest limit: all of this manages miscalibration and controls risk; none restores the accuracy lost to shift — if severe shift is expected, the real fix is training-time robustness (realistic augmentation), not post-hoc calibration.",
+        "star_framework_tip": "Order the layers cheapest-first, then end on the explicit non-promise.",
+        "common_pitfalls": ["Implying post-hoc calibration recovers accuracy under shift", "Choosing an abstention threshold with no plan for lacking shifted labels"],
+        "references": [
+          { "title": "Lakshminarayanan et al. 2017 — Deep Ensembles", "url": "https://arxiv.org/abs/1612.01474" },
+          { "title": "Ovadia et al. 2019 — Can You Trust Your Model's Uncertainty?", "url": "https://arxiv.org/abs/1906.02530" }
+        ]
+      },
+      {
+        "id": "cal_s3",
+        "question": "Reproducing a known negative result (temperature scaling fails under shift) is only valuable if your measurement instruments are trustworthy. How do you establish that your ECE numbers under shift are real and not estimator artifacts?",
+        "complexity": "Hard",
+        "companies": ["OpenAI", "Anthropic"],
+        "core_intent": "Tests measurement rigor: distinguishing a genuine phenomenon from binning noise and small-sample effects.",
+        "preparation_guide": "Cross-check binning schemes, bootstrap confidence intervals on ECE per severity, verify clean-set ECE matches published values for the architecture, and check per-severity sample sizes.",
+        "explanation": "Trustworthy ECE-under-shift requires: agreement in trend between fixed-width and equal-mass binning; bootstrap confidence intervals on ECE at each severity so the severity-to-severity change exceeds estimator noise; an anchor check that clean-distribution ECE reproduces literature values for that architecture family before corruption is applied; and adequate sample size in each severity cell so bin accuracies are not themselves noisy. Only after these does 'ECE rose with severity' become a claim about the model rather than about the estimator.",
+        "star_framework_tip": "Frame as instrument calibration before result reporting — the meta-point that measuring tools need validation too.",
+        "common_pitfalls": ["Reporting single-scheme ECE with no uncertainty quantification", "Skipping the clean-set anchor that would catch a broken pipeline"],
+        "references": [
+          { "title": "Guo et al. 2017 — On Calibration of Modern Neural Networks", "url": "https://arxiv.org/abs/1706.04599" }
+        ]
+      }
+    ]
+  }
+}

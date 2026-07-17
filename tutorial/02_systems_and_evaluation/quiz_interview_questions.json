@@ -1,0 +1,140 @@
+{
+  "lesson_title": "Systems & Evaluation: RAG Diagnostics and Uncertainty Under Shift",
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "sys_j1",
+        "question": "What is the difference between a model's accuracy and its calibration, and why can a highly accurate model still be unsafe to deploy?",
+        "complexity": "Medium",
+        "companies": ["General", "Google"],
+        "core_intent": "Checks that the candidate separates discriminative performance from probabilistic reliability.",
+        "preparation_guide": "Define both, then give a decision-making scenario where confidence is used as an input to an action, not just a ranking.",
+        "explanation": "Accuracy measures how often the top prediction is right; calibration measures whether the stated confidence matches the empirical hit rate. A model can be 95% accurate yet report 99% confidence on everything, so downstream systems that route low-confidence cases to humans never trigger. When confidence drives an action — abstain, escalate, auto-approve — miscalibration silently disables the safety mechanism even while headline accuracy looks fine.",
+        "star_framework_tip": "Anchor on a concrete decision the confidence feeds, not an abstract definition.",
+        "common_pitfalls": ["Treating calibration as a cosmetic metric", "Assuming higher accuracy implies better calibration — the correlation is often negative for larger models"],
+        "references": [
+          { "title": "Guo et al. 2017 — On Calibration of Modern Neural Networks", "url": "https://arxiv.org/abs/1706.04599" }
+        ]
+      },
+      {
+        "id": "sys_j2",
+        "question": "In a retrieval-augmented system, why is end-to-end accuracy insufficient as the only evaluation metric?",
+        "complexity": "Easy",
+        "companies": ["General", "Meta"],
+        "core_intent": "Tests the instinct to decompose a multi-stage system before optimizing it.",
+        "preparation_guide": "Explain that a single number cannot attribute blame across retrieval and generation, so it cannot direct engineering effort.",
+        "explanation": "End-to-end accuracy tells you the system is wrong but not why. The same score can come from a retriever that never surfaces evidence or a generator that ignores evidence it was given, and the fixes are opposite. Stage-wise metrics — recall against gold passages for retrieval, an oracle-context condition for generation — turn one uninformative number into an error budget that says where to spend.",
+        "star_framework_tip": "Frame as: one number cannot allocate a budget.",
+        "common_pitfalls": ["Optimizing retrieval because it is the easier knob rather than the binding constraint", "Reporting only aggregate accuracy in a system review"],
+        "references": [
+          { "title": "Lewis et al. 2020 — Retrieval-Augmented Generation", "url": "https://arxiv.org/abs/2005.11401" }
+        ]
+      },
+      {
+        "id": "sys_j3",
+        "question": "What is selective prediction, and what curve do you report when using it?",
+        "complexity": "Medium",
+        "companies": ["General", "Anthropic"],
+        "core_intent": "Checks familiarity with abstention as a practical response to uncertainty.",
+        "preparation_guide": "Define the confidence threshold and abstention behavior; name the risk-coverage curve as the reporting artifact.",
+        "explanation": "Selective prediction sets a confidence threshold below which the model abstains rather than answers, converting potential errors into explicit refusals. The result is not a single accuracy number but a risk-coverage curve: as coverage (fraction answered) falls, risk (error rate among answered) falls too. Stakeholders choose the operating point that matches their cost of a wrong answer versus a deferral.",
+        "star_framework_tip": "Always mention that a single accuracy number is the wrong reporting format here.",
+        "common_pitfalls": ["Reporting accuracy on answered items only, hiding the coverage cost", "Setting the threshold on training data"],
+        "references": [
+          { "title": "Ovadia et al. 2019 — Can You Trust Your Model's Uncertainty?", "url": "https://arxiv.org/abs/1906.02530" }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "sys_m1",
+        "question": "You are asked to attribute errors in a multi-stage ML pipeline to specific stages. Describe a general methodology and the control conditions it requires.",
+        "complexity": "Hard",
+        "companies": ["Google", "OpenAI"],
+        "core_intent": "Tests transferable experimental design: oracle conditions and ablations for stage attribution.",
+        "preparation_guide": "Generalize the oracle-context idea: replace each stage's output with ground truth and measure residual error. Add a no-pipeline baseline to detect shortcuts.",
+        "explanation": "For each stage, substitute its output with an oracle (ground-truth) value and measure the residual end-to-end error: the drop attributable to that substitution bounds the stage's contribution. Complement with a no-pipeline baseline that measures how much of the task the final stage solves unaided, which exposes shortcuts and leakage. Together these give an error budget rather than a single conflated score, and they are robust to the temptation to blame whichever component is easiest to change.",
+        "star_framework_tip": "Describe the oracle substitution as a general tool, then instantiate it on the specific pipeline you built.",
+        "common_pitfalls": ["Running oracle conditions with confounded context length or formatting differences", "Omitting the no-pipeline baseline and mistaking memorization for pipeline success"],
+        "references": [
+          { "title": "Lewis et al. 2020 — Retrieval-Augmented Generation", "url": "https://arxiv.org/abs/2005.11401" }
+        ]
+      },
+      {
+        "id": "sys_m2",
+        "question": "An automated evaluator (LLM-as-judge or lexical metric) sits between your system and every conclusion you draw. How do you validate it, and what biases do you expect?",
+        "complexity": "Hard",
+        "companies": ["Anthropic", "OpenAI"],
+        "core_intent": "Tests treating the evaluator as an instrument requiring calibration, including bias direction.",
+        "preparation_guide": "Name bias directions: lexical metrics over-penalize paraphrase; LLM judges show self-preference and leniency toward fluent errors. Validate with a stratified human audit and report agreement.",
+        "explanation": "Validation means measuring judge-human agreement on a stratified sample — stratified because a random sample leaves small but decisive categories unbounded. Expected biases have direction: exact-match and token-F1 mark correct paraphrases wrong, inflating whichever error category those cases fall into; LLM judges favor outputs resembling their own generations and pass fluent but unsupported answers. The critical risk is when judge bias points in the same direction as the hypothesis being tested, which makes the error self-serving rather than merely noisy.",
+        "star_framework_tip": "State the bias direction before the audit design — direction is the part most candidates miss.",
+        "common_pitfalls": ["Random rather than stratified auditing", "Not re-validating the judge after output style changes"],
+        "references": [
+          { "title": "Guo et al. 2017 — On Calibration of Modern Neural Networks", "url": "https://arxiv.org/abs/1706.04599" }
+        ]
+      },
+      {
+        "id": "sys_m3",
+        "question": "Your evaluation metric is a binned estimator. What questions must you answer before reporting its value as a finding?",
+        "complexity": "Hard",
+        "companies": ["Google", "General"],
+        "core_intent": "Tests statistical maturity about estimator configuration and uncertainty.",
+        "preparation_guide": "Cover binning scheme sensitivity, mass concentration, sample size per cell, and bootstrap confidence intervals.",
+        "explanation": "Before a binned estimate becomes a finding: does the value change materially under a different binning scheme (fixed-width versus equal-mass)? Where does the prediction mass actually live, and are the decisive bins populated enough to be more than noise? Is the difference you are claiming larger than a bootstrap confidence interval on the same data? And does an anchor condition reproduce a known published value, proving the pipeline itself is not broken? Only then is the number about the model rather than about the estimator.",
+        "star_framework_tip": "Present as a pre-report checklist you actually ran, with the anchor check last.",
+        "common_pitfalls": ["Reporting a single-configuration estimate with no uncertainty", "Interpreting large gaps in nearly empty bins"],
+        "references": [
+          { "title": "Guo et al. 2017 — On Calibration of Modern Neural Networks", "url": "https://arxiv.org/abs/1706.04599" }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "sys_s1",
+        "question": "Design an evaluation and monitoring plan for a retrieval-augmented assistant that must operate under gradual corpus and query drift.",
+        "complexity": "System Design",
+        "companies": ["OpenAI", "Google", "Anthropic"],
+        "core_intent": "Tests end-to-end evaluation governance: frozen sets, stage metrics, judge governance, drift signals, and gating.",
+        "preparation_guide": "Cover a versioned gold-labeled eval set, per-stage and per-failure-bucket regression gates, judge re-validation on style changes, drift detection independent of confidence, and periodic refresh against overfitting.",
+        "explanation": "The plan needs four layers. Dataset governance: a frozen, versioned eval set with gold-passage labels, refreshed on a schedule because a static set gets overfit by iteration and stale against corpus drift. Stage metrics: recall against gold for retrieval and an oracle-context condition for generation, with regression gates per failure bucket so a change that trades hallucination for retrieval misses is visible rather than netting out. Judge governance: measured human agreement per bucket, re-audited whenever prompts or models change answer style. Drift monitoring: signals independent of model confidence — query-embedding distribution distance, retrieval-score distributions, abstention rate — because confidence is exactly what drift corrupts.",
+        "star_framework_tip": "Structure as dataset, stage metrics, judge, drift — then state the gating policy that ties them to shipping.",
+        "common_pitfalls": ["Gating on aggregate accuracy while bucket composition degrades", "Using model confidence as the drift signal it cannot provide"],
+        "references": [
+          { "title": "Lewis et al. 2020 — RAG", "url": "https://arxiv.org/abs/2005.11401" },
+          { "title": "Ovadia et al. 2019 — Can You Trust Your Model's Uncertainty?", "url": "https://arxiv.org/abs/1906.02530" }
+        ]
+      },
+      {
+        "id": "sys_s2",
+        "question": "A stakeholder wants a single confidence threshold that guarantees a fixed error rate in production, where distribution shift is expected. Explain what you can and cannot deliver.",
+        "complexity": "System Design",
+        "companies": ["Anthropic", "Google"],
+        "core_intent": "Tests honest scoping under pressure plus knowledge of what post-hoc uncertainty methods can guarantee.",
+        "preparation_guide": "Distinguish in-distribution guarantees (achievable via calibration plus a validation-derived threshold) from shifted-distribution guarantees (not achievable without labeled shifted data). Mention conformal prediction's exchangeability assumption and how shift breaks it.",
+        "explanation": "In-distribution, a threshold derived from a calibrated model on held-out data supports an approximate error-rate target, and conformal methods can make it a coverage guarantee under exchangeability. Distribution shift breaks exchangeability, so those guarantees lapse exactly when they matter most: the confidence that defines the threshold is itself corrupted by shift. What can be delivered is conservative operation plus instrumentation — a threshold set with margin, a risk-coverage curve at the chosen point, drift detection independent of confidence, and an alarm when abstention rate or input distribution moves. The honest statement is that no post-hoc method converts an unlabeled shifted distribution into an error-rate guarantee; obtaining a small labeled sample from the target distribution is the purchase that actually buys the guarantee.",
+        "star_framework_tip": "Lead with what you can deliver, then the precise assumption that fails, then the concrete thing worth buying.",
+        "common_pitfalls": ["Promising conformal guarantees without noting exchangeability fails under shift", "Deriving the threshold from clean data and presenting it as a production guarantee"],
+        "references": [
+          { "title": "Ovadia et al. 2019 — Can You Trust Your Model's Uncertainty?", "url": "https://arxiv.org/abs/1906.02530" },
+          { "title": "Lakshminarayanan et al. 2017 — Deep Ensembles", "url": "https://arxiv.org/abs/1612.01474" }
+        ]
+      },
+      {
+        "id": "sys_s3",
+        "question": "You reproduce a published negative result and your numbers differ from the paper's. Walk through how you determine whether your setup is wrong or the finding is conditional.",
+        "complexity": "Hard",
+        "companies": ["OpenAI", "Anthropic", "General"],
+        "core_intent": "Tests scientific debugging discipline and the maturity to distinguish implementation error from genuine scope conditions.",
+        "preparation_guide": "Anchor checks first (reproduce a clean-condition published number), then isolate differences one at a time: architecture, data preprocessing, metric configuration, evaluation protocol.",
+        "explanation": "Start with an anchor: reproduce a published value under the paper's baseline condition. If the anchor fails, the pipeline is broken and no downstream comparison means anything — debug preprocessing, metric configuration, and evaluation protocol before touching the hypothesis. If the anchor holds and the shifted-condition result still differs, vary one factor at a time — architecture family, corruption implementation, metric binning, sample size — because published negative results are usually conditional on model family and data regime rather than universal. The conclusion is then a scope statement: the finding holds under these conditions and not those, which is a contribution rather than a contradiction.",
+        "star_framework_tip": "Anchor, isolate, scope — and be explicit that suspecting your own setup before the paper is the default posture.",
+        "common_pitfalls": ["Announcing a paper is wrong before reproducing its baseline condition", "Changing several factors at once and losing attribution"],
+        "references": [
+          { "title": "Hendrycks & Dietterich 2019 — Benchmarking Neural Network Robustness", "url": "https://arxiv.org/abs/1903.12261" },
+          { "title": "Ovadia et al. 2019 — Can You Trust Your Model's Uncertainty?", "url": "https://arxiv.org/abs/1906.02530" }
+        ]
+      }
+    ]
+  }
+}

@@ -2,6 +2,35 @@
 
 All notable changes to this course are documented here. Versioning follows `MAJOR.MINOR`.
 
+## [1.3] — 2026-07-14
+
+### Added
+- **Session 2 — Project Deep-Dives: Systems & Evaluation** (`tutorial/02_systems_and_evaluation/`), replacing its locked stub:
+  - Session README with scope brief (every interrogation surface for both projects) and armory table.
+  - Lesson 1: Defending the RAG Failure-Mode Analysis — operational failure taxonomy as a decision tree, the recall/error dissociation, the oracle-context isolation, chunking mechanisms (dilution / fragmentation / position), judge validity, plus 6 hardest follow-ups with model answers.
+  - Lesson 2: Defending Calibration Under Distribution Shift — ECE estimator pathologies, temperature scaling derived, the shift mechanism (off-manifold features → linear-head extrapolation → softmax saturation), the oracle-T exhibit, plus 6 hardest follow-ups.
+  - Lesson 3: Tiered challenges across 8 core topics + the Systems Bar Raiser boss fight (10-item rubric).
+  - Chapter quiz (12 questions + 2 reflections) and per-lesson interview suites (junior/mid/senior, 3 each).
+  - Armory notebooks: `01_rag_failure_triage_lab.ipynb` (triage decision tree, chunk×k sweep, oracle-context decomposition, leakage confound) and `02_calibration_and_temperature_lab.ipynb` (ECE from scratch both binning schemes, reliability diagrams, NLL-vs-ECE objective, oracle-T sweep, risk–coverage).
+- Session 2 Metric Vault rows in PROGRESS.md; Session 2 skill-tree nodes expanded to all 8 core topics.
+
+### Fixed
+- Calibration lab: retuned the shift simulation so the clean model is **over**confident (fitted T ≈ 2.0, matching the range Guo et al. 2017 report for ResNets). The initial parameters produced T ≈ 0.66 — an *under*confident model, contradicting the lesson it was built to demonstrate. Temperature fit bounds widened to 25.0 so the oracle-T sweep is not silently capped.
+- RAG triage lab: added 20 hard distractors sharing question vocabulary. Without them the toy corpus reached recall 1.0 at k=2, so the recall/accuracy dissociation never appeared, the retrieval-miss bucket never populated, and the leakage knob had no observable effect. Leakage demo moved to k=1 where misses actually occur; oracle decomposition now reported at two operating points to show attribution depends on the operating point.
+
+### Verified
+- Both notebooks executed end-to-end on CPU. Calibration lab reproduces the phenomenon (accuracy 0.91→0.17 while confidence 0.96→0.78; oracle T* rising 1.97→12.56). RAG lab reproduces the dissociation (recall 0.40→1.00 with a widening recall–accuracy gap) and the leakage confound (identical recall, accuracy 0.23→0.53).
+
+## [1.2] — 2026-07-14
+
+### Added
+- Sessions 2–9 shown as visible **locked skill-tree nodes**, each backed by a real stub file with scope preview and unlock conditions, so the whole 9-session map is visible from day one without dead links.
+- Metadata curriculum expanded to list every reachable chapter (Start Here module: overview/progress/playbook; Session 1 module: overview, 3 lessons, quiz).
+
+### Fixed
+- Restored chapters lost when the curriculum was over-trimmed: the portal renders only what the curriculum lists, so quiz, playbook, progress tracker, and session overview had silently disappeared from the sidebar.
+- Colab launch links converted from image badges to plain text links — the portal's markdown renderer emitted `href="#"` for image-wrapped links.
+
 ## [1.1] — 2026-07-14
 
 ### Added

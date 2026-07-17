@@ -90,9 +90,49 @@
     },
     {
       "module_id": "module_02",
-      "title": "🔒 Session 2: Project Deep-Dives — Systems & Evaluation",
+      "title": "Session 2: Project Deep-Dives — Systems & Evaluation",
       "lessons": [
-        { "id": "m2_locked", "title": "Locked — clear the Session 1 boss fight", "defaultMode": "mdx", "modes": { "mdx": "tutorial/02_systems_and_evaluation/00_locked.md" } }
+        {
+          "id": "m2_l0",
+          "title": "Session 2 Overview & Scope Brief",
+          "defaultMode": "mdx",
+          "modes": { "mdx": "tutorial/02_systems_and_evaluation/README.md" }
+        },
+        {
+          "id": "m2_l1",
+          "title": "Defending the RAG Failure-Mode Analysis",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/02_systems_and_evaluation/01_defending_rag_failure_modes.md",
+            "notebook": "tutorial/02_systems_and_evaluation/01_rag_failure_triage_lab.ipynb",
+            "interview": "tutorial/02_systems_and_evaluation/01_defending_rag_failure_modes_interview_questions.json"
+          }
+        },
+        {
+          "id": "m2_l2",
+          "title": "Defending Calibration Under Distribution Shift",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/02_systems_and_evaluation/02_defending_calibration_under_shift.md",
+            "notebook": "tutorial/02_systems_and_evaluation/02_calibration_and_temperature_lab.ipynb",
+            "interview": "tutorial/02_systems_and_evaluation/02_defending_calibration_under_shift_interview_questions.json"
+          }
+        },
+        {
+          "id": "m2_l3",
+          "title": "Tiered Challenges & Boss Fight: Systems Bar Raiser",
+          "defaultMode": "mdx",
+          "modes": { "mdx": "tutorial/02_systems_and_evaluation/03_tiered_challenges_and_boss_fight.md" }
+        },
+        {
+          "id": "m2_l4",
+          "title": "Session 2 Chapter Quiz",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/02_systems_and_evaluation/quiz.md",
+            "interview": "tutorial/02_systems_and_evaluation/quiz_interview_questions.json"
+          }
+        }
       ]
     },
     {
@@ -100,7 +140,8 @@
       "title": "🔒 Session 3: ML Fundamentals — Core Theory",
       "lessons": [
         { "id": "m3_locked", "title": "Locked — clear the Session 2 boss fight", "defaultMode": "mdx", "modes": { "mdx": "tutorial/03_core_theory/00_locked.md" } }
-      ]
+      ],
+      "_note": "Unlocks after the Session 2 Systems Bar Raiser."
     },
     {
       "module_id": "module_04",

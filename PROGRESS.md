@@ -10,11 +10,15 @@ Legend: `[ ]` untouched · `[B]` Bronze · `[S]` Silver · `[G]` Gold (boss-figh
 
 ```text
 SESSION 1 — FINE-TUNING & ARCHITECTURE          SESSION 2 — SYSTEMS & EVALUATION
-├─ [ ] NF4 / quantile quantization              ├─ [ ] RAG failure taxonomy
-├─ [ ] LoRA math (rank, alpha, placement)       ├─ [ ] Retrieval knobs (chunking, k)
-├─ [ ] GPU memory accounting (16GB budget)      ├─ [ ] ECE & reliability diagrams
-├─ [ ] Causal-LM-as-classifier design           ├─ [ ] Temperature scaling & its failure
-├─ [ ] Macro-F1 & ESCI imbalance                └─ [ ] BOSS: Systems Bar Raiser
+├─ [ ] NF4 / quantile quantization              ├─ [ ] Failure-mode operational definitions
+├─ [ ] LoRA math (rank, alpha, placement)       ├─ [ ] Sweep design & oracle-context test
+├─ [ ] GPU memory accounting (16GB budget)      ├─ [ ] Chunking mechanics & position effects
+├─ [ ] Causal-LM-as-classifier design           ├─ [ ] Judge validity & measurement error
+├─ [ ] Macro-F1 & ESCI imbalance                ├─ [ ] ECE & estimator pathologies
+│                                               ├─ [ ] Temperature scaling: derivation & limits
+│                                               ├─ [ ] Why calibration breaks under shift
+│                                               ├─ [ ] Acting under miscalibration (abstention)
+│                                               └─ [ ] BOSS: Systems Bar Raiser
 ├─ [ ] RoPE derivation
 ├─ [ ] Pre-LN vs Post-LN                        SESSION 3 — CORE THEORY
 ├─ [ ] Contrastive loss & negatives             ├─ [ ] Bias–variance / regularization
@@ -91,3 +95,41 @@ Before Session 1's boss fight, pull these from your actual run logs. Any slot yo
 | ROPE model: QQP eval metric + value | [FILL] | |
 | ROPE model: baseline compared against (if any) | [FILL] | |
 | Contrastive loss: exact formulation + temperature/margin | [FILL] | |
+
+### Session 2 — Systems & Evaluation
+
+Fill before the Systems Bar Raiser. Same law: run logs or `QUALITATIVE-ONLY`. The armory notebooks show the *machinery*; only your own artifacts fill these rows.
+
+| Slot | Value from run logs | Source (log/notebook path) |
+|---|---|---|
+| **RAG — project setup** | | |
+| Corpus + split (name, size, gold-label source) | [FILL] | |
+| Embedder + query instruction prefix used? (y/n) | [FILL] | |
+| FAISS index type + corpus scale | [FILL] | |
+| Generator model used | [FILL] | |
+| **RAG — headline evidence** | | |
+| Failure distribution (miss / ignored / hallucination %) | [FILL] | |
+| n (eval questions) | [FILL] | |
+| recall@k curve points (k → recall) | [FILL] | |
+| End-to-end accuracy at operating point | [FILL] | |
+| Oracle-context accuracy (generation floor) | [FILL] | |
+| Closed-book baseline (leakage control) | [FILL] | |
+| Chunk × k sweep grid + what was held fixed | [FILL] | |
+| **RAG — instrument validity** | | |
+| Judge type + known bias direction | [FILL] | |
+| Judge audit: sample size + human agreement | [FILL] | |
+| One real example per failure bucket | [FILL] | |
+| **Calibration — project setup** | | |
+| Architecture (timm id) + dataset | [FILL] | |
+| Corruption set + severity range | [FILL] | |
+| ECE config (bins, scheme, n) | [FILL] | |
+| **Calibration — headline evidence** | | |
+| Clean accuracy / mean confidence / ECE | [FILL] | |
+| Per-severity accuracy | [FILL] | |
+| Per-severity ECE (fixed-width) | [FILL] | |
+| Per-severity ECE (equal-mass cross-check) | [FILL] | |
+| Fitted T on clean validation | [FILL] | |
+| Oracle T per severity (the mechanism exhibit) | [FILL] | |
+| ECE under clean-fitted T, per severity | [FILL] | |
+| Worst corruption for calibration + hypothesis why | [FILL] | |
+| NLL / Brier reported alongside ECE? | [FILL] | |

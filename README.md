@@ -5,7 +5,7 @@
 | **Target role** | Applied Scientist (entry-level, NLP/LLM focus) |
 | **Candidate profile** | M.Tech Robotics & AI (IIT Guwahati), B.Tech CS (AI/ML), no industry experience — four flagship projects carry the resume |
 | **Format** | 9 sessions, delivered one at a time; each ends in a Boss Fight that gates the next |
-| **Version** | 1.1 |
+| **Version** | 1.3 |
 | **Last verified** | 2026-07-13 (model names, paper links, and Leadership Principles list checked on this date) |
 
 ---
@@ -74,7 +74,7 @@ The skill tree in [PROGRESS.md](PROGRESS.md) shows all 9 sessions and their core
 | # | Session | Core topics (boss-fight gated) | Status |
 |---|---|---|---|
 | 1 | Project Deep-Dives: Fine-Tuning & Architecture | QLoRA/NF4, LoRA math, GPU memory accounting, RoPE derivation, Pre-LN, contrastive loss | ✅ Delivered |
-| 2 | Project Deep-Dives: Systems & Evaluation | RAG failure taxonomy, retrieval knobs, ECE, reliability diagrams, temperature scaling | 🔒 Locked |
+| 2 | Project Deep-Dives: Systems & Evaluation | Failure-mode definitions, sweep design & oracle test, chunking mechanics, judge validity, ECE pathologies, temperature scaling limits, shift mechanism, abstention | ✅ Delivered |
 | 3 | ML Fundamentals: Core Theory | Bias–variance, regularization, probabilistic foundations, optimization, metrics | 🔒 Locked |
 | 4 | ML Fundamentals: Deep Learning & Transformers | Backprop mechanics, normalization, attention variants, training pathologies | 🔒 Locked |
 | 5 | LLMs, Fine-Tuning & Retrieval | PEFT landscape, decoding, scaling behavior, RAG design, evaluating LLM systems | 🔒 Locked |

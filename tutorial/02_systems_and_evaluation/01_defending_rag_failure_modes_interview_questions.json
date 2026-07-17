@@ -1,0 +1,137 @@
+{
+  "lesson_title": "Defending the RAG Failure-Mode Analysis",
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "rag_j1",
+        "question": "In a retrieval-augmented generation system, what distinguishes a retrieval failure from a generation failure, and how would you measure each separately?",
+        "complexity": "Medium",
+        "companies": ["General", "Google"],
+        "core_intent": "Tests whether the candidate can decompose an end-to-end system into independently measurable stages.",
+        "preparation_guide": "Anchor on recall@k against gold-passage labels for retrieval, and an oracle-context condition (gold passage supplied directly) for generation. Explain why end-to-end accuracy alone cannot attribute blame.",
+        "explanation": "Retrieval quality is measured by whether evidence sufficient to answer appears in the retrieved set (recall@k versus labeled gold passages). Generation quality is isolated by the oracle-context experiment: hand the model the gold passage and measure residual error — no retrieval explanation remains. End-to-end accuracy conflates the two; the decomposition is what makes fixes targeted rather than guesswork.",
+        "star_framework_tip": "Situation: end-to-end errors with no attribution. Task: assign blame per stage. Action: gold-label recall measurement + oracle condition. Result: an error budget by stage.",
+        "common_pitfalls": ["Measuring retrieval by 'similarity score looked high' instead of labeled recall", "Skipping the oracle condition and attributing blame from intuition"],
+        "references": [
+          { "title": "Lewis et al. 2020 — Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks", "url": "https://arxiv.org/abs/2005.11401" }
+        ]
+      },
+      {
+        "id": "rag_j2",
+        "question": "Why does chunk size matter in a RAG pipeline? Describe two mechanisms by which changing it alters answer quality.",
+        "complexity": "Medium",
+        "companies": ["General", "Meta"],
+        "core_intent": "Separates candidates who ran a sweep from candidates who understand what the sweep varies.",
+        "preparation_guide": "Give mechanisms, not folklore: embedding dilution for large chunks, evidence fragmentation for small chunks, position effects in long contexts.",
+        "explanation": "Large chunks average many topics into one embedding, weakening query-chunk similarity for specific facts (retrieval misses), and push relevant sentences into mid-context positions that generators use poorly. Small chunks embed sharply but split multi-sentence evidence across retrieval slots, so the context can contain pieces of the answer without ever containing enough of it.",
+        "star_framework_tip": "Name the mechanism first, then the failure mode it aggravates, then the sweep evidence.",
+        "common_pitfalls": ["Treating chunk size and retrieval depth as independent when both feed the same context budget", "Quoting a 'best chunk size' without conditions"],
+        "references": [
+          { "title": "Liu et al. 2023 — Lost in the Middle: How Language Models Use Long Contexts", "url": "https://arxiv.org/abs/2307.03172" }
+        ]
+      },
+      {
+        "id": "rag_j3",
+        "question": "You are using a small embedding model like bge-small for retrieval. What implementation details commonly go wrong, and how do you verify your setup?",
+        "complexity": "Easy",
+        "companies": ["General"],
+        "core_intent": "Checks hands-on familiarity with embedding-retrieval plumbing.",
+        "preparation_guide": "Cover the BGE query instruction prefix, L2 normalization so inner product equals cosine, and a sanity check via known query-passage pairs.",
+        "explanation": "BGE v1 models expect a query-side instruction prefix; omitting it degrades retrieval quietly. Cosine similarity requires normalizing embeddings before an inner-product index. Verification: a handful of hand-labeled query-passage pairs should retrieve at rank 1; if not, the plumbing (prefix, normalization, tokenization truncation) is suspect before the model is.",
+        "star_framework_tip": "Frame as a checklist you actually ran, ending with the sanity-check result.",
+        "common_pitfalls": ["Skipping the instruction prefix", "Comparing unnormalized inner products as if they were cosine similarities"],
+        "references": [
+          { "title": "Xiao et al. 2023 — C-Pack (BGE embeddings)", "url": "https://arxiv.org/abs/2309.07597" }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "rag_m1",
+        "question": "Design the instrumentation that classifies each wrong RAG answer as retrieval-miss, retrieved-but-ignored, or hallucination. What labels does it require and where does the classification become ambiguous?",
+        "complexity": "Hard",
+        "companies": ["Google", "OpenAI"],
+        "core_intent": "Evaluates ability to operationalize a conceptual taxonomy into testable rules and to see its boundary cases.",
+        "preparation_guide": "Order the checks: gold-in-context first, then answer-support against context, then support against any retrieved chunk. Name the ambiguities: ignored vs. parametric override, partial answers, chunking that splits gold passages.",
+        "explanation": "The classifier needs gold-passage labels and an answer-correctness judge. Retrieval-miss: no gold chunk in top-k. Retrieved-but-ignored: gold present, answer wrong but derivable from context. Hallucination: answer claims supported by no retrieved text. Ambiguity concentrates where a wrong answer is supported by a non-gold retrieved chunk (selection failure, not hallucination) and where chunk boundaries include only part of the gold passage — both need explicit rules, and the rules themselves carry an error rate.",
+        "star_framework_tip": "Present as a decision tree with counts flowing into each leaf, then quote one audited example per leaf.",
+        "common_pitfalls": ["Conflating 'ignored' with 'hallucinated' without a support test on the wrong answer", "Assuming passage-level gold labels transfer cleanly to chunk level"],
+        "references": [
+          { "title": "Lewis et al. 2020 — RAG", "url": "https://arxiv.org/abs/2005.11401" }
+        ]
+      },
+      {
+        "id": "rag_m2",
+        "question": "Your automated judge labels answers right or wrong before your failure analysis runs. How does judge error contaminate each failure bucket, and how do you bound it?",
+        "complexity": "Hard",
+        "companies": ["Anthropic", "OpenAI"],
+        "core_intent": "Tests measurement-instrument thinking: the evaluator is a model with its own bias direction.",
+        "preparation_guide": "Know each judge type's bias direction: exact-match/F1 over-flags paraphrases (inflates 'ignored'); LLM judges under-flag fluent hallucination. Bound with a stratified human audit per bucket.",
+        "explanation": "Every bucket's count is judge-conditional. Strict lexical judges convert correct paraphrases into 'wrong', which then classify as retrieved-but-ignored — inflating the very bucket used to blame the generator. Lenient LLM judges pass fluent unsupported answers, deflating hallucination counts. A stratified audit (sample per bucket, human relabel, report agreement) turns an unknown bias into a confidence interval on the headline distribution.",
+        "star_framework_tip": "State the bias direction per bucket before describing the audit — direction is what interviewers listen for.",
+        "common_pitfalls": ["Reporting failure-mode percentages with no judge validation at all", "Auditing a random sample instead of stratifying by bucket, leaving small buckets unbounded"],
+        "references": [
+          { "title": "Liu et al. 2023 — Lost in the Middle", "url": "https://arxiv.org/abs/2307.03172" }
+        ]
+      },
+      {
+        "id": "rag_m3",
+        "question": "A sweep shows recall@k rising from 0.6 to 0.95 while end-to-end accuracy barely moves. What conclusions are licensed, what confounds remain, and what experiment do you run next?",
+        "complexity": "Hard",
+        "companies": ["Google", "General"],
+        "core_intent": "Tests causal reasoning from observational sweeps and knowledge of the oracle-context isolation.",
+        "preparation_guide": "The dissociation implicates post-retrieval stages; confounds include longer contexts at high k hurting generation (position effects) and judge error. Next experiment: oracle context.",
+        "explanation": "Rising recall with flat accuracy means added evidence isn't converted into correct answers — implicating generation. But higher k also lengthens context, which itself degrades generation, so 'generation is weak' and 'context got harder' are entangled. The oracle-context condition (gold passage only, minimal context) breaks the tie: high oracle accuracy points to context construction; low oracle accuracy points to the generator itself.",
+        "star_framework_tip": "Conclusion, confound, experiment — in that order, one sentence each, then elaborate.",
+        "common_pitfalls": ["Claiming generation dominance without controlling context length", "Sweeping and diagnosing on the same set without a held-out slice"],
+        "references": [
+          { "title": "Lewis et al. 2020 — RAG", "url": "https://arxiv.org/abs/2005.11401" }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "rag_s1",
+        "question": "You must reduce a production RAG system's end-to-end error by half with limited engineering budget. Walk through how a failure-mode decomposition drives the investment plan, including what you explicitly decline to build.",
+        "complexity": "System Design",
+        "companies": ["Google", "OpenAI", "Anthropic"],
+        "core_intent": "Evaluates using diagnosis to allocate resources and the discipline to skip fashionable but off-target fixes.",
+        "preparation_guide": "Map interventions to buckets: rerankers/hybrid retrieval attack retrieval-miss; grounding prompts, abstention, claim-support gating attack generation-side buckets. Decline whatever targets the smaller bucket.",
+        "explanation": "The failure distribution is the budget allocator. If generation-side failures dominate, a reranker — the default 'RAG improvement' — buys little; grounding-hardened prompting with abstention converts silent hallucination into visible refusal, and a claim-support gate bounds unsupported output. If retrieval-miss dominates, invert the plan. Every intervention re-measures against a frozen eval set and judge, with a fresh held-out slice at the end to catch adaptive overfitting of the week's iteration.",
+        "star_framework_tip": "Lead with the distribution, assign spend proportionally, name the declined build and why, close with the measurement protocol.",
+        "common_pitfalls": ["Buying retrieval upgrades for a generation-dominant system", "Iterating against one eval set until the fix overfits it"],
+        "references": [
+          { "title": "Liu et al. 2023 — Lost in the Middle", "url": "https://arxiv.org/abs/2307.03172" }
+        ]
+      },
+      {
+        "id": "rag_s2",
+        "question": "How does generator pretraining leakage undermine failure attribution in a RAG evaluation, and what control conditions restore validity?",
+        "complexity": "Hard",
+        "companies": ["Anthropic", "Google"],
+        "core_intent": "Tests experimental-design maturity: recognizing that parametric knowledge breaks the link between retrieval outcomes and answer outcomes.",
+        "preparation_guide": "Closed-book baseline as the control; discuss per-question leakage flags and counterfactual corpora (perturbed facts) as stronger designs.",
+        "explanation": "If the generator already knows corpus facts, retrieval-miss questions can be answered correctly (masking retrieval failures) and 'grounded' answers may come from memory (mislabeling hallucination checks). A closed-book baseline quantifies aggregate leakage; per-question closed-book correctness flags contaminated items; the strongest design perturbs corpus facts so parametric memory gives the wrong answer, making genuine grounding detectable per item.",
+        "star_framework_tip": "Present as threat-to-validity followed by an escalating ladder of controls, ending with the counterfactual-corpus design.",
+        "common_pitfalls": ["Treating high closed-book accuracy as harmless", "Perturbing facts without re-validating the judge on perturbed answers"],
+        "references": [
+          { "title": "Lewis et al. 2020 — RAG", "url": "https://arxiv.org/abs/2005.11401" }
+        ]
+      },
+      {
+        "id": "rag_s3",
+        "question": "Propose the evaluation you would stand up before allowing any RAG stack change to ship, given that both the retriever and the judge are models with drift and bias.",
+        "complexity": "System Design",
+        "companies": ["OpenAI", "Anthropic", "General"],
+        "core_intent": "Evaluates end-to-end evaluation governance: frozen sets, judge audits, regression gates, and drift monitoring.",
+        "preparation_guide": "Frozen eval set with gold passages; stratified human-audited judge calibration; per-bucket regression gates (not just aggregate accuracy); scheduled refresh with leakage checks.",
+        "explanation": "Ship gates need: a frozen, versioned eval set with gold-passage labels; a judge whose agreement with humans is measured per bucket and re-audited when answer styles change (a grounding-prompt change alters style enough to break lexical judges); regression thresholds per failure bucket so a change that trades hallucination for misses is visible; and periodic set refresh because a static set gets overfit by iteration and stale against corpus drift.",
+        "star_framework_tip": "Structure as: dataset governance, judge governance, gating policy, refresh policy.",
+        "common_pitfalls": ["Gating on aggregate accuracy while bucket composition silently degrades", "Never re-auditing the judge after prompt or model changes alter answer style"],
+        "references": [
+          { "title": "Xiao et al. 2023 — C-Pack (BGE)", "url": "https://arxiv.org/abs/2309.07597" }
+        ]
+      }
+    ]
+  }
+}
