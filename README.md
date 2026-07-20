@@ -69,6 +69,24 @@ The skill tree in [PROGRESS.md](PROGRESS.md) shows all 9 sessions and their core
 
 ---
 
+## 🟢 Phase 1 — Target, Resume & Gaps (do this first)
+
+Built to the **Resume-to-Offer** archetype: the syllabus below is *derived* from your resume × Amazon's published loop, not authored in advance. Read these six chapters in order before Session 1 — later chapters consume earlier ones.
+
+| Ch | Chapter | What it gives you |
+|---|---|---|
+| 0 | [Target Lock](dossier/00_target_lock.md) | What everything is conditioned on; the 4 unknowns to close with a recruiter |
+| 1 | [The Amazon AS Loop](dossier/01_company_dossier.md) | The loop as Amazon publishes it, every claim provenance-tagged |
+| 2 | [Resume Audit & Score](dossier/02_resume_audit_and_score.md) | **58/100 intrinsic · 54/100 company-relative**, fully derived |
+| 3 | [Your Own Tech Stack, Defined](dossier/03_your_tech_stack_defined.md) | All 34 terms from your resume + the self-check that scores you |
+| 4 | [The Introduction](dossier/04_the_introduction.md) | Your 60–90s answer, per-round variants, and what to omit |
+| 5 | [Gap Map & Study Plan](dossier/05_gap_map_and_study_plan.md) | Risk-weighted plan across your ~12-month runway |
+
+> [!IMPORTANT]
+> **Start with Chapter 5's Week 1 list.** The three highest-value actions available to you are not technical study — they are recovering results you already generated, editing claims you already wrote, and asking your recruiter eight questions.
+
+---
+
 ## 🟢 Course Map (9 Sessions)
 
 | # | Session | Core topics (boss-fight gated) | Status |

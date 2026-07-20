@@ -1,5 +1,7 @@
 {
   "title": "The Gauntlet: Applied Scientist Interview Prep (M.Tech Fresher Edition)",
+  "archetype": "resume-to-offer",
+  "visibility": "private",
   "domain": "Machine Learning Interview Preparation",
   "tech_stack": ["Python", "PyTorch", "Hugging Face", "PEFT", "FAISS", "C++"],
   "difficulty": "advanced",
@@ -35,6 +37,48 @@
           "title": "The Round Playbook: Four AS Round Types",
           "defaultMode": "mdx",
           "modes": { "mdx": "playbooks/round_playbook.md" }
+        }
+      ]
+    },
+    {
+      "module_id": "module_00b_dossier",
+      "title": "Phase 1 — Target, Resume & Gaps (start here)",
+      "lessons": [
+        {
+          "id": "d_ch0",
+          "title": "Chapter 0 — Target Lock",
+          "defaultMode": "mdx",
+          "modes": { "mdx": "dossier/00_target_lock.md" }
+        },
+        {
+          "id": "d_ch1",
+          "title": "Chapter 1 — The Amazon Applied Scientist Loop",
+          "defaultMode": "mdx",
+          "modes": { "mdx": "dossier/01_company_dossier.md" }
+        },
+        {
+          "id": "d_ch2",
+          "title": "Chapter 2 — Resume Audit & Score",
+          "defaultMode": "mdx",
+          "modes": { "mdx": "dossier/02_resume_audit_and_score.md" }
+        },
+        {
+          "id": "d_ch3",
+          "title": "Chapter 3 — Your Own Tech Stack, Defined",
+          "defaultMode": "mdx",
+          "modes": { "mdx": "dossier/03_your_tech_stack_defined.md" }
+        },
+        {
+          "id": "d_ch4",
+          "title": "Chapter 4 — The Introduction",
+          "defaultMode": "mdx",
+          "modes": { "mdx": "dossier/04_the_introduction.md" }
+        },
+        {
+          "id": "d_ch5",
+          "title": "Chapter 5 — Gap Map & Study Plan",
+          "defaultMode": "mdx",
+          "modes": { "mdx": "dossier/05_gap_map_and_study_plan.md" }
         }
       ]
     },
