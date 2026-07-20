@@ -1,7 +1,8 @@
 {
   "title": "The Gauntlet: Applied Scientist Interview Prep (M.Tech Fresher Edition)",
   "archetype": "resume-to-offer",
-  "visibility": "private",
+  "visibility": "public",
+  "visibility_note": "Public temporarily so Colab notebook links resolve without auth. Contains a scored assessment of a named candidate; guideline 04 default is private. Revisit before wider sharing.",
   "domain": "Machine Learning Interview Preparation",
   "tech_stack": ["Python", "PyTorch", "Hugging Face", "PEFT", "FAISS", "C++"],
   "difficulty": "advanced",
