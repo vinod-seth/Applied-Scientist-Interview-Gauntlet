@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 470" font-family="Segoe UI, Arial, sans-serif">
+  <style>
+    .flow-good { stroke-dasharray: 10 8; animation: dash 0.7s linear infinite; }
+    .flow-bad  { stroke-dasharray: 10 8; animation: dash 1.4s linear infinite; }
+    @keyframes dash { to { stroke-dashoffset: -18; } }
+    .title { font-size: 16px; font-weight: 600; fill: #1e293b; }
+    .cap { font-size: 14px; fill: #475569; }
+    .small { font-size: 12.5px; fill: #64748b; }
+    .box { fill: #f8fafc; stroke: #94a3b8; stroke-width: 1.5; }
+    .boxtext { font-size: 13px; fill: #334155; }
+  </style>
+  <defs>
+    <marker id="arrGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#059669"/>
+    </marker>
+    <marker id="arrAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <!-- ================= LEFT: Pre-LN ================= -->
+  <text x="230" y="32" text-anchor="middle" class="title">Pre-LN (yours) — gradient highway ✅</text>
+  <text x="230" y="62" text-anchor="middle" class="cap">gradient from the loss ⬇</text>
+
+  <!-- residual spine: one clean animated line, no interruptions -->
+  <line x1="180" y1="78" x2="180" y2="400" stroke="#059669" stroke-width="5" class="flow-good" marker-end="url(#arrGreen)"/>
+
+  <!-- sublayer branches (off the spine) -->
+  <rect x="230" y="110" width="150" height="44" rx="8" class="box"/>
+  <text x="305" y="137" text-anchor="middle" class="boxtext">LN → MHA (RoPE)</text>
+  <path d="M 180 100 C 210 100, 210 132, 228 132" fill="none" stroke="#94a3b8" stroke-width="1.8"/>
+  <path d="M 382 132 C 400 132, 400 170, 184 172" fill="none" stroke="#94a3b8" stroke-width="1.8"/>
+  <circle cx="180" cy="172" r="9" fill="#fff" stroke="#059669" stroke-width="2"/>
+  <text x="180" y="177" text-anchor="middle" font-size="13" fill="#059669" font-weight="700">+</text>
+
+  <rect x="230" y="230" width="150" height="44" rx="8" class="box"/>
+  <text x="305" y="257" text-anchor="middle" class="boxtext">LN → FFN</text>
+  <path d="M 180 220 C 210 220, 210 252, 228 252" fill="none" stroke="#94a3b8" stroke-width="1.8"/>
+  <path d="M 382 252 C 400 252, 400 290, 184 292" fill="none" stroke="#94a3b8" stroke-width="1.8"/>
+  <circle cx="180" cy="292" r="9" fill="#fff" stroke="#059669" stroke-width="2"/>
+  <text x="180" y="297" text-anchor="middle" font-size="13" fill="#059669" font-weight="700">+</text>
+
+  <text x="230" y="432" text-anchor="middle" class="cap">Residual stream = plain addition.</text>
+  <text x="230" y="452" text-anchor="middle" class="small">The gradient rides the spine untouched — trains without warmup.</text>
+
+  <!-- ================= RIGHT: Post-LN ================= -->
+  <text x="690" y="32" text-anchor="middle" class="title">Post-LN (original) — rescaled every layer ⚠️</text>
+  <text x="690" y="62" text-anchor="middle" class="cap">gradient from the loss ⬇</text>
+
+  <!-- spine interrupted by LayerNorm boxes sitting ON it -->
+  <line x1="640" y1="78" x2="640" y2="128" stroke="#d97706" stroke-width="5" class="flow-bad"/>
+  <rect x="575" y="130" width="130" height="40" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="640" y="155" text-anchor="middle" class="boxtext">LayerNorm ⚠️</text>
+  <line x1="640" y1="172" x2="640" y2="248" stroke="#d97706" stroke-width="5" class="flow-bad"/>
+  <rect x="575" y="250" width="130" height="40" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="640" y="275" text-anchor="middle" class="boxtext">LayerNorm ⚠️</text>
+  <line x1="640" y1="292" x2="640" y2="400" stroke="#d97706" stroke-width="5" class="flow-bad" marker-end="url(#arrAmber)"/>
+
+  <!-- sublayer branches -->
+  <rect x="740" y="98" width="120" height="40" rx="8" class="box"/>
+  <text x="800" y="123" text-anchor="middle" class="boxtext">MHA</text>
+  <path d="M 640 90 C 680 90, 690 118, 738 118" fill="none" stroke="#94a3b8" stroke-width="1.8"/>
+  <rect x="740" y="215" width="120" height="40" rx="8" class="box"/>
+  <text x="800" y="240" text-anchor="middle" class="boxtext">FFN</text>
+  <path d="M 640 210 C 680 210, 690 235, 738 235" fill="none" stroke="#94a3b8" stroke-width="1.8"/>
+
+  <text x="690" y="432" text-anchor="middle" class="cap">Every LayerNorm rescales the gradient as it passes.</text>
+  <text x="690" y="452" text-anchor="middle" class="small">At depth: needs warmup, can refuse to train beyond ~12 layers.</text>
+</svg>

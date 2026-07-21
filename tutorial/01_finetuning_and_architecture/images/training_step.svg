@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 360" font-family="Segoe UI, Arial, sans-serif">
+  <style>
+    .fwd { stroke-dasharray: 9 7; animation: fwd 0.6s linear infinite; }
+    .bwd { stroke-dasharray: 9 7; animation: bwd 0.6s linear infinite; }
+    @keyframes fwd { to { stroke-dashoffset: -16; } }
+    @keyframes bwd { to { stroke-dashoffset: 16; } }
+    .box { fill: #eef2ff; stroke: #4f46e5; stroke-width: 2; }
+    .boxAmber { fill: #fffbeb; stroke: #d97706; stroke-width: 2; }
+    .t { font-size: 13.5px; fill: #1e293b; }
+    .small { font-size: 12px; fill: #64748b; }
+    .lbl { font-size: 14px; font-weight: 600; }
+  </style>
+  <defs>
+    <marker id="fA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4f46e5"/>
+    </marker>
+    <marker id="bA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <text x="470" y="30" text-anchor="middle" font-size="16" font-weight="600" fill="#1e293b">One training step — forward (blue) then backward (amber)</text>
+
+  <!-- forward row -->
+  <rect x="20" y="70" width="120" height="58" rx="10" class="box"/>
+  <text x="80" y="95" text-anchor="middle" class="t">batch:</text>
+  <text x="80" y="113" text-anchor="middle" class="t">B question pairs</text>
+
+  <line x1="142" y1="99" x2="180" y2="99" stroke="#4f46e5" stroke-width="3.5" class="fwd" marker-end="url(#fA)"/>
+
+  <rect x="184" y="70" width="120" height="58" rx="10" class="box"/>
+  <text x="244" y="95" text-anchor="middle" class="t">tokenize</text>
+  <text x="244" y="113" text-anchor="middle" class="t">+ pad</text>
+
+  <line x1="306" y1="99" x2="344" y2="99" stroke="#4f46e5" stroke-width="3.5" class="fwd" marker-end="url(#fA)"/>
+
+  <rect x="348" y="58" width="150" height="82" rx="10" class="box"/>
+  <text x="423" y="83" text-anchor="middle" class="t">shared encoder ×2</text>
+  <text x="423" y="101" text-anchor="middle" class="small">Pre-LN · MHA + RoPE · FFN</text>
+  <text x="423" y="119" text-anchor="middle" class="small">same weights, both questions</text>
+
+  <line x1="500" y1="99" x2="538" y2="99" stroke="#4f46e5" stroke-width="3.5" class="fwd" marker-end="url(#fA)"/>
+
+  <rect x="542" y="70" width="115" height="58" rx="10" class="box"/>
+  <text x="599" y="95" text-anchor="middle" class="t">pool (masked)</text>
+  <text x="599" y="113" text-anchor="middle" class="t">+ L2 normalize</text>
+
+  <line x1="659" y1="99" x2="697" y2="99" stroke="#4f46e5" stroke-width="3.5" class="fwd" marker-end="url(#fA)"/>
+
+  <rect x="701" y="70" width="105" height="58" rx="10" class="box"/>
+  <text x="753" y="95" text-anchor="middle" class="t">similarity</text>
+  <text x="753" y="113" text-anchor="middle" class="t">matrix</text>
+
+  <line x1="808" y1="99" x2="846" y2="99" stroke="#4f46e5" stroke-width="3.5" class="fwd" marker-end="url(#fA)"/>
+
+  <rect x="850" y="70" width="80" height="58" rx="10" class="box"/>
+  <text x="890" y="95" text-anchor="middle" class="t">loss</text>
+  <text x="890" y="113" text-anchor="middle" class="small">InfoNCE, τ</text>
+
+  <!-- backward path -->
+  <path d="M 890 132 L 890 220 L 160 220" fill="none" stroke="#d97706" stroke-width="3.5" class="bwd"/>
+  <line x1="162" y1="220" x2="110 " y2="220" stroke="#d97706" stroke-width="3.5" class="bwd" marker-end="url(#bA)"/>
+  <text x="520" y="207" text-anchor="middle" class="lbl" fill="#d97706">backward: gradients through BOTH encoder passes (shared weights)</text>
+
+  <rect x="20" y="192" width="86" height="56" rx="10" class="boxAmber"/>
+  <text x="63" y="215" text-anchor="middle" class="t">optimizer</text>
+  <text x="63" y="233" text-anchor="middle" class="small">AdamW step</text>
+
+  <!-- footnotes -->
+  <text x="470" y="290" text-anchor="middle" class="small">pooling must mask padding — an unmasked mean is pulled toward the pad embedding</text>
+  <text x="470" y="310" text-anchor="middle" class="small">RoPE frequencies are NOT learned parameters — no gradient flows into them (classic trick question)</text>
+</svg>

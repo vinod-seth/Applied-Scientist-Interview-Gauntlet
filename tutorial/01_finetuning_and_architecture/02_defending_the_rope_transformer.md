@@ -9,13 +9,13 @@
 
 🔬 **Interactive companion** (CPU-only, runs instantly): [▶ Open the Architecture Unit Tests notebook in Colab](https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/01_finetuning_and_architecture/02_architecture_unit_tests.ipynb)
 
-> 📍 **How this lesson works:** each 🎯 drill is a real interviewer question. **Answer out loud first** — 30–60 seconds, as if the interviewer is waiting — *then* open ✅ to compare against the model answer. 📚 blocks hold the full derivations and citations; open them only where your answer felt shaky. Same rule as Lesson 1: every number comes from your logs. `[FILL]` or silence — never an invented figure.
+> 📍 **How this lesson works:** each 🎯 drill is a real interviewer question. **Answer out loud first** — 30–60 seconds, as if the interviewer is waiting — *then* open ✅ to compare against the model answer. 🔁 shows how they push deeper; 📚 holds full derivations and citations for shaky spots only. Same rule as Lesson 1: every number comes from your logs. `[FILL]` or silence — never an invented figure.
 
 ---
 
 ## 🟢 The Map of This Interrogation
 
-This bullet gets a different chain than QLoRA. There, the question was "did you understand the tool you used?" Here it is "did you understand the thing you *built*?" — and since you chose every component, every choice is attackable. Your opening frame decides which branch you live in:
+This bullet gets a different chain than QLoRA. There the question was "did you understand the tool you used?" Here it is "did you understand the thing you *built*?" — you chose every component, so every choice is attackable. Your opening frame decides which branch you live in:
 
 ```mermaid
 flowchart TD
@@ -39,50 +39,65 @@ The honest frame: a learning project that demonstrates mastery of transformer in
 
 <details><summary>✅ Model answer</summary>
 
-"The purpose is demonstrated mastery, not a performance claim. A pretrained sentence-transformer — say all-MiniLM-L6-v2 — would almost certainly beat my from-scratch model on QQP, because it starts with distilled knowledge from 1B+ sentence pairs. What I gained is the ability to defend every component in this conversation: I can derive RoPE from the relative-position requirement, explain Pre-LN over Post-LN, and write my contrastive loss from memory. A fine-tuned model gives better numbers; a from-scratch model gives better *understanding* — which is what this round tests. My QQP performance was `[FILL: metric + value]` — I frame the project as 'built and trained a working transformer, then used it to study contrastive learning dynamics,' not as a SOTA claim."
+**The beats to hit:**
+
+- **Primary frame:** demonstrated mastery, not a <abbr title="State of the art — the best published result on a benchmark.">SOTA</abbr> performance claim.
+- **Own the baseline:** a pretrained sentence-transformer (e.g. `all-MiniLM-L6-v2`) will win on <abbr title="Quora Question Pairs — ~400k question pairs labeled duplicate / not-duplicate; the training and eval dataset for this project.">QQP</abbr> — it starts from 1B+ pretraining pairs.
+- **What building bought you:** command of every decision —
+  - derive <abbr title="Rotary Position Embedding — encodes token position by rotating query/key vectors so the attention score depends only on the relative offset.">RoPE</abbr> from the relative-position requirement,
+  - defend <abbr title="Pre-LayerNorm — normalization inside the sublayer branch, before attention/FFN; keeps the residual stream a clean addition.">Pre-LN</abbr> vs <abbr title="Post-LayerNorm — normalization after the residual addition (original 2017 Transformer); gradients pass through it at every layer.">Post-LN</abbr> from gradient flow,
+  - write the contrastive loss from memory.
+- **Numbers stay honest:** QQP result = `[FILL: metric + value]`, framed as a study artifact.
+
+**Say it:**
+
+> *"The purpose is demonstrated mastery, not a performance claim — a fine-tuned MiniLM would beat my model, because it starts with a billion pairs of distilled knowledge. What building from scratch bought me is that I can defend every component in this conversation: derive RoPE, justify Pre-LN, write my loss on the board. My QQP result was `[FILL]`, and I frame the project as building a working transformer to study contrastive training dynamics."*
 </details>
 
 <details><summary>🔁 The follow-up chain (how they push)</summary>
 
-"What baseline did you compare against?" → "How many parameters in yours vs. MiniLM?" → "So you spent GPU hours to underperform — what's the ROI argument?" (answer: it's a learning project; the ROI is the engineer's depth, which is what's being evaluated right now) → "First change to make it production-quality?" (pretrain on a large corpus before contrastive fine-tuning — self-supervised pretraining is the entire gap).
+"What baseline did you compare against?" → "How many parameters in yours vs. MiniLM?" → "So you spent GPU hours to underperform — what's the ROI argument?" (it's a learning project; the ROI is the engineer's depth, which is what's being evaluated right now) → "First change to make it production-quality?" (pretrain on a large corpus before contrastive fine-tuning — self-supervised pretraining is the entire gap).
 </details>
 
 ---
 
 ## 🔷 Drill 2 — "Derive RoPE for me. Start from what you want the attention score to satisfy."
 
-*The single cleanest test of math-vs-memorization. This is the derivation, as a picture:*
+*The single cleanest test of math-vs-memorization. Watch the mechanism, then say the derivation — 60 seconds, board-style:*
 
-```mermaid
-flowchart TD
-    A["<b>Requirement</b><br/>attention score between position m and n<br/>must depend only on the offset (m − n)"]
-    A --> B["<b>Try rotations, 2D first</b><br/>f(x, m) = R(mθ) · x"]
-    B --> C["<b>Orthogonality does the work</b><br/>R(mθ)ᵀ R(nθ) = R((n−m)θ)"]
-    C --> D["<b>Score = qᵀ R((n−m)θ) k</b><br/>✅ depends only on the offset"]
-    D --> E["<b>Scale to d dims</b><br/>split into d/2 pairs,<br/>each pair gets its own frequency<br/>θᵢ = 10000^(−2i/d)"]
-    E --> F["fast-rotating pairs →<br/>fine local position"]
-    E --> G["slow-rotating pairs →<br/>coarse long-range position"]
-```
+![RoPE rotation — both vectors rotate together, the relative angle never changes; each dimension pair is a clock at its own speed](images/rope_rotation.svg)
 
-*Now say it — 60 seconds, board-style — before opening the answer.*
+<details><summary>✅ Model answer (4 steps)</summary>
 
-<details><summary>✅ Model answer</summary>
+1. **The requirement** — the score must depend only on the offset $(m-n)$:
 
-"I want ⟨f(q, m), f(k, n)⟩ = g(q, k, m−n) — the dot product depends on relative position only. In 2D: let f(x, m) = R(mθ)x, a rotation by mθ. Then ⟨R(mθ)q, R(nθ)k⟩ = qᵀR(mθ)ᵀR(nθ)k = qᵀR((n−m)θ)k, because rotation matrices are orthogonal. The score is now a function of (n−m) — done. For d-dimensional heads, pair the dimensions into d/2 two-dimensional subspaces, each with frequency θᵢ = 10000^(−2i/d): low-index pairs rotate fast (fine local position), high-index pairs rotate slowly (coarse long-range position). Applied to q and k only — values carry content, and rotating them would distort what gets read once attended."
+$$\langle f(q, m),\; f(k, n) \rangle = g(q, k, m-n)$$
+
+2. **Try rotations in 2D** — let $f(x, m) = R(m\theta)\,x$. Rotation matrices are orthogonal ($R^\top = R^{-1}$), so the absolute positions cancel:
+
+$$\langle R(m\theta)q,\; R(n\theta)k \rangle = q^\top R(m\theta)^\top R(n\theta)\,k = q^\top R\big((n-m)\theta\big)\,k$$
+
+3. **Scale to $d$ dims** — split the head into $d/2$ two-dimensional pairs, each with its own frequency:
+
+$$\theta_i = 10000^{-2i/d}$$
+
+   Low-index pairs rotate fast → fine local position. High-index pairs rotate slowly → coarse long-range position.
+
+4. **Rotate $q$ and $k$ only** — values carry content; rotating $v$ would distort what gets read once attended.
 </details>
 
 <details><summary>🔁 The follow-up chain</summary>
 
-"Why θᵢ = 10000^(−2i/d) specifically?" (empirical default from RoFormer; the base sets the wavelength range; larger bases extend it for longer contexts) → "What happens beyond training length?" (unseen rotation angles → attention patterns the model never trained on; NTK-aware scaling / YaRN rescale the frequency spectrum without adding parameters) → "Compare to learned absolute embeddings?" (learned embeddings have a fixed vocabulary of positions; RoPE generates any position, but the model still hasn't *learned* patterns for unseen positions — the advantage is smoothness, not magic).
+"Why $\theta_i = 10000^{-2i/d}$ specifically?" (empirical default from RoFormer; the base sets the wavelength range; larger bases extend it for longer contexts) → "What happens beyond training length?" (unseen rotation angles → attention patterns the model never trained on; NTK-aware scaling / YaRN rescale the frequency spectrum without adding parameters) → "Compare to learned absolute embeddings?" (a learned table has a fixed vocabulary of positions; RoPE generates any position, but the model still hasn't *learned* patterns for unseen positions — the advantage is smoothness, not magic).
 </details>
 
 <details><summary>📚 Full derivation, extrapolation behavior & citations</summary>
 
-**The requirement.** We want the inner product between query q at position m and key k at position n to be a function of their *relative* distance (m − n), not their absolute positions: ⟨f(q, m), f(k, n)⟩ = g(q, k, m − n).
+**The requirement.** We want the inner product between query $q$ at position $m$ and key $k$ at position $n$ to be a function of their *relative* distance $(m-n)$, not their absolute positions.
 
-**Why rotations satisfy this.** In 2D, if f(x, m) = R(mθ)·x with R a rotation matrix, then ⟨f(q, m), f(k, n)⟩ = qᵀR(mθ)ᵀR(nθ)k = qᵀR((n − m)θ)k. Rotation matrices are orthogonal — lengths and angles preserved, transpose equals inverse — so the absolute-position rotations cancel, leaving only the offset.
+**Why rotations satisfy this.** In 2D, with $f(x, m) = R(m\theta)x$, orthogonality gives $R(m\theta)^\top R(n\theta) = R((n-m)\theta)$ — lengths and angles preserved, transpose equals inverse, absolute rotations cancel.
 
-**Extension to d dimensions.** Pair the d_head dimensions into d/2 pairs, each with its own frequency θᵢ = 10000^(−2i/d). This creates a spectrum: early pairs rotate fast (high-resolution local position), late pairs rotate slowly (coarse long-range position). The encoding applies pair-wise: [q₂ᵢ, q₂ᵢ₊₁] → R(m·θᵢ)[q₂ᵢ, q₂ᵢ₊₁].
+**Extension to $d$ dimensions.** Pair the head dimensions into $d/2$ pairs; the encoding applies pair-wise: $[q_{2i},\, q_{2i+1}] \mapsto R(m\,\theta_i)\,[q_{2i},\, q_{2i+1}]$. The frequency spectrum makes early pairs high-resolution local clocks and late pairs slow long-range clocks.
 
 **Extrapolation.** RoPE has no trainable position table — positions come from the formula, so extrapolation is possible in principle. In practice quality degrades at unseen lengths because the model never saw those attention patterns. NTK-aware scaling and YaRN (Peng et al. 2023, https://arxiv.org/abs/2309.00071) rescale the frequency spectrum to fix this.
 
@@ -93,29 +108,24 @@ Citation: Su et al. (2021), *RoFormer* (https://arxiv.org/abs/2104.09864).
 
 ## 🔷 Drill 3 — "Pre-LN makes training easy. What does it cost you, and how do you know?"
 
-*The two architectures differ by where the LayerNorm sits — and by where gradients must travel:*
+*Watch where the gradient travels in each design — then answer.* Know your numbers cold first: `[FILL: layers / heads / d_model / d_head / total params]`.
 
-```mermaid
-flowchart TD
-    subgraph PRE["Pre-LN — yours ✅ clean gradient highway"]
-        direction TB
-        x2["x"] --> ln2["LayerNorm"] --> s2["Sublayer<br/>(MHA / FFN)"] --> add2(("＋"))
-        x2 -->|"residual: plain addition,<br/>gradients flow straight through"| add2
-        add2 --> o2["to next layer"]
-    end
-    subgraph POST["Post-LN — original ⚠️ gradient rescaled every layer"]
-        direction TB
-        x1["x"] --> s1["Sublayer<br/>(MHA / FFN)"] --> add1(("＋"))
-        x1 --> add1
-        add1 --> ln1["LayerNorm<br/>⚠️ sits ON the residual path"] --> o1["to next layer"]
-    end
-```
-
-*Know your own numbers cold before answering: `[FILL: layers / heads / d_model / d_head / total params]`.*
+![Gradient flow: Pre-LN rides a clean residual highway; Post-LN is rescaled by every LayerNorm on the path](images/gradient_flow.svg)
 
 <details><summary>✅ Model answer</summary>
 
-"Two costs. First, the residual stream grows in magnitude across depth — each sublayer adds to it without renormalization. At `[FILL: your layer count]` layers this is manageable; at 48+ layers the final LayerNorm has to compress a wide dynamic range. Second, Xiong et al. 2020 show a *well-tuned* Post-LN model can slightly outperform Pre-LN at the same depth — the repeated normalization acts as an implicit regularizer. At my scale the trade-off is clear: Pre-LN trained stably without warmup, and the potential gap is within noise at my parameter count."
+| | **Pre-LN (yours)** | **Post-LN (original)** |
+|---|---|---|
+| LayerNorm sits | inside the sublayer branch | **on** the residual path |
+| Gradient path | clean addition, flows straight through | rescaled by every LN |
+| Warmup | not needed | required |
+| Deep stacks | stable | can fail beyond ~12 layers |
+| Final quality | slightly lower ceiling | slightly higher — *if* well-tuned |
+| Hidden cost | residual magnitude grows with depth | training fragility |
+
+**Say it:**
+
+> *"Two costs. First, the residual stream grows across depth — each sublayer adds to it without renormalization; at my `[FILL]` layers that's manageable, at 48+ the final LayerNorm must compress a wide dynamic range. Second, Xiong et al. 2020 show a well-tuned Post-LN can slightly outperform Pre-LN at equal depth — the repeated normalization acts as an implicit regularizer. At my scale the trade-off is clear: Pre-LN trained stably without warmup, and the potential gap is within noise at my parameter count."*
 </details>
 
 <details><summary>🔁 The follow-up chain</summary>
@@ -125,7 +135,7 @@ flowchart TD
 
 <details><summary>📚 Why Post-LN needs warmup — the mechanism</summary>
 
-In Post-LN the residual stream passes through a LayerNorm at every layer, each of which rescales gradients, so effective gradient magnitude degrades across depth — deep Post-LN models need careful warmup and can fail to train beyond ~12 layers. In Pre-LN the normalization sits *inside* the sublayer branch; the residual stream is a clean sum, and Xiong et al. (2020, https://arxiv.org/abs/2002.04745) show gradients are well-behaved at initialization, eliminating warmup in most cases.
+In Post-LN the residual stream passes through a LayerNorm at every layer, each of which rescales gradients, so effective gradient magnitude degrades across depth. In Pre-LN the normalization sits *inside* the sublayer branch; the residual stream is a clean sum, and Xiong et al. (2020, https://arxiv.org/abs/2002.04745) show gradients are well-behaved at initialization, eliminating warmup in most cases.
 </details>
 
 ---
@@ -145,11 +155,20 @@ flowchart LR
     WO --> OUT["output<br/>seq × d_model"]
 ```
 
-*Why √d_head? Why is W_O there at all? Answer both, then the MQA/GQA question.*
+*Why divide by √d_head? Why is W_O there at all? Answer both, then the MQA/GQA question.*
 
 <details><summary>✅ Model answer</summary>
 
-"Each of the h heads projects X with W_Q, W_K, W_V ∈ ℝ^(d_model × d_head), where d_head = d_model / n_heads. The 1/√d_head scaling keeps dot-product variance near 1 — without it, logits grow with dimension and push softmax into saturation, killing gradients. W_O mixes information across heads; without it each head's subspace stays isolated. On MQA/GQA: MQA shares one K/V head across all query heads; GQA groups query heads, one K/V head per group. Both shrink the KV cache at inference with modest quality cost — GQA at g=2–4 roughly matches MHA. I used standard MHA because (a) my model isn't served, so KV-cache size is irrelevant, and (b) for a learning project, full MHA keeps every head independently inspectable. For production inference, GQA would be my default."
+**The beats to hit:**
+
+- **Shapes:** each of $h$ heads projects with $W_Q, W_K, W_V \in \mathbb{R}^{d_{model} \times d_{head}}$, where $d_{head} = d_{model}/h$.
+- **The scaling:** $1/\sqrt{d_{head}}$ keeps logit variance ≈ 1 — without it, softmax saturates near one-hot and gradients die.
+- **$W_O$:** mixes information across heads; without it each head's subspace stays isolated.
+- **<abbr title="Multi-Query Attention — all query heads share a single key/value head, shrinking the KV cache at inference.">MQA</abbr> / <abbr title="Grouped-Query Attention — query heads are grouped; each group shares one key/value head. Middle ground between MHA and MQA.">GQA</abbr>:** both shrink the inference <abbr title="Key/value tensors cached per generated token at inference; size scales with layers × heads × context length.">KV cache</abbr> (MQA: one shared K/V head; GQA: one per group) at modest quality cost — GQA at $g{=}2\text{–}4$ ≈ matches <abbr title="Multi-Head Attention — runs several attention operations in parallel subspaces and concatenates the results.">MHA</abbr>.
+
+**Say it:**
+
+> *"I used standard MHA because my model isn't served — KV-cache size is irrelevant — and for a learning project full MHA keeps every head independently inspectable. For production inference, GQA would be my default."*
 </details>
 
 <details><summary>🔁 The follow-up chain</summary>
@@ -157,9 +176,9 @@ flowchart LR
 "What KV-cache bottleneck would you hit at inference?" → "Can you convert MHA to GQA post-training?" (yes — mean-pool the K/V heads within each group, then brief continued training recovers most quality; Ainslie et al. 2023) → "Parameter count change?" (K/V projections shrink by the grouping factor; Q and O unchanged).
 </details>
 
-<details><summary>📚 The √d_head derivation, head specialization & citations</summary>
+<details><summary>📚 The scaling derivation, head specialization & citations</summary>
 
-**Scaling derivation:** if q and k entries are iid with unit variance, their dot product has variance d_head. Dividing by √d_head restores unit variance, keeping softmax in its informative range instead of near-one-hot saturation (where the Jacobian is near zero and gradients stop).
+**Scaling derivation:** if $q$ and $k$ entries are iid with unit variance, their dot product has variance $d_{head}$. Dividing by $\sqrt{d_{head}}$ restores unit variance, keeping softmax in its informative range instead of near-one-hot saturation (where the Jacobian is near zero and gradients stop).
 
 **What heads learn:** Voita et al. (2019, https://arxiv.org/abs/1905.09418) — a small fraction of heads carry most of the function (positional, syntactic, rare-word heads); most are prunable. For your `[FILL: n_heads]`-head model, present head specialization as a hypothesis unless you actually ran attention-weight visualization.
 
@@ -170,36 +189,39 @@ flowchart LR
 
 ## 🔷 Drill 5 — "Write your contrastive loss on the board. What's the temperature doing, and what happens if you set it wrong?"
 
-*This is* your *custom loss — the strongest claim in the bullet and the easiest to expose if copy-pasted. The battlefield per batch looks like this:*
+*This is* your *custom loss — the strongest claim in the bullet and the easiest to expose if copy-pasted. Watch the forces inside one batch:*
 
-```mermaid
-flowchart LR
-    A(["anchor<br/>'How do I learn Python?'"])
-    A -->|"pull together 🧲"| P(["its positive<br/>'Best way to learn Python?'"])
-    A -->|"push apart ✅"| N1(["true negative<br/>'How tall is Everest?'"])
-    A -->|"push apart ⚠️ WRONG"| FN(["<b>false negative</b><br/>another Python-duplicate,<br/>paired elsewhere in the batch"])
-    style FN stroke-dasharray: 5 5
-```
-
-*With QQP's ~37% duplicate rate, a batch of 64 pairs gives each anchor 126 in-batch negatives — and a material fraction are false. Write your loss, state your τ, and explain what a wrong τ does. Then reveal.*
+![Contrastive forces: the positive is pulled in, true negatives pushed out — and a false negative gets pushed apart wrongly](images/contrastive_forces.svg)
 
 <details><summary>✅ Model answer</summary>
 
-`[FILL: write your exact loss — formulation, similarity function (cosine vs. dot), temperature/margin value]`. "Temperature τ controls the sharpness of the softmax over similarities. Low τ (~0.05) concentrates gradient on the hardest negatives — faster learning, but a false negative that's actually a duplicate gets a huge wrongful repulsive gradient, and too-low τ risks embedding collapse. High τ (~1.0) spreads gradient uniformly — safer but slower, and fine distinctions may never form. I used τ = `[FILL]`. Empirical sweet spot for sentence-level tasks: 0.05–0.1 (SimCLR, Chen et al. 2020 — the finding transfers to NLP)."
+**Write on the board:** `[FILL: your exact formulation — similarity function (cosine vs. dot), temperature/margin value]`. The standard symmetric form:
+
+$$\mathcal{L}_i = -\log \frac{\exp(\mathrm{sim}(z_i, z_j)/\tau)}{\sum_{k \neq i} \exp(\mathrm{sim}(z_i, z_k)/\tau)}$$
+
+**The temperature story:**
+
+- **Low $\tau$ (~0.05):** gradient concentrates on the hardest negatives → faster learning, but false negatives get huge wrongful repulsion, and collapse risk rises.
+- **High $\tau$ (~1.0):** gradient spreads uniformly → safer but slower; fine distinctions may never form.
+- **Yours:** $\tau =$ `[FILL]`. Empirical sweet spot for sentence tasks: 0.05–0.1 (SimCLR; transfers to NLP).
+
+**Say it:**
+
+> *"Temperature controls the sharpness of the softmax over similarities — low tau focuses the gradient on hard negatives but amplifies false-negative damage and collapse risk; high tau is safe but slow. I used `[FILL]`, in the empirical 0.05–0.1 range."*
 </details>
 
 <details><summary>🔁 The follow-up chain</summary>
 
-"How did you choose τ? Did you sweep it?" `[FILL: if you swept]` → "What are false negatives doing to your gradient?" → "How would you mine hard negatives on QQP specifically?" (question-cluster overlap; or use the current model's top-k nearest neighbors as candidates, re-mine every N epochs).
+"How did you choose $\tau$? Did you sweep it?" `[FILL: if you swept]` → "What are false negatives doing to your gradient?" → "How would you mine hard negatives on QQP specifically?" (question-cluster overlap; or use the current model's top-k nearest neighbors as candidates, re-mine every N epochs).
 </details>
 
 <details><summary>📚 Formulations, false-negative math & embedding collapse</summary>
 
-**InfoNCE / NT-Xent (symmetric):** for anchor i with positive j, loss = −log( exp(sim(zᵢ, zⱼ)/τ) / Σ_{k≠i} exp(sim(zᵢ, z_k)/τ) ). **Triplet:** max(0, sim(a, neg) − sim(a, pos) + margin) — simpler, one negative per anchor.
+**Alternatives:** Triplet loss $\max(0,\ \mathrm{sim}(a, n) - \mathrm{sim}(a, p) + \text{margin})$ — simpler, one negative per anchor. InfoNCE uses all $2B-2$ in-batch negatives.
 
-**False negatives on QQP:** in a batch of B pairs, each anchor's 2B−2 negatives include all other questions — some of which are duplicates paired elsewhere. Mitigation: filter known duplicates from the negative set (needs the label matrix), or accept the noise and *say so* — honesty beats pretending you handled it.
+**False negatives on QQP:** in a batch of $B$ pairs, each anchor's $2B-2$ negatives include all other questions — some of which are duplicates paired elsewhere. Mitigation: filter known duplicates from the negative set (needs the label matrix), or accept the noise and *say so* — honesty beats pretending you handled it.
 
-**Embedding collapse:** the degenerate solution — encoder maps everything to one point or a narrow cone; loss is low, all cosine similarities near 1.0, representations useless. Symptoms: early loss plateau, random downstream performance. Prevention: larger batches (more diverse negatives), batch norm on embeddings, temperature tuning, hard-negative mining.
+**Embedding collapse:** the degenerate solution — the encoder maps everything to one point or a narrow cone; loss is low, all cosine similarities near 1.0, representations useless. Symptoms: early loss plateau, random downstream performance. Prevention: larger batches (more diverse negatives), batch norm on embeddings, temperature tuning, hard-negative mining.
 
 Citation: Chen et al. (2020), *SimCLR* (https://arxiv.org/abs/2002.05709).
 </details>
@@ -208,31 +230,21 @@ Citation: Chen et al. (2020), *SimCLR* (https://arxiv.org/abs/2002.05709).
 
 ## 🔷 Drill 6 — "Walk me through one training step, end to end, for a batch of QQP pairs."
 
-*The "do you actually own this code?" question. Your forward/backward, as a picture:*
+*The "do you actually own this code?" question. Watch the batch travel forward (blue), the gradients travel back (amber) — then narrate it in your implementation's terms, pooling strategy included:*
 
-```mermaid
-flowchart TD
-    B["batch of [FILL: B] question pairs + labels"] --> T["tokenize + pad to [FILL: max_len]"]
-    T --> E1["encoder pass — question 1"]
-    T --> E2["encoder pass — question 2<br/>(same shared weights)"]
-    subgraph ENC["inside each encoder block × [FILL: N]"]
-        direction TB
-        e1["Pre-LN → MHA (RoPE on Q/K) → residual add"] --> e2["Pre-LN → FFN → residual add"]
-    end
-    E1 --> P1["pool → embedding z₁"]
-    E2 --> P2["pool → embedding z₂"]
-    P1 --> NORM["L2-normalize both"]
-    P2 --> NORM
-    NORM --> L["contrastive loss<br/>with in-batch negatives"]
-    L --> BW["backward through everything<br/>(both passes, shared weights)"]
-    BW --> U["clip? [FILL] → optimizer step<br/>[FILL: AdamW, LR, schedule]"]
-```
-
-*Narrate it in your own implementation's terms — pooling strategy included — then reveal.*
+![One training step: batch → tokenize → shared encoder ×2 → pool → similarity → InfoNCE loss, then gradients flow back to the AdamW step](images/training_step.svg)
 
 <details><summary>✅ Model answer</summary>
 
-"A batch of `[FILL: batch size]` (question₁, question₂) pairs with binary labels, tokenized to max length `[FILL]` and padded. Each question passes through the same encoder: token embedding → `[FILL: N]` blocks of (Pre-LN → MHA with RoPE on Q/K → residual add → Pre-LN → FFN → residual add) → pooling: `[FILL: CLS / mean / last token]`. Both embeddings are L2-normalized for cosine similarity. Loss: `[FILL: your loss]` with in-batch negatives. Backward runs through the loss, the similarity computation, and both encoder passes (shared weights). Optimizer: `[FILL: AdamW, LR, schedule, grad clipping]`."
+**The beats to hit (all `[FILL]`s from *your* code):**
+
+- Batch of `[FILL: B]` question pairs, tokenized to `[FILL: max_len]`, padded.
+- Same encoder, both questions: embedding → `[FILL: N]` × (Pre-LN → MHA + RoPE on Q/K → add → Pre-LN → <abbr title="Feed-forward network — the per-token two-layer MLP inside each transformer block.">FFN</abbr> → add).
+- Pooling: `[FILL: CLS / mean / last]` — **masked**, then L2-normalize both embeddings.
+- Loss: `[FILL: your loss]` with in-batch negatives.
+- Backward through both encoder passes (shared weights); optimizer `[FILL: AdamW, LR, schedule, clipping]`.
+
+**Say it:** narrate exactly that list as flowing speech — the interviewer is checking the *order* and the *specifics*, not eloquence.
 </details>
 
 <details><summary>🔁 The follow-up chain</summary>
@@ -322,9 +334,9 @@ Expected output: a pitch ≤ 4 minutes, zero unfilled numbers, zero Bronze hooks
 
 ## 🟢 Summary
 
-- RoPE = rotations on q/k pairs, derived from "score must depend on offset only"; orthogonality does the work; d/2 frequency pairs give a multi-resolution position spectrum.
+- RoPE = rotations on q/k pairs, derived from "score must depend on offset only"; orthogonality does the work; $d/2$ frequency pairs give a multi-resolution position spectrum.
 - Pre-LN trades a small performance ceiling for a clean gradient highway and warmup-free training — the right call at your scale, and you can name the cost.
-- Your loss, your τ, your false-negative story are *your code* — reproduce them from memory or the round stalls there.
+- Your loss, your $\tau$, your false-negative story are *your code* — reproduce them from memory or the round stalls there.
 - Frame the project as demonstrated mastery. QQP's label noise and transitivity leakage bound achievable performance — knowing that bound is Gold-tier.
 
 **References:** Su et al. 2021 (RoPE, arXiv:2104.09864) · Xiong et al. 2020 (Pre-LN, arXiv:2002.04745) · Voita et al. 2019 (head analysis, arXiv:1905.09418) · Chen et al. 2020 (SimCLR, arXiv:2002.05709) · Shazeer 2019 (MQA, arXiv:1911.02150) · Ainslie et al. 2023 (GQA, arXiv:2305.13245) · Peng et al. 2023 (YaRN, arXiv:2309.00071)
