@@ -120,7 +120,7 @@ Your model predicts Exact for almost everything and still shows 70%+ accuracy. W
 
 Each entry: the question, why it gets asked, a model answer at AS depth, and the deeper chain behind it. Model answers are written in first person as *your* voice — replace every `[FILL]` with your logged value or drop to qualitative.
 
-### 🔷 Follow-up 1: "Why NF4 and not int4 or FP4? You said 'information-theoretically optimal' — optimal in what sense?"
+### 🔷 Question 1 (Follow-up): "Why NF4 and not int4 or FP4? You said 'information-theoretically optimal' — optimal in what sense?"
 
 **Why they ask:** tests whether a resume keyword is understood or transplanted.
 
@@ -128,7 +128,7 @@ Each entry: the question, why it gets asked, a model answer at AS depth, and the
 
 **The chain behind it (be ready):** derive why equal-mass bins are the error-minimizing choice → why blocks of 64 → what double quantization saves and where → when NF4 breaks (weight distributions with heavy outlier structure; why outlier-aware schemes like int8 decomposition exist).
 
-### 🔷 Follow-up 2: "Walk me through your 16GB. Where does every gigabyte go, in full fine-tuning versus your setup?"
+### 🔷 Question 2 (Follow-up): "Walk me through your 16GB. Where does every gigabyte go, in full fine-tuning versus your setup?"
 
 **Why they ask:** the arithmetic is verifiable in real time; hand-waving is instantly visible.
 
@@ -136,7 +136,7 @@ Each entry: the question, why it gets asked, a model answer at AS depth, and the
 
 **The chain:** why fp32 optimizer moments even in mixed precision (numerical stability of the second-moment EMA) → what gradient checkpointing actually stores → what paged optimizers do and *when* they trigger → "could you have full fine-tuned a 0.5B model instead? Would that have been better?" (honest answer: maybe — and it's a fair ablation you can propose).
 
-### 🔷 Follow-up 3: "How exactly does your causal decoder produce a 4-class label? Walk me from input string to logit."
+### 🔷 Question 3 (Follow-up): "How exactly does your causal decoder produce a 4-class label? Walk me from input string to logit."
 
 **Why they ask:** separates people who ran a script from people who own their pipeline.
 
@@ -144,7 +144,7 @@ Each entry: the question, why it gets asked, a model answer at AS depth, and the
 
 **The chain:** why the last token and not mean pooling (causal masking makes earlier tokens partially-informed) → verbalizer alternative and when it wins (few-shot, no new parameters) → template sensitivity → "did you check the tokenizer splits product titles sanely in all locales?"
 
-### 🔷 Follow-up 4: "Why compare a 1.5B decoder with adapters to a ~184M fully fine-tuned encoder? Is that comparison fair — and whichever won, why?"
+### 🔷 Question 4 (Follow-up): "Why compare a 1.5B decoder with adapters to a ~184M fully fine-tuned encoder? Is that comparison fair — and whichever won, why?"
 
 **Why they ask:** experimental-design judgment is the core AS skill; this question has no memorizable answer.
 
@@ -152,7 +152,7 @@ Each entry: the question, why it gets asked, a model answer at AS depth, and the
 
 **The chain:** what confounds remain (LR tuning per model, epochs, truncation) → "design the controlled version" → "if the decoder lost, why publish the comparison at all?" (because negative results under honest constraints are informative — and saying that is Earn Trust).
 
-### 🔷 Follow-up 5: "Exact dominates ESCI. Beyond choosing macro-F1, what did you do about the imbalance — and what would you do next?"
+### 🔷 Question 5 (Follow-up): "Exact dominates ESCI. Beyond choosing macro-F1, what did you do about the imbalance — and what would you do next?"
 
 **Why they ask:** metric choice is passive; they want an *intervention* and its trade-offs.
 
@@ -160,7 +160,7 @@ Each entry: the question, why it gets asked, a model answer at AS depth, and the
 
 **The chain:** why oversampling ≈ weighted loss in expectation but differs in optimization dynamics → threshold moving vs. loss reweighting for F1 targets → does label noise in crowd-sourced ESCI bound achievable F1? → "how would you *detect* that bound?" (annotator-agreement analysis, if available; training on relabeled subsets).
 
-### 🔷 Follow-up 6: "You trained <2% of parameters. What did that constraint cost you, and how do you know?"
+### 🔷 Question 6 (Follow-up): "You trained <2% of parameters. What did that constraint cost you, and how do you know?"
 
 **Why they ask:** the resume line advertises the efficiency; the bar is knowing its price.
 
@@ -172,14 +172,15 @@ Each entry: the question, why it gets asked, a model answer at AS depth, and the
 
 ## 🔷 Hands-On Lab: Build Your Pitch Menu
 
-30 minutes, produces the artifact you'll use in the boss fight and the real loop.
+30 minutes, produces the artifact you'll use in the assessment and the real loop.
 
 1. From your run logs, fill every QLoRA row of the Metric Vault in [PROGRESS.md](../../PROGRESS.md). Empty slots get marked `QUALITATIVE-ONLY`.
 2. Write your 4-minute project pitch (see [round playbook](../../playbooks/round_playbook.md), beat structure: result → framing → decision tour → invite the drill).
 3. Underline every technical term in the pitch. For each, self-assess Bronze/Silver/Gold honestly. **Delete or downgrade every hook that isn't Silver+.** A pitch with six defensible hooks beats one with twelve fragile ones.
 4. Say the pitch out loud, timed. Twice.
 
-Expected output: a pitch of ≤ 4 minutes containing zero unfilled numbers and zero Bronze hooks. You'll verify it against the boss fight in lesson 3.
+Expected output: a pitch of ≤ 4 minutes containing zero unfilled numbers and zero Bronze hooks. You'll verify it against the assessment in lesson 3.
+
 
 ## 🟢 Concept Check
 

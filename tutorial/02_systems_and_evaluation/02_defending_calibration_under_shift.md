@@ -156,6 +156,8 @@ Your ECE with 15 fixed-width bins is 3.1%; with 15 equal-mass bins it's 5.8%. Wh
 2. Fill the Session 2 calibration rows of the Metric Vault in [PROGRESS.md](../../PROGRESS.md): architecture, dataset, per-severity accuracy/ECE, fitted T, oracle-T if run. Empty → `QUALITATIVE-ONLY`.
 3. Run the lab's transfer-failure section and describe — out loud, one minute — why the with-TS curve and without-TS curve converge as severity grows. If your explanation uses the word "because" fewer than twice, it isn't a mechanism yet.
 
+<RehearsalStudio prompt="Explain out loud, in ~1 minute, WHY the with-TS and without-TS calibration curves converge as shift severity grows. Give the causal mechanism — a chain of &quot;because&quot; — not just the observation that they converge." minSeconds="45" maxSeconds="75" rubric="mechanism" />
+
 ## 🟢 Concept Check
 
 A team fits temperature on clean validation data and reports "our model is now calibrated." Which single experiment most directly tests whether that claim survives deployment drift?
@@ -182,4 +184,4 @@ A team fits temperature on clean validation data and reports "our model is now c
 
 **References:** Guo et al. 2017 (arXiv:1706.04599, building on Naeini et al. 2015, AAAI) · Hendrycks & Dietterich 2019 (arXiv:1903.12261) · Ovadia et al. 2019 (arXiv:1906.02530) · Lakshminarayanan et al. 2017 (arXiv:1612.01474)
 
-**Next:** [Lesson 3 — Tiered Challenges & Boss Fight: Systems Bar Raiser](03_tiered_challenges_and_boss_fight.md)
+**Next:** [Lesson 3 — Tiered Challenges & Assessment: Systems Bar Raiser](03_tiered_challenges_and_boss_fight.md)

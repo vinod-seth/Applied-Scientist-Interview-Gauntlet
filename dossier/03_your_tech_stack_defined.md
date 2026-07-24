@@ -26,6 +26,10 @@ Then mark yourself honestly:
 
 Every ❌ is a decision, not a failure. A term you cannot defend is not an asset — it is an interrogation opening you handed over voluntarily.
 
+Rehearse one term at a time out loud — define it, then answer the follow-up — and get feedback before you self-mark:
+
+<RehearsalStudio prompt="Pick your highest-risk term below. Define it in one clear sentence, then answer the follow-up out loud: &quot;why this, and not the obvious alternative?&quot; Name the term at the start so the review knows what you're defending." minSeconds="15" maxSeconds="45" rubric="tech-term" />
+
 > [!IMPORTANT]
 > Do this **before** reading Sessions 1–2's answers. Reading the model answer first and then rating yourself ✅ produces a comfortable, useless self-assessment.
 

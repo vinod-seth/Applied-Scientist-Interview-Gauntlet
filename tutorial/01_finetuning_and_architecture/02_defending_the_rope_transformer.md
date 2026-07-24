@@ -317,7 +317,7 @@ Your contrastive model's cosine similarities all cluster near 0.98 for both posi
 
 ## 🔷 Hands-On Lab: Build Your RoPE Transformer Pitch Menu
 
-30 minutes, produces the artifact you'll use in the boss fight and the real loop.
+30 minutes, produces the artifact you'll use in the assessment and the real loop.
 
 1. From your run logs, fill every ROPE row of the Metric Vault in [PROGRESS.md](../../PROGRESS.md). Empty slots get marked `QUALITATIVE-ONLY`.
 2. Write your 4-minute pitch (beat structure from the [round playbook](../../playbooks/round_playbook.md): result → framing → decision tour → invite the drill).
@@ -330,6 +330,8 @@ Your contrastive model's cosine similarities all cluster near 0.98 for both posi
 
 Expected output: a pitch ≤ 4 minutes, zero unfilled numbers, zero Bronze hooks.
 
+<RehearsalStudio prompt="Deliver your 4-minute from-scratch RoPE transformer pitch: result first → frame as demonstrated mastery, not a SOTA claim → decision tour (RoPE over learned embeddings, Pre-LN over Post-LN, contrastive loss) → invite the drill." minSeconds="210" maxSeconds="240" rubric="project-pitch" />
+
 ---
 
 ## 🟢 Summary
@@ -341,4 +343,4 @@ Expected output: a pitch ≤ 4 minutes, zero unfilled numbers, zero Bronze hooks
 
 **References:** Su et al. 2021 (RoPE, arXiv:2104.09864) · Xiong et al. 2020 (Pre-LN, arXiv:2002.04745) · Voita et al. 2019 (head analysis, arXiv:1905.09418) · Chen et al. 2020 (SimCLR, arXiv:2002.05709) · Shazeer 2019 (MQA, arXiv:1911.02150) · Ainslie et al. 2023 (GQA, arXiv:2305.13245) · Peng et al. 2023 (YaRN, arXiv:2309.00071)
 
-**Next:** [Lesson 3 — Tiered Challenges & Boss Fight](03_tiered_challenges_and_boss_fight.md)
+**Next:** [Lesson 3 — Tiered Challenges & Assessment](03_tiered_challenges_and_boss_fight.md)

@@ -153,7 +153,7 @@ An answer is wrong; the gold passage IS in the retrieved context; the wrong answ
 
 30 minutes.
 
-1. On paper, write your failure classifier as pseudocode — every check, every threshold, in order. Then open your actual instrumentation code and diff. Every mismatch is a floor-hit; log it.
+1. On paper, write your failure classifier as pseudocode — every check, every threshold, in order. Then open your actual instrumentation code and diff. Every mismatch is a gap; log it.
 2. Fill the Session 2 RAG rows of the Metric Vault in [PROGRESS.md](../../PROGRESS.md): failure distribution, recall@k curve points, oracle result, judge audit, closed-book baseline. Empty slots → `QUALITATIVE-ONLY`.
 3. Run the [RAG Failure Triage Lab](01_rag_failure_triage_lab.ipynb) to see the same machinery on a corpus where *you* control ground truth — then write one sentence on what your real pipeline's instrumentation would misclassify that the lab's doesn't.
 4. Memorize one real example per failure bucket from your own logs.

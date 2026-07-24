@@ -6,7 +6,7 @@
 | **Time** | ~40 min |
 | **Rules** | Closed notes. Reason out loud where asked — the interview is spoken, not written. |
 
-12 quiz questions plus 2 reflection prompts, on top of the concept checks in lessons 1–2 and the boss-fight chains. No XP for completing this bank — it exists to find floors cheaply, before a Bar Raiser finds them expensively.
+12 quiz questions plus 2 reflection prompts, on top of the concept checks in lessons 1–2 and the assessment chains. No mastery credit for completing this bank — it exists to find floors cheaply, before a Bar Raiser finds them expensively.
 
 ---
 
@@ -193,5 +193,5 @@ The strong shape: no defensiveness, no invented novelty. "The result is known; w
 ## 🟢 Summary
 
 - 12 quiz questions + 2 reflections here, plus the concept checks in lessons 1–2 and 8 five-deep Gold chains: Session 2's full question volume.
-- Miss a question → it's a floor-hit. Log it in [PROGRESS.md](../../PROGRESS.md) like any drill failure.
-- Cleared everything? Deliver both pitches cold tomorrow morning. If the scoped claims survive a night of forgetting, take the boss fight.
+- Miss a question → it’s a gap. Log it in [PROGRESS.md](../../PROGRESS.md) like any drill failure.
+- Cleared everything? Deliver both pitches cold tomorrow morning. If the scoped claims survive a night of forgetting, take the assessment.

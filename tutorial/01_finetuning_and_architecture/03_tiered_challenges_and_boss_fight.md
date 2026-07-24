@@ -1,27 +1,27 @@
-# Lesson 3 — Tiered Challenges & Boss Fight: Architecture Bar Raiser
+# Lesson 3 — Tiered Challenges & Assessment: Architecture Bar Raiser
 
 | | |
 |---|---|
 | **Prerequisites** | Lessons 1–2 complete; Metric Vault in PROGRESS.md filled from run logs |
-| **Session time** | ~90 min (drills + boss fight; retries add time) |
+| **Session time** | ~90 min (drills + assessment; retries add time) |
 | **Domain tag** | Assessment / Interview Simulation |
 | **Objective** | Reach Gold on all 8 core topics to unlock Session 2 |
 
-🔬 **Interactive companion** (run this to fill the vault before the boss fight): [▶ Open the Metric Vault Extractor notebook in Colab](https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/01_finetuning_and_architecture/03_metric_vault_extractor.ipynb)
+🔬 **Interactive companion** (run this to fill the vault before the assessment): [▶ Open the Metric Vault Extractor notebook in Colab](https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/01_finetuning_and_architecture/03_metric_vault_extractor.ipynb)
 
-> 📍 **Roadmap:** Tiered drills first (self-score honestly), then the Boss Fight. The boss fight is a scripted Bar Raiser interrogation — five levels deep on the session's core topics. Clearing it = Gold on every topic = Session 2 unlocked.
+> 📍 **Roadmap:** Tiered drills first (self-score honestly), then the Assessment. The assessment is a scripted Bar Raiser interrogation — five levels deep on the session's core topics. Passing it = Gold on every topic = Session 2 unlocked.
 
 ## 🟢 Before You Start
 
 1. Open [PROGRESS.md](../../PROGRESS.md) in a second window.
-2. Confirm every `[FILL]` slot in the Metric Vault is either filled from your run logs or explicitly marked `QUALITATIVE-ONLY`. The boss fight will probe any slot you filled — an unsupported number ends the attempt.
+2. Confirm every `[FILL]` slot in the Metric Vault is either filled from your run logs or explicitly marked `QUALITATIVE-ONLY`. The assessment will probe any slot you filled — an unsupported number ends the attempt.
 3. Have your two pitch scripts (QLoRA, RoPE transformer) ready. You'll deliver them under time pressure.
 
 ---
 
 ## 🟢 Tiered Drills
 
-For each of the 8 core topics, attempt all three tiers in order. Record your honest tier in PROGRESS.md. Skip to the next topic once you hit your floor — that's the floor-hit map doing its job.
+For each of the 8 core topics, attempt all three tiers in order. Record your honest tier in PROGRESS.md. Skip to the next topic once you hit your floor — that's the gap log doing its job.
 
 ### Topic 1: NF4 / Quantile Quantization
 
@@ -205,14 +205,14 @@ All five must be directionally correct and mechanistic, not hand-waved. If you h
 
 After completing the drills, update PROGRESS.md:
 - Mark each topic as `[B]`, `[S]`, or `[G]` based on where you hit your floor.
-- Log every floor-hit in the Floor-Hit Map: the exact question chain, the depth you reached, and the point where depth ran out.
-- Zero XP for tiers below the boss fight bar. Gold on all 8 topics is required to attempt the boss fight.
+- Log every gap in the Gap Log: the exact question chain, the depth you reached, and the point where depth ran out.
+- No mastery credit for tiers below the assessment bar. Gold on all 8 topics is required to attempt the assessment.
 
-If you're not Gold on all 8: study your floor-hit map, revisit Lessons 1–2's refreshers at the exact point you stalled, and re-drill. The boss fight will wait.
+If you're not Gold on all 8: study your gap log, revisit Lessons 1–2's refreshers at the exact point you stalled, and re-drill. The assessment will wait.
 
 ---
 
-## 🟢 Boss Fight: Architecture Bar Raiser
+## 🟢 Assessment: Architecture Bar Raiser
 
 > ⚔️ **Format:** Simulated 50-minute science-depth round. The "interviewer" drills five levels deep on topics drawn from all 8 core areas. You answer out loud (or written, but out loud is better practice). Score yourself honestly per the rubric below.
 
@@ -222,6 +222,10 @@ If you're not Gold on all 8: study your floor-hit map, revisit Lessons 1–2's r
 2. Deliver your QLoRA pitch first (~4 min), then your RoPE pitch (~4 min). Total ≤ 8 min.
 3. The interviewer questions below fire in sequence. Answer each fully before reading the next.
 4. After the questions, score yourself.
+
+Record both pitches back-to-back under time pressure, then review the delivery before you face the interrogation:
+
+<RehearsalStudio prompt="Deliver both Session 1 pitches back-to-back under time pressure — QLoRA on ESCI first, then the from-scratch RoPE transformer. ≤ 8 minutes total. Result-first, decision tour, invite the drill; no unfilled or invented numbers." minSeconds="360" maxSeconds="480" rubric="project-pitch" />
 
 ### The Interrogation
 
@@ -281,24 +285,24 @@ If you're not Gold on all 8: study your floor-hit map, revisit Lessons 1–2's r
 
 **Passing condition:** All 9 rubric items scored at Gold standard. Zero hand-waves, zero unsupported numbers.
 
-### After the Boss Fight
+### After the Assessment
 
 1. **Update PROGRESS.md:**
    - Mark all 8 core topics with their earned tier: `[B]`, `[S]`, or `[G]`.
-   - Log XP: 10 per depth level survived (max 50 per chain), 5 for each honest floor hit.
-   - Record floor hits in the Floor-Hit Map with exact question and depth.
+   - Log each drill: depth survived, where you hit your floor, and the exact question.
+   - Record gaps in the Gap Log with exact question and depth.
 
-2. **If cleared (Gold on all topics):** 🎉 Session 2 is unlocked. Update the Streak Tracker. Move to Session 2 when ready.
+2. **If passed (Gold on all topics):** 🎉 Session 2 is unlocked. Update the Consistency Tracker. Move to Session 2 when ready.
 
-3. **If not cleared:** Study the floor-hit map. Re-read the specific refresher section where depth ran out. Re-drill the failed topic's Gold chain. Retry the boss fight — each attempt restarts from question one.
+3. **If not passed:** Study the gap log. Re-read the specific refresher section where depth ran out. Re-drill the failed topic's Gold chain. Retry the assessment — each attempt restarts from question one.
 
 ---
 
 ## 🟢 Summary
 
-- The tiered drills are self-scored: Bronze = states correctly, Silver = derives it, Gold = defends 5 follow-ups. Only Gold clears the boss fight bar.
-- The boss fight simulates a 50-minute science-depth round across both projects. It probes all 8 core topics at five-plus levels.
-- Every number must trace to a run log. Every floor hit goes in the map. Every hand-wave costs a tier.
+- The tiered drills are self-scored: Bronze = states correctly, Silver = derives it, Gold = defends 5 follow-ups. Only Gold meets the assessment bar.
+- The assessment simulates a 50-minute science-depth round across both projects. It probes all 8 core topics at five-plus levels.
+- Every number must trace to a run log. Every gap goes in the log. Every hand-wave costs a tier.
 - Passing unlocks Session 2: Project Deep-Dives — Systems & Evaluation (RAG + Calibration).
 
-**The enemy is not the boss fight. The enemy is an unfilled floor-hit map.**
+**The enemy is not the assessment. The enemy is an empty gap log.**

@@ -9,10 +9,10 @@ All notable changes to this course are documented here. Versioning follows `MAJO
   - Session README with scope brief (every interrogation surface for both projects) and armory table.
   - Lesson 1: Defending the RAG Failure-Mode Analysis — operational failure taxonomy as a decision tree, the recall/error dissociation, the oracle-context isolation, chunking mechanisms (dilution / fragmentation / position), judge validity, plus 6 hardest follow-ups with model answers.
   - Lesson 2: Defending Calibration Under Distribution Shift — ECE estimator pathologies, temperature scaling derived, the shift mechanism (off-manifold features → linear-head extrapolation → softmax saturation), the oracle-T exhibit, plus 6 hardest follow-ups.
-  - Lesson 3: Tiered challenges across 8 core topics + the Systems Bar Raiser boss fight (10-item rubric).
+  - Lesson 3: Tiered challenges across 8 core topics + the Systems Bar Raiser assessment (10-item rubric).
   - Chapter quiz (12 questions + 2 reflections) and per-lesson interview suites (junior/mid/senior, 3 each).
   - Armory notebooks: `01_rag_failure_triage_lab.ipynb` (triage decision tree, chunk×k sweep, oracle-context decomposition, leakage confound) and `02_calibration_and_temperature_lab.ipynb` (ECE from scratch both binning schemes, reliability diagrams, NLL-vs-ECE objective, oracle-T sweep, risk–coverage).
-- Session 2 Metric Vault rows in PROGRESS.md; Session 2 skill-tree nodes expanded to all 8 core topics.
+- Session 2 Metric Vault rows in PROGRESS.md; Session 2 mastery-tracker nodes expanded to all 8 core topics.
 
 ### Fixed
 - Calibration lab: retuned the shift simulation so the clean model is **over**confident (fitted T ≈ 2.0, matching the range Guo et al. 2017 report for ResNets). The initial parameters produced T ≈ 0.66 — an *under*confident model, contradicting the lesson it was built to demonstrate. Temperature fit bounds widened to 25.0 so the oracle-T sweep is not silently capped.
@@ -24,7 +24,7 @@ All notable changes to this course are documented here. Versioning follows `MAJO
 ## [1.2] — 2026-07-14
 
 ### Added
-- Sessions 2–9 shown as visible **locked skill-tree nodes**, each backed by a real stub file with scope preview and unlock conditions, so the whole 9-session map is visible from day one without dead links.
+- Sessions 2–9 shown as visible **locked mastery-tracker nodes**, each backed by a real stub file with scope preview and unlock conditions, so the whole 9-session map is visible from day one without dead links.
 - Metadata curriculum expanded to list every reachable chapter (Start Here module: overview/progress/playbook; Session 1 module: overview, 3 lessons, quiz).
 
 ### Fixed
@@ -38,7 +38,7 @@ All notable changes to this course are documented here. Versioning follows `MAJO
   - `01_memory_budget_verifier.ipynb` — paper memory budget vs. live `torch.cuda` allocator readings for Qwen2.5-1.5B in NF4; real trainable-param count via PEFT (Colab T4).
   - `02_architecture_unit_tests.ipynb` — five executable architecture claims: RoPE shift invariance, value-rotation counterfactual, padding-mask equivalence, last-token indexing bug, 1/√d_k variance measurement (CPU).
   - `03_metric_vault_extractor.ipynb` — per-class F1, confusion matrix, alignment/uniformity diagnostics from the learner's own artifacts; explicit SYNTHETIC-DEMO vs. REAL mode with a record-nothing rule for demo outputs.
-- Module 1 README "Armory" section: notebooks produce evidence, award 0 XP — defense remains the only paid currency.
+- Module 1 README "Armory" section: notebooks produce evidence, not mastery on their own — defense in drills remains the only measure.
 
 ### Fixed
 - Lesson 2: corrected GQA citation from "Agarwal et al." to **Ainslie et al. 2023** (arXiv:2305.13245).
@@ -50,11 +50,11 @@ All notable changes to this course are documented here. Versioning follows `MAJO
 ## [1.0] — 2026-07-13
 
 ### Added
-- Course scaffold: README (game rules, course map, constraints), PROGRESS.md (skill tree, XP ledger, streak tracker, floor-hit map, metric vault), round playbook covering all four AS round types.
+- Course scaffold: README (course structure, mastery levels, constraints), PROGRESS.md (mastery tracker, practice log, consistency tracker, gap log, metric vault), round playbook covering all four AS round types.
 - **Session 1 — Project Deep-Dives: Fine-Tuning & Architecture** (`tutorial/01_finetuning_and_architecture/`):
   - Lesson 1: QLoRA-on-ESCI defense (scope map, 6 hardest follow-ups with model answers, concept checks).
   - Lesson 2: RoPE transformer defense (scope map, 6 hardest follow-ups with model answers, concept checks).
-  - Lesson 3: Tiered challenges + Architecture Bar Raiser boss fight.
+  - Lesson 3: Tiered challenges + Architecture Bar Raiser assessment.
   - Module quiz bank and per-lesson interview question suites (JSON).
 - metadata.json with full 9-session curriculum manifest. Sessions 2–9 are registered as planned; their files land as each session is delivered on request ("next").
 

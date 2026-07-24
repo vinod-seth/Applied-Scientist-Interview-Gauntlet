@@ -1,5 +1,22 @@
 {
   "lesson_title": "Defending QLoRA on ESCI: Quantization, Memory, and Metrics",
+  "rehearsal": {
+    "prompt": "Practice defending the QLoRA on ESCI project comprehensively: (1) Deliver your 4-minute project pitch: result first, then framing as demonstrated mastery (not SOTA). (2) Explain the detailed 16GB memory budget (reproduce full FT vs. QLoRA memory arithmetic line-by-line). (3) Defend your technical choices, including why NF4 is optimal, fp32 optimizer precision, last-token causal classification head mechanics (including pad strategies), DeBERTa encoder baseline comparisons (confounds & design of controlled ablations), macro-F1 metric selection (what it highlights/hides), and class imbalance interventions (weighted CE, focal loss, oversampling, and ordinal targets).",
+    "minSeconds": 180,
+    "maxSeconds": 300,
+    "rubric": "qlora-esci-prep",
+    "questions": [
+      "Explain the difference between NF4 and uniform int4 quantization. When is NF4 preferred?",
+      "Why are optimizer states kept in fp32 during mixed-precision training?",
+      "What is macro-F1, and why is it preferred over accuracy for imbalanced classification tasks?",
+      "Why NF4 and not int4 or FP4? You said 'information-theoretically optimal' — optimal in what sense?",
+      "Walk me through your 16GB. Where does every gigabyte go, in full fine-tuning versus your setup?",
+      "How exactly does your causal decoder produce a 4-class label? Walk me from input string to logit.",
+      "Why compare a 1.5B decoder with adapters to a ~184M fully fine-tuned encoder? Is that comparison fair — and whichever won, why?",
+      "Exact dominates ESCI. Beyond choosing macro-F1, what did you do about the imbalance — and what would you do next?",
+      "You trained <2% of parameters. What did that constraint cost you, and how do you know?"
+    ]
+  },
   "experience_levels": {
     "junior": [
       {

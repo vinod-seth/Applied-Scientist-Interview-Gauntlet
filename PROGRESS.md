@@ -1,12 +1,12 @@
-# Player Progress — The Gauntlet
+# Course Progress
 
-> Update this file after every drill session. It is your save file. XP and tiers here must trace back to an actual scored drill attempt — the game never pays for a made-up number, including here.
+> Update this file after every drill session. Mastery levels here must trace back to an actual scored drill attempt — there is no credit for a made-up number, including here.
 
 ---
 
-## 🟢 Skill Tree
+## 🟢 Mastery Tracker
 
-Legend: `[ ]` untouched · `[B]` Bronze · `[S]` Silver · `[G]` Gold (boss-fight bar)
+Legend: `[ ]` untouched · `[B]` Bronze · `[S]` Silver · `[G]` Gold (assessment bar)
 
 ```text
 SESSION 1 — FINE-TUNING & ARCHITECTURE          SESSION 2 — SYSTEMS & EVALUATION
@@ -18,45 +18,45 @@ SESSION 1 — FINE-TUNING & ARCHITECTURE          SESSION 2 — SYSTEMS & EVALUA
 │                                               ├─ [ ] Temperature scaling: derivation & limits
 │                                               ├─ [ ] Why calibration breaks under shift
 │                                               ├─ [ ] Acting under miscalibration (abstention)
-│                                               └─ [ ] BOSS: Systems Bar Raiser
+│                                               └─ [ ] ASSESSMENT: Systems Bar Raiser
 ├─ [ ] RoPE derivation
 ├─ [ ] Pre-LN vs Post-LN                        SESSION 3 — CORE THEORY
 ├─ [ ] Contrastive loss & negatives             ├─ [ ] Bias–variance / regularization
-└─ [ ] BOSS: Architecture Bar Raiser            ├─ [ ] Probabilistic foundations
+└─ [ ] ASSESSMENT: Architecture Bar Raiser       ├─ [ ] Probabilistic foundations
                                                 ├─ [ ] Optimization
 SESSION 4 — DL & TRANSFORMERS                   ├─ [ ] Metrics & validation
-├─ [ ] Backprop mechanics                       └─ [ ] BOSS: Theory Bar Raiser
+├─ [ ] Backprop mechanics                       └─ [ ] ASSESSMENT: Theory Bar Raiser
 ├─ [ ] Normalization family
 ├─ [ ] Attention variants                       SESSION 5 — LLMs & RETRIEVAL
 ├─ [ ] Training pathologies                     ├─ [ ] PEFT landscape
-└─ [ ] BOSS: DL Bar Raiser                      ├─ [ ] Decoding & sampling
+└─ [ ] ASSESSMENT: DL Bar Raiser                ├─ [ ] Decoding & sampling
                                                 ├─ [ ] RAG design space
 SESSION 6 — DSA                                 ├─ [ ] LLM evaluation
-├─ [ ] Pattern fluency                          └─ [ ] BOSS: LLM Bar Raiser
+├─ [ ] Pattern fluency                          └─ [ ] ASSESSMENT: LLM Bar Raiser
 ├─ [ ] Interview protocol
-└─ [ ] BOSS: Coding Bar Raiser                  SESSION 8 — LP & STAR
+└─ [ ] ASSESSMENT: Coding Bar Raiser             SESSION 8 — LP & STAR
                                                 ├─ [ ] Story bank (12 stories)
 SESSION 7 — ML FROM SCRATCH                     ├─ [ ] STAR with quantified results
 ├─ [ ] Attention from blank editor              ├─ [ ] Failure/conflict sourcing
-├─ [ ] Classic ML from blank editor             └─ [ ] BOSS: Behavioral Bar Raiser
-└─ [ ] BOSS: Whiteboard Bar Raiser
+├─ [ ] Classic ML from blank editor             └─ [ ] ASSESSMENT: Behavioral Bar Raiser
+└─ [ ] ASSESSMENT: Whiteboard Bar Raiser
                                                 SESSION 9 — MOCK LOOP
-                                                └─ [ ] FINAL BOSS: Full Loop
+                                                └─ [ ] FINAL ASSESSMENT: Full Loop
 ```
 
 ---
 
-## 🟢 XP Ledger
+## 🟢 Practice Log
 
-| Date | Drill / chain | Depth survived | XP | Running total |
+| Date | Drill / chain | Depth survived | Outcome | Notes |
 |---|---|---|---|---|
-| | | | | 0 |
+| | | | | |
 
-Scoring reminder: 10 XP per depth level survived (max 50/chain) · 5 XP for an honest floor-hit · 0 XP and a tier drop for hand-waving or unbacked numbers.
+Recording reminder: log depth survived per chain, note where you hit your floor, and mark whether hand-waving or unbacked numbers caused a level drop.
 
 ---
 
-## 🟢 Streak Tracker
+## 🟢 Consistency Tracker
 
 | Week | Mon | Tue | Wed | Thu | Fri | Sat | Sun |
 |---|---|---|---|---|---|---|---|
@@ -65,11 +65,11 @@ Scoring reminder: 10 XP per depth level survived (max 50/chain) · 5 XP for an h
 | W3 | | | | | | | |
 | W4 | | | | | | | |
 
-Mark ✅ for any day with at least one scored drill attempt. A failed attempt keeps the streak; a blank day breaks it.
+Mark ✅ for any day with at least one drill attempt. Even an unsuccessful attempt counts; a zero-activity day is the real obstacle.
 
 ---
 
-## 🟢 Floor-Hit Map
+## 🟢 Gap Log
 
 Log every point where you ran out of depth. This is next session's study map, not a failure record.
 
@@ -81,7 +81,7 @@ Log every point where you ran out of depth. This is next session's study map, no
 
 ## 🟢 [FILL] Metric Vault
 
-Before Session 1's boss fight, pull these from your actual run logs. Any slot you cannot fill becomes a "qualitative-only" topic — you may describe direction and method, never a number.
+Before Session 1's assessment, pull these from your actual run logs. Any slot you cannot fill becomes a "qualitative-only" topic — you may describe direction and method, never a number.
 
 | Slot | Value from run logs | Source (log/notebook path) |
 |---|---|---|
@@ -98,7 +98,7 @@ Before Session 1's boss fight, pull these from your actual run logs. Any slot yo
 
 ### Session 2 — Systems & Evaluation
 
-Fill before the Systems Bar Raiser. Same law: run logs or `QUALITATIVE-ONLY`. The armory notebooks show the *machinery*; only your own artifacts fill these rows.
+Fill before the Systems assessment. Same law: run logs or `QUALITATIVE-ONLY`. The armory notebooks show the *machinery*; only your own artifacts fill these rows.
 
 | Slot | Value from run logs | Source (log/notebook path) |
 |---|---|---|

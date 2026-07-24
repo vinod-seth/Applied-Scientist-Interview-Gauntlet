@@ -1,5 +1,5 @@
 {
-  "title": "The Gauntlet: Applied Scientist Interview Prep (M.Tech Fresher Edition)",
+  "title": "Applied Scientist Interview Prep (M.Tech Fresher Edition)",
   "archetype": "resume-to-offer",
   "visibility": "public",
   "visibility_note": "Public temporarily so Colab notebook links resolve without auth. Contains a scored assessment of a named candidate; guideline 04 default is private. Revisit before wider sharing.",
@@ -14,22 +14,22 @@
   "estimated_hours": 45,
   "modules": 9,
   "lessons": 27,
-  "version": "1.2",
+  "version": "1.4",
   "delivery_note": "Sessions are generated one at a time. The curriculum lists ONLY delivered content so the portal never points at a file that does not exist yet. Each new session appends a module here. The full 9-session plan lives in README.md.",
   "curriculum": [
     {
       "module_id": "module_00_start_here",
-      "title": "Start Here: How the Gauntlet Works",
+      "title": "Start Here: How the Course Works",
       "lessons": [
         {
           "id": "m0_l1",
-          "title": "Course Overview & Game Rules",
+          "title": "Course Overview & Structure",
           "defaultMode": "mdx",
           "modes": { "mdx": "README.md" }
         },
         {
           "id": "m0_l2",
-          "title": "Progress, Skill Tree & Metric Vault",
+          "title": "Progress & Metric Vault",
           "defaultMode": "mdx",
           "modes": { "mdx": "PROGRESS.md" }
         },
@@ -115,7 +115,7 @@
         },
         {
           "id": "m1_l3",
-          "title": "Tiered Challenges & Boss Fight: Architecture Bar Raiser",
+          "title": "Tiered Challenges & Assessment: Architecture Bar Raiser",
           "defaultMode": "mdx",
           "modes": {
             "mdx": "tutorial/01_finetuning_and_architecture/03_tiered_challenges_and_boss_fight.md",
@@ -165,7 +165,7 @@
         },
         {
           "id": "m2_l3",
-          "title": "Tiered Challenges & Boss Fight: Systems Bar Raiser",
+          "title": "Tiered Challenges & Assessment: Systems Bar Raiser",
           "defaultMode": "mdx",
           "modes": { "mdx": "tutorial/02_systems_and_evaluation/03_tiered_challenges_and_boss_fight.md" }
         },
@@ -184,7 +184,7 @@
       "module_id": "module_03",
       "title": "🔒 Session 3: ML Fundamentals — Core Theory",
       "lessons": [
-        { "id": "m3_locked", "title": "Locked — clear the Session 2 boss fight", "defaultMode": "mdx", "modes": { "mdx": "tutorial/03_core_theory/00_locked.md" } }
+        { "id": "m3_locked", "title": "Locked — clear the Session 2 assessment", "defaultMode": "mdx", "modes": { "mdx": "tutorial/03_core_theory/00_locked.md" } }
       ],
       "_note": "Unlocks after the Session 2 Systems Bar Raiser."
     },
@@ -192,42 +192,42 @@
       "module_id": "module_04",
       "title": "🔒 Session 4: ML Fundamentals — Deep Learning & Transformers",
       "lessons": [
-        { "id": "m4_locked", "title": "Locked — clear the Session 3 boss fight", "defaultMode": "mdx", "modes": { "mdx": "tutorial/04_deep_learning_transformers/00_locked.md" } }
+        { "id": "m4_locked", "title": "Locked — clear the Session 3 assessment", "defaultMode": "mdx", "modes": { "mdx": "tutorial/04_deep_learning_transformers/00_locked.md" } }
       ]
     },
     {
       "module_id": "module_05",
       "title": "🔒 Session 5: LLMs, Fine-Tuning & Retrieval",
       "lessons": [
-        { "id": "m5_locked", "title": "Locked — clear the Session 4 boss fight", "defaultMode": "mdx", "modes": { "mdx": "tutorial/05_llms_finetuning_retrieval/00_locked.md" } }
+        { "id": "m5_locked", "title": "Locked — clear the Session 4 assessment", "defaultMode": "mdx", "modes": { "mdx": "tutorial/05_llms_finetuning_retrieval/00_locked.md" } }
       ]
     },
     {
       "module_id": "module_06",
       "title": "🔒 Session 6: Coding — DSA & Algorithms",
       "lessons": [
-        { "id": "m6_locked", "title": "Locked — clear the Session 5 boss fight", "defaultMode": "mdx", "modes": { "mdx": "tutorial/06_dsa_algorithms/00_locked.md" } }
+        { "id": "m6_locked", "title": "Locked — clear the Session 5 assessment", "defaultMode": "mdx", "modes": { "mdx": "tutorial/06_dsa_algorithms/00_locked.md" } }
       ]
     },
     {
       "module_id": "module_07",
       "title": "🔒 Session 7: Coding — ML From Scratch",
       "lessons": [
-        { "id": "m7_locked", "title": "Locked — clear the Session 6 boss fight", "defaultMode": "mdx", "modes": { "mdx": "tutorial/07_ml_from_scratch/00_locked.md" } }
+        { "id": "m7_locked", "title": "Locked — clear the Session 6 assessment", "defaultMode": "mdx", "modes": { "mdx": "tutorial/07_ml_from_scratch/00_locked.md" } }
       ]
     },
     {
       "module_id": "module_08",
       "title": "🔒 Session 8: Behavioral — Leadership Principles & STAR",
       "lessons": [
-        { "id": "m8_locked", "title": "Locked — clear the Session 7 boss fight", "defaultMode": "mdx", "modes": { "mdx": "tutorial/08_leadership_principles_star/00_locked.md" } }
+        { "id": "m8_locked", "title": "Locked — clear the Session 7 assessment", "defaultMode": "mdx", "modes": { "mdx": "tutorial/08_leadership_principles_star/00_locked.md" } }
       ]
     },
     {
       "module_id": "module_09",
       "title": "🔒 Session 9: Mock Loop & Integration",
       "lessons": [
-        { "id": "m9_locked", "title": "Locked — clear the Session 8 boss fight", "defaultMode": "mdx", "modes": { "mdx": "tutorial/09_mock_loop_integration/00_locked.md" } }
+        { "id": "m9_locked", "title": "Locked — clear the Session 8 assessment", "defaultMode": "mdx", "modes": { "mdx": "tutorial/09_mock_loop_integration/00_locked.md" } }
       ]
     }
   ]

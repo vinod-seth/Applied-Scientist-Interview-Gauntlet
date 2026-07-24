@@ -3,9 +3,9 @@
 | | |
 |---|---|
 | **Projects defended** | RAG failure-mode analysis · Calibration under distribution shift |
-| **Prerequisites** | Session 1 boss fight cleared; your run logs and eval artifacts for both projects |
-| **Session length** | 3 lessons, ~4–6 hours including drills and boss fight |
-| **Boss fight** | Systems Bar Raiser (lesson 3) — clearing it unlocks Session 3 |
+| **Prerequisites** | Session 1 assessment passed; your run logs and eval artifacts for both projects |
+| **Session length** | 3 lessons, ~4–6 hours including drills and assessment |
+| **Assessment** | Systems Bar Raiser (lesson 3) — passing it unlocks Session 3 |
 
 ---
 
@@ -49,7 +49,7 @@ The two projects also share a failure pattern to defend against: both make a *ca
 
 1. [Lesson 1 — Defending the RAG Failure-Mode Analysis](01_defending_rag_failure_modes.md)
 2. [Lesson 2 — Defending Calibration Under Distribution Shift](02_defending_calibration_under_shift.md)
-3. [Lesson 3 — Tiered Challenges & Boss Fight](03_tiered_challenges_and_boss_fight.md)
+3. [Lesson 3 — Tiered Challenges & Assessment](03_tiered_challenges_and_boss_fight.md)
 
 Before lesson 3, fill the Session 2 rows of the **Metric Vault** in [PROGRESS.md](../../PROGRESS.md). Same law as Session 1: every number from run logs, `[FILL]` or silence.
 
@@ -57,7 +57,7 @@ Before lesson 3, fill the Session 2 rows of the **Metric Vault** in [PROGRESS.md
 
 ## 🔷 The Armory (Interactive Notebooks)
 
-Same rules as Session 1: notebooks produce evidence, award **0 XP**, and defense remains the only paid currency.
+Same rules as Session 1: notebooks produce evidence, and defense in drills remains the only measure of mastery.
 
 | Notebook | Launch | Pairs with | What it produces |
 |---|---|---|---|
@@ -69,7 +69,7 @@ Same rules as Session 1: notebooks produce evidence, award **0 XP**, and defense
 
 ---
 
-## 🟢 Session 2 Core Topics (Gold required to clear the boss)
+## 🟢 Session 2 Core Topics (Gold required to pass the assessment)
 
 - Failure-mode operational definitions
 - Sweep design & the oracle-context test

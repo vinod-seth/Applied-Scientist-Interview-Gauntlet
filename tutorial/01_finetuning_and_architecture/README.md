@@ -3,9 +3,9 @@
 | | |
 |---|---|
 | **Projects defended** | QLoRA on ESCI · From-scratch RoPE transformer |
-| **Prerequisites** | Course README (game rules), your own run logs for both projects |
-| **Session length** | 3 lessons, ~4–6 hours including drills and boss fight |
-| **Boss fight** | Architecture Bar Raiser (lesson 3) — clearing it unlocks Session 2 |
+| **Prerequisites** | Course README (course structure), your own run logs for both projects |
+| **Session length** | 3 lessons, ~4–6 hours including drills and assessment |
+| **Assessment** | Architecture Bar Raiser (lesson 3) — passing it unlocks Session 2 |
 
 ---
 
@@ -17,7 +17,7 @@ These two projects are your strongest interview assets: fine-tuning efficiency a
 
 ## 🟢 Scope Brief: Everything an Interviewer Could Raise
 
-If it's on this list, it's fair game in the boss fight. Nothing outside this list appears in Session 1.
+If it’s on this list, it’s fair game in the assessment. Nothing outside this list appears in Session 1.
 
 ### 🔷 From the QLoRA bullet
 
@@ -51,15 +51,15 @@ If it's on this list, it's fair game in the boss fight. Nothing outside this lis
 
 1. [Lesson 1 — Defending QLoRA on ESCI](01_defending_qlora_on_esci.md): concept refreshers at peer level + the 6 hardest follow-ups with model answers.
 2. [Lesson 2 — Defending the RoPE Transformer](02_defending_the_rope_transformer.md): same format.
-3. [Lesson 3 — Tiered Challenges & Boss Fight](03_tiered_challenges_and_boss_fight.md): Bronze/Silver/Gold drills per core topic, then the Architecture Bar Raiser.
+3. [Lesson 3 — Tiered Challenges & Assessment](03_tiered_challenges_and_boss_fight.md): Bronze/Silver/Gold drills per core topic, then the Architecture Bar Raiser.
 
-Before lesson 3, fill the **Metric Vault** in [PROGRESS.md](../../PROGRESS.md) from your run logs. The boss fight assumes it's filled; every unfilled slot becomes a "qualitative-only" topic in your answers.
+Before lesson 3, fill the **Metric Vault** in [PROGRESS.md](../../PROGRESS.md) from your run logs. The assessment assumes it’s filled; every unfilled slot becomes a "qualitative-only" topic in your answers.
 
 ---
 
 ## 🔷 The Armory (Interactive Notebooks)
 
-Three Colab-ready notebooks accompany this session. They are the **armory, not a track**: they produce the evidence you defend in drills, and award **0 XP** themselves — defense remains the only paid currency.
+Three Colab-ready notebooks accompany this session. They are the **armory, not a track**: they produce the evidence you defend in drills. Defense in drills remains the only measure of mastery.
 
 | Notebook | Launch | Pairs with | What it produces |
 |---|---|---|---|
@@ -75,7 +75,7 @@ Three Colab-ready notebooks accompany this session. They are the **armory, not a
 
 ---
 
-## 🟢 Session 1 Core Topics (Gold required to clear the boss)
+## 🟢 Session 1 Core Topics (Gold required to pass the assessment)
 
 - NF4 / quantile quantization
 - LoRA math (rank, alpha, placement)

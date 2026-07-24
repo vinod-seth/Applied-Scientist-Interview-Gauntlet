@@ -1,20 +1,20 @@
-# Lesson 3 — Tiered Challenges & Boss Fight: Systems Bar Raiser
+# Lesson 3 — Tiered Challenges & Assessment: Systems Bar Raiser
 
 | | |
 |---|---|
 | **Prerequisites** | Lessons 1–2 complete; Session 2 Metric Vault rows filled from run logs |
-| **Session time** | ~90 min (drills + boss fight; retries add time) |
+| **Session time** | ~90 min (drills + assessment; retries add time) |
 | **Domain tag** | Assessment / Interview Simulation |
 | **Objective** | Reach Gold on all 8 core topics to unlock Session 3 |
 
 🔬 **Interactive companion:** [▶ Open the Calibration & Temperature Lab in Colab](https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/02_systems_and_evaluation/02_calibration_and_temperature_lab.ipynb)
 
-> 📍 **Roadmap:** Tiered drills first (self-score honestly), then the Boss Fight. Session 1's boss tested whether you understood what you *built*. This one tests whether you can defend what you *concluded* — a harder standard, because conclusions have confounds and instruments have error bars.
+> 📍 **Roadmap:** Tiered drills first (self-score honestly), then the Assessment. Session 1's assessment tested whether you understood what you *built*. This one tests whether you can defend what you *concluded* — a harder standard, because conclusions have confounds and instruments have error bars.
 
 ## 🟢 Before You Start
 
 1. Open [PROGRESS.md](../../PROGRESS.md) in a second window.
-2. Every Session 2 Metric Vault slot must be filled from run logs or explicitly marked `QUALITATIVE-ONLY`. The boss probes what you filled.
+2. Every Session 2 Metric Vault slot must be filled from run logs or explicitly marked `QUALITATIVE-ONLY`. The assessment probes what you filled.
 3. Have both project pitches ready (4 min each). Remember the menu rule: only surface hooks you can defend five deep.
 
 ---
@@ -233,11 +233,11 @@ Attempt all three tiers per topic, in order. Record your honest tier. Stop at yo
 
 ## 🟢 Self-Scoring Protocol
 
-Update PROGRESS.md: mark each of the 8 topics `[B]`/`[S]`/`[G]`, log every floor-hit with the exact chain and depth reached. Gold on all 8 is required to attempt the boss fight. Below Gold: study the floor-hit map, re-read the refresher at the exact stall point, re-drill.
+Update PROGRESS.md: mark each of the 8 topics `[B]`/`[S]`/`[G]`, log every gap with the exact chain and depth reached. Gold on all 8 is required to attempt the assessment. Below Gold: study the gap log, re-read the refresher at the exact stall point, re-drill.
 
 ---
 
-## 🟢 Boss Fight: Systems Bar Raiser
+## 🟢 Assessment: Systems Bar Raiser
 
 > ⚔️ **Format:** Simulated 50-minute science-depth round across both Session 2 projects. Answer out loud, fully, before reading the next question. This Bar Raiser specializes in methodology — every question attacks the gap between what you measured and what you concluded.
 
@@ -247,6 +247,10 @@ Update PROGRESS.md: mark each of the 8 topics `[B]`/`[S]`/`[G]`, log every floor
 2. Deliver both pitches (~4 min each, ≤ 8 min total).
 3. Answer the sequence below without skipping ahead.
 4. Score against the rubric.
+
+Record both pitches back-to-back, then review them before the interrogation:
+
+<RehearsalStudio prompt="Deliver both Session 2 pitches back-to-back — RAG failure-mode analysis, then calibration under shift. ≤ 8 minutes total. Result-first, decision tour, honest about limits; surface only hooks you can defend five deep." minSeconds="360" maxSeconds="480" rubric="project-pitch" />
 
 ### The Interrogation
 
@@ -266,7 +270,7 @@ Update PROGRESS.md: mark each of the 8 topics `[B]`/`[S]`/`[G]`, log every floor
 
 > **Follow-up 3:** "Your judge decided what counts as wrong before any of this ran. Which bucket does its bias inflate, and by how much?"
 
-*(Expecting: the judge named, bias *direction* per bucket, and the recognition that a strict lexical judge inflates 'retrieved-but-ignored' — the bucket that carries the conclusion. Then the audit: run, or designed and named as a gap. "I didn't validate the judge" without the design is a floor-hit.)*
+*(Expecting: the judge named, bias *direction* per bucket, and the recognition that a strict lexical judge inflates 'retrieved-but-ignored' — the bucket that carries the conclusion. Then the audit: run, or designed and named as a gap. "I didn't validate the judge" without the design is a gap.)*
 
 > **Follow-up 4:** "One week, halve end-to-end error. Spend it — and tell me what you refuse to build."
 
@@ -311,11 +315,11 @@ Update PROGRESS.md: mark each of the 8 topics `[B]`/`[S]`/`[G]`, log every floor
 
 **Passing condition:** all 10 at Gold standard. Zero hand-waves, zero unsupported numbers, zero overclaims.
 
-### After the Boss Fight
+### After the Assessment
 
-1. **Update PROGRESS.md:** tier each of the 8 core topics; log XP (10/depth level, max 50/chain; 5 per honest floor-hit); record floor-hits with exact chain and depth.
-2. **If cleared:** 🎉 Session 3 unlocks. Update the Streak Tracker. Say **next** when ready.
-3. **If not cleared:** study the floor-hit map, re-read the exact refresher where you stalled, re-drill that topic's Gold chain, retry from question one.
+1. **Update PROGRESS.md:** tier each of the 8 core topics; log each drill with depth survived and where you hit your floor; record gaps with exact chain and depth.
+2. **If passed:** 🎉 Session 3 unlocks. Update the Consistency Tracker. Say **next** when ready.
+3. **If not passed:** study the gap log, re-read the exact refresher where you stalled, re-drill that topic's Gold chain, retry from question one.
 
 ---
 
@@ -326,4 +330,4 @@ Update PROGRESS.md: mark each of the 8 topics `[B]`/`[S]`/`[G]`, log every floor
 - Volunteering your own confounds is not weakness; it is the single strongest signal available in this round.
 - Passing unlocks Session 3: ML Fundamentals — Core Theory.
 
-**The enemy is not the boss fight. The enemy is a conclusion you can't scope.**
+**The enemy is not the assessment. The enemy is a conclusion you can't scope.**

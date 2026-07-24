@@ -6,7 +6,7 @@
 | **Time** | ~40 min |
 | **Rules** | Closed notes. Answer out loud where the question asks for reasoning — the interview is spoken, not written. |
 
-This bank brings Session 1 to interview-drill volume: 12 quiz questions plus 2 reflection prompts, on top of the 9 concept-check questions inside lessons 1–2 and the boss-fight chains. No XP for completing the quiz — XP comes from the drills and boss fight. Use this bank to find floors cheaply.
+This bank brings Session 1 to interview-drill volume: 12 quiz questions plus 2 reflection prompts, on top of the 9 concept-check questions inside lessons 1–2 and the assessment chains. No mastery credit for completing the quiz — mastery comes from the drills and assessment. Use this bank to find floors cheaply.
 
 ---
 
@@ -192,6 +192,6 @@ Case 1 pattern: restate the question in your own terms → name the relevant mec
 
 ## 🟢 Summary
 
-- 12 quiz questions + 2 reflections here, 9 concept checks in lessons 1–2, plus 8 five-deep Gold chains and a 9-item boss fight: Session 1's full question volume.
-- Miss a quiz question → it's a floor-hit. Log it in [PROGRESS.md](../../PROGRESS.md) like any drill failure.
+- 12 quiz questions + 2 reflections here, 9 concept checks in lessons 1–2, plus 8 five-deep Gold chains and a 9-item assessment: Session 1's full question volume.
+- Miss a quiz question → it’s a gap. Log it in [PROGRESS.md](../../PROGRESS.md) like any drill failure.
 - Cleared everything? Deliver the two pitches once more, cold, tomorrow morning. If they survive a day of forgetting, say "next" for Session 2.

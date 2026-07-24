@@ -7,7 +7,7 @@
 | **Domain tag** | Interview strategy |
 | **Last verified** | 2026-07-13 |
 
-> 📍 **Roadmap:** This file is round strategy, not technical content. Read it once before Session 1, then re-read the relevant round section before each boss fight. Session 9 executes this playbook end to end.
+> 📍 **Roadmap:** This file is round strategy, not technical content. Read it once before Session 1, then re-read the relevant round section before each assessment. Session 9 executes this playbook end to end.
 
 ## 🟢 Learning Objectives
 

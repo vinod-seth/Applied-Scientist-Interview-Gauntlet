@@ -86,8 +86,8 @@ Nothing here requires new learning. This is the highest value-per-hour week in t
 ### 🟠 Weeks 2–6 — Defend What You Built
 
 ```markdown
-- [ ] Session 1 boss fight: QLoRA + RoPE depth        (Gap #1 defence)
-- [ ] Session 2 boss fight: RAG + calibration depth   (Gap #1 defence)
+- [ ] Session 1 assessment: QLoRA + RoPE depth        (Gap #1 defence)
+- [ ] Session 2 assessment: RAG + calibration depth   (Gap #1 defence)
 - [ ] Every ⚠️/❌ from Chapter 3 Tiers 1–2 → Gold
 - [ ] Rehearse the Chapter 4 introduction to the readiness checklist
 ```
@@ -162,7 +162,7 @@ This plan is derived, so it goes stale when its inputs change. Re-run it when:
 - ✅ Recruiter answers the Chapter 0 checklist → level confirmed → **re-run the Company-Relative score**
 - ✅ Claim Vault filled → **re-run the Intrinsic score** (biggest single jump)
 - ✅ Chapter 3 self-check done → **Depth Signals recomputed**
-- ✅ Any boss fight cleared → Round Readiness rises
+- ✅ Any assessment passed → Round Readiness rises
 - ⚠️ Dossier expires **2027-01-20** → re-verify Chapter 1 before applying
 
 ---
