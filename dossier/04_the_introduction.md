@@ -170,7 +170,38 @@ Your M.Tech is **Robotics and AI**; all four projects are NLP/LLM. Expect: *"Why
 4. **Audit hooks:** Underline every technical term you said and verify it is ✅ in Chapter 3.
 5. **Rehearse the follow-ups:** Prepare answers for *"Tell me more about the ESCI project"* and *"Why Amazon?"*
 
-<RehearsalStudio prompt="Deliver your introduction as if the interviewer just said &quot;Tell me about yourself.&quot; Aim for the four beats — Position, Spine, Proof, Aim — in 60–90 seconds." minSeconds="60" maxSeconds="90" rubric="introduction" />
+```rehearsal-drill
+RUBRIC: introduction
+TITLE: Introduction Rehearsal
+INTRO: Rehearse each opener from this chapter out loud. The coach holds you to the chapter's principles — the four beats, the menu (only defensible hooks), and no invented numbers — and keeps coaching until a real interviewer would be satisfied. Reveal the model script to compare. Use "Next question" to move through the variants.
+MIN: 45
+MAX: 105
+[[Base: "Tell me about yourself"]]
+Q: Tell me about yourself.
+A: Hit the four beats, front-loaded for relevance. **Position (~10s):** who you are now — "I'm partway through an M.Tech in Robotics and AI at IIT Guwahati, graduating 2027, concentrated in NLP and large language models." **Spine (~25s):** the thread, not a project list — "The thread across my work is that I build LLM systems and then try to break them: on the building side, QLoRA fine-tuning and a from-scratch RoPE transformer; on the breaking side, RAG failure-mode analysis and calibration under shift." **Proof (~30s):** ONE project with a metric — the ESCI work, macro-F1 `[FILL]` vs a DeBERTa-v3 cross-encoder baseline `[FILL]`, and one sentence on what the comparison taught you. **Aim (~15s):** why this role here — "I'm aiming at Applied Scientist because the part I care about is the measurement — deciding whether a model is actually good — and search relevance is where that has real consequences." Keep it 60–90s; every term you name is a dish on the menu, so only surface hooks you can defend.
+
+[[Coding-round opener]]
+Q: Tell me about yourself. (technical / coding round)
+A: Compress the science and pivot to implementation so you can start coding fast: "My work is mostly NLP and LLMs — fine-tuning, transformer internals, and evaluation. I also implement a lot from scratch, and I've solved 700+ DSA problems in C++, so I'm comfortable reasoning through implementation details out loud." Keep the spine but trade the deep Proof beat for a signal that you'll be fluent in the coding exercise. ⚠️ Confirm the coding-language policy first (Chapter 0 checklist).
+
+[[ML-breadth opener]]
+Q: Tell me about yourself. (ML breadth round)
+A: Signal scope over single-project depth: "I work across the LLM stack — parameter-efficient fine-tuning, transformer architecture, retrieval systems, and model evaluation. The evaluation side is what I keep returning to: calibration, failure attribution, whether a metric is actually measuring what you think." Name the breadth, then plant your centre of gravity (evaluation) so the interviewer knows where you go deep.
+
+[[Behavioral / Bar Raiser opener]]
+Q: Tell me about yourself. (behavioral / Bar Raiser round)
+A: Lead with trajectory and self-direction — this seeds **Learn and Be Curious**: "I came into my M.Tech from a CS background and taught myself most of the LLM material through projects — starting with fine-tuning, then implementing a transformer from scratch when I realised I understood the API better than the mechanism, and most recently evaluation and failure analysis. Each project came from a gap I found in the previous one." Keep it a coherent arc, not a résumé readout.
+
+[[Why a robotics programme?]]
+R: default
+Q: Your M.Tech is Robotics and AI, but all your projects are NLP. Why the robotics programme if you're doing NLP?
+A: Bridge → intentional specialisation → proof, with no defensiveness. "The programme is Robotics and AI, and the AI side is where I concentrated — the optimisation and learning-theory coursework carried directly into what I do now. I chose NLP and LLMs deliberately over the last year because that's where the problems I find most interesting are, and all four of my recent projects are in that space." Close with one concrete carry-over: `[FILL: a specific robotics-course concept you actually use — e.g. state estimation, control theory, probabilistic modelling]`. Never apologise for the programme; frame it as a deliberate path.
+
+[[Why Amazon?]]
+R: default
+Q: Why Amazon?
+A: Tie a specific, true experience to the science done here — this is where the ML Summer School belongs (deploy it here, not in the base intro): "I was selected for Amazon's ML Summer School in 2026, which is where I first saw how the science here connects to real search problems — that's a large part of why I'm targeting Applied Scientist at Amazon specifically." Make it about the *work* (measurement, search relevance) rather than generic admiration; avoid flattery that any company could receive.
+```
 
 ### Readiness Checklist
 

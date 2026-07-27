@@ -26,9 +26,15 @@ Then mark yourself honestly:
 
 Every ❌ is a decision, not a failure. A term you cannot defend is not an asset — it is an interrogation opening you handed over voluntarily.
 
-Rehearse one term at a time out loud — pick it, get asked a real interrogation question, record and review your answer, then reveal a detailed model answer to compare against. Do this *before* you self-mark below.
+Rehearse one term at a time — pick it, get asked a real interrogation question, and refine your spoken answer with the coach until a real interviewer would be satisfied and move on. Each evaluation **auto-marks** the term in the self-check tables below (✅ ready · ⚠️ close · ❌ not yet); you can override any mark by clicking it. Do this *before* you read Sessions 1–2's answers.
 
 ```rehearsal-drill
+RUBRIC: tech-term
+SCORE: techstack
+TITLE: Tech-Stack Interrogation Drill
+INTRO: Pick a term you put on your resume — you'll be asked a real interrogation question, coached until a real interviewer would move on, then you can reveal a model answer. Your marks in the tables below fill in automatically as you go.
+MIN: 20
+MAX: 75
 [[QLoRA]]
 T: 1
 Q: What is QLoRA, and why use it instead of full fine-tuning or plain LoRA?
@@ -209,18 +215,19 @@ A: A transformer stacks self-attention and feed-forward blocks with residual con
 
 These sit on your headline project, name specific mechanisms, and are the most likely opening moves in a depth round. `risk = P(asked) × depth reachable × centrality`.
 
-| # | Term | One-line meaning | Self-check |
-|---|---|---|---|
-| 1 | <abbr title="Quantized Low-Rank Adaptation: fine-tuning where the frozen base model is stored in 4-bit and only small added matrices are trained.">**QLoRA**</abbr> | Fine-tune a 4-bit-stored frozen model by training only small added matrices | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 2 | <abbr title="NormalFloat4: a 4-bit storage format whose 16 levels sit at standard-normal quantiles, matching how pretrained weights are distributed.">**NF4**</abbr> | 4-bit format with levels placed at normal-distribution quantiles | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 3 | <abbr title="Low-Rank Adaptation. Freezes pretrained weights and learns each update as the product of two thin matrices.">**LoRA adapters**</abbr> | The trainable thin-matrix pair added to frozen layers | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 4 | <abbr title="The unweighted mean of per-class F1 scores. Every class counts equally however rare, so a collapsed minority class drags the average down.">**macro-F1**</abbr> | Unweighted mean of per-class F1 — rare classes count fully | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 5 | <abbr title="Rotary Position Embedding: rotates query and key vectors by angles proportional to position, so attention scores depend only on relative distance.">**RoPE**</abbr> | Position encoding by rotation; attention depends only on offset | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 6 | <abbr title="Normalization applied inside each sublayer branch rather than on the residual path, leaving gradients an unobstructed route through the network.">**Pre-LayerNorm**</abbr> | Norm inside the branch, clean residual path, trains without warmup | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 7 | <abbr title="A loss that pulls matching pairs together and pushes non-matching pairs apart in embedding space.">**Contrastive Loss**</abbr> | Pulls positives together, pushes negatives apart | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 8 | <abbr title="Expected Calibration Error: the average gap between confidence and accuracy, computed in confidence bins and weighted by bin population.">**ECE**</abbr> | Average gap between stated confidence and actual accuracy | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 9 | <abbr title="Dividing logits by one learned scalar before softmax to fix overconfidence, without changing which class is predicted.">**Temperature Scaling**</abbr> | One scalar on the logits; fixes confidence, never accuracy | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 10 | <abbr title="Retrieval-Augmented Generation: retrieve relevant documents, then condition a generator on them.">**RAG**</abbr> | Retrieve documents, then generate an answer conditioned on them | ☐ ✅ ☐ ⚠️ ☐ ❌ |
+```self-check
+T: 1
+QLoRA | Quantized Low-Rank Adaptation: fine-tuning where the frozen base model is stored in 4-bit and only small added matrices are trained. | Fine-tune a 4-bit-stored frozen model by training only small added matrices
+NF4 | NormalFloat4: a 4-bit storage format whose 16 levels sit at standard-normal quantiles, matching how pretrained weights are distributed. | 4-bit format with levels placed at normal-distribution quantiles
+LoRA adapters | Low-Rank Adaptation. Freezes pretrained weights and learns each update as the product of two thin matrices. | The trainable thin-matrix pair added to frozen layers
+macro-F1 | The unweighted mean of per-class F1 scores. Every class counts equally however rare, so a collapsed minority class drags the average down. | Unweighted mean of per-class F1 — rare classes count fully
+RoPE | Rotary Position Embedding: rotates query and key vectors by angles proportional to position, so attention scores depend only on relative distance. | Position encoding by rotation; attention depends only on offset
+Pre-LayerNorm | Normalization applied inside each sublayer branch rather than on the residual path, leaving gradients an unobstructed route through the network. | Norm inside the branch, clean residual path, trains without warmup
+Contrastive Loss | A loss that pulls matching pairs together and pushes non-matching pairs apart in embedding space. | Pulls positives together, pushes negatives apart
+ECE | Expected Calibration Error: the average gap between confidence and accuracy, computed in confidence bins and weighted by bin population. | Average gap between stated confidence and actual accuracy
+Temperature Scaling | Dividing logits by one learned scalar before softmax to fix overconfidence, without changing which class is predicted. | One scalar on the logits; fixes confidence, never accuracy
+RAG | Retrieval-Augmented Generation: retrieve relevant documents, then condition a generator on them. | Retrieve documents, then generate an answer conditioned on them
+```
 
 **Why Tier 1 is Tier 1:** #4 and #8 are metrics you *named without reporting a value* (Chapter 2, Finding A). Naming a metric guarantees the question. Be able to define it, state your number, and explain what it hides.
 
@@ -230,20 +237,21 @@ These sit on your headline project, name specific mechanisms, and are the most l
 
 Named mechanisms an interviewer can drill two or three levels into.
 
-| # | Term | One-line meaning | Self-check |
-|---|---|---|---|
-| 11 | <abbr title="Multi-Head Attention: several attention functions computed in parallel over different learned projections, then concatenated.">**Multi-Head Attention**</abbr> | Parallel attention heads over different projections, then combined | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 12 | <abbr title="Reducing numeric precision of weights, here from 16-bit floats to 4-bit codes, to cut memory.">**4-bit Quantization**</abbr> | Storing weights in 4 bits instead of 16 to fit memory | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 13 | <abbr title="Parameter-Efficient Fine-Tuning: the family of methods that adapt a model by training a small fraction of its parameters.">**PEFT**</abbr> | Family of methods training a small fraction of parameters | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 14 | <abbr title="A model that takes a query and a document together and scores their relevance jointly, rather than embedding each separately.">**Cross-encoder**</abbr> | Scores a pair jointly rather than embedding each separately | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 15 | <abbr title="A library for fast similarity search over dense vectors, supporting exact and approximate indexes.">**FAISS**</abbr> | Fast similarity search over dense vectors | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 16 | <abbr title="A plot of per-bin accuracy against per-bin confidence; the diagonal is perfect calibration.">**Reliability diagram**</abbr> | Accuracy vs. confidence per bin; diagonal = calibrated | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 17 | <abbr title="A model output that is fluent and confident but unsupported by the retrieved evidence.">**Hallucination**</abbr> | Confident output unsupported by the retrieved context | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 18 | <abbr title="A change in the input distribution between training and deployment while the label relationship stays the same.">**Distribution Shift**</abbr> | Inputs move away from the training distribution | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 19 | <abbr title="A small BAAI general embedding model used to turn text into vectors for retrieval.">**bge-small**</abbr> | Small embedding model turning text into retrieval vectors | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 20 | <abbr title="A transformer encoder trained to map sentences to embeddings whose distances reflect semantic similarity.">**Sentence-Transformers**</abbr> | Encoders producing semantically meaningful sentence vectors | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 21 | <abbr title="An encoder model using disentangled attention over content and position, with ELECTRA-style pretraining in v3.">**DeBERTa-v3**</abbr> | Strong encoder; your stated baseline | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 22 | <abbr title="A 1.5-billion-parameter decoder-only language model from the Qwen2.5 family.">**Qwen2.5-1.5B**</abbr> | The decoder you fine-tuned | ☐ ✅ ☐ ⚠️ ☐ ❌ |
+```self-check
+T: 2
+Multi-Head Attention | Several attention functions computed in parallel over different learned projections, then concatenated. | Parallel attention heads over different projections, then combined
+4-bit Quantization | Reducing numeric precision of weights, here from 16-bit floats to 4-bit codes, to cut memory. | Storing weights in 4 bits instead of 16 to fit memory
+PEFT | Parameter-Efficient Fine-Tuning: the family of methods that adapt a model by training a small fraction of its parameters. | Family of methods training a small fraction of parameters
+Cross-encoder | A model that takes a query and a document together and scores their relevance jointly, rather than embedding each separately. | Scores a pair jointly rather than embedding each separately
+FAISS | A library for fast similarity search over dense vectors, supporting exact and approximate indexes. | Fast similarity search over dense vectors
+Reliability diagram | A plot of per-bin accuracy against per-bin confidence; the diagonal is perfect calibration. | Accuracy vs. confidence per bin; diagonal = calibrated
+Hallucination | A model output that is fluent and confident but unsupported by the retrieved evidence. | Confident output unsupported by the retrieved context
+Distribution Shift | A change in the input distribution between training and deployment while the label relationship stays the same. | Inputs move away from the training distribution
+bge-small | A small BAAI general embedding model used to turn text into vectors for retrieval. | Small embedding model turning text into retrieval vectors
+Sentence-Transformers | A transformer encoder trained to map sentences to embeddings whose distances reflect semantic similarity. | Encoders producing semantically meaningful sentence vectors
+DeBERTa-v3 | An encoder model using disentangled attention over content and position, with ELECTRA-style pretraining in v3. | Strong encoder; your stated baseline
+Qwen2.5-1.5B | A 1.5-billion-parameter decoder-only language model from the Qwen2.5 family. | The decoder you fine-tuned
+```
 
 **Trap in this tier:** #14 and #21. You say you *benchmarked against* a DeBERTa-v3 cross-encoder. Expect *"why would a cross-encoder be structurally advantaged here?"* If you cannot answer that, the comparison looks unconsidered.
 
@@ -253,20 +261,21 @@ Named mechanisms an interviewer can drill two or three levels into.
 
 Real terms you used, drillable but less likely to be the opening move.
 
-| # | Term | One-line meaning | Self-check |
-|---|---|---|---|
-| 23 | <abbr title="Amazon's Shopping Queries dataset labelling query-product pairs as Exact, Substitute, Complement, or Irrelevant.">**ESCI dataset**</abbr> | Amazon query–product relevance data, 4 labels | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 24 | <abbr title="When some classes have far more examples than others, so accuracy is dominated by the majority class.">**Class imbalance**</abbr> | Skewed label distribution; why you chose macro-F1 | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 25 | <abbr title="A dataset of question pairs labelled as duplicates or not, used for paraphrase detection.">**Quora Question Pairs**</abbr> | Duplicate-question dataset | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 26 | <abbr title="Learning vector representations of data where geometric closeness encodes semantic similarity.">**Representation Learning**</abbr> | Learning embeddings where distance means similarity | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 27 | <abbr title="The mechanism letting a model weight different parts of its input when producing each output.">**Attention Mechanisms**</abbr> | Weighting input positions when producing each output | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 28 | <abbr title="Searching by meaning using vector similarity rather than keyword overlap.">**Semantic Search**</abbr> | Retrieval by vector similarity, not keyword match | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 29 | <abbr title="A database that indexes dense vectors for nearest-neighbour retrieval.">**Vector Databases**</abbr> | Storage and indexing for embedding retrieval | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 30 | <abbr title="Systematically categorising the ways a system produces wrong outputs, rather than only measuring how often.">**Failure-Mode Analysis**</abbr> | Categorising *how* a system fails, not just how often | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 31 | <abbr title="How well a model maintains accuracy when inputs differ from its training distribution.">**Distribution-Shift Robustness**</abbr> | Holding up when inputs drift | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 32 | <abbr title="A PyTorch library of image models and pretrained weights.">**timm**</abbr> | Image-model library (your calibration project) | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 33 | <abbr title="Adapting a pretrained model to a specific task by continuing training on task data.">**Fine-Tuning**</abbr> | Continuing training on task data | ☐ ✅ ☐ ⚠️ ☐ ❌ |
-| 34 | <abbr title="Neural architectures built on self-attention rather than recurrence or convolution.">**Transformer Architectures**</abbr> | Self-attention-based architectures | ☐ ✅ ☐ ⚠️ ☐ ❌ |
+```self-check
+T: 3
+ESCI dataset | Amazon's Shopping Queries dataset labelling query-product pairs as Exact, Substitute, Complement, or Irrelevant. | Amazon query–product relevance data, 4 labels
+Class imbalance | When some classes have far more examples than others, so accuracy is dominated by the majority class. | Skewed label distribution; why you chose macro-F1
+Quora Question Pairs | A dataset of question pairs labelled as duplicates or not, used for paraphrase detection. | Duplicate-question dataset
+Representation Learning | Learning vector representations of data where geometric closeness encodes semantic similarity. | Learning embeddings where distance means similarity
+Attention Mechanisms | The mechanism letting a model weight different parts of its input when producing each output. | Weighting input positions when producing each output
+Semantic Search | Searching by meaning using vector similarity rather than keyword overlap. | Retrieval by vector similarity, not keyword match
+Vector Databases | A database that indexes dense vectors for nearest-neighbour retrieval. | Storage and indexing for embedding retrieval
+Failure-Mode Analysis | Systematically categorising the ways a system produces wrong outputs, rather than only measuring how often. | Categorising how a system fails, not just how often
+Distribution-Shift Robustness | How well a model maintains accuracy when inputs differ from its training distribution. | Holding up when inputs drift
+timm | A PyTorch library of image models and pretrained weights. | Image-model library (your calibration project)
+Fine-Tuning | Adapting a pretrained model to a specific task by continuing training on task data. | Continuing training on task data
+Transformer Architectures | Neural architectures built on self-attention rather than recurrence or convolution. | Self-attention-based architectures
+```
 
 ---
 
@@ -295,13 +304,11 @@ For **CUDA** specifically: if you wrote no custom kernels, the honest options ar
 
 ## 🟢 Score Your Surface
 
-Count your marks across Tiers 1–3 (34 terms):
+Your marks across Tiers 1–3 (34 terms) tally automatically as you work through the drill:
 
-| Count | What it means | Action |
-|---|---|---|
-| ✅ **28+** | Strong command of your own claims | Move to Sessions 1–2 depth work |
-| ✅ **20–27** | Solid, with real gaps | Study every ⚠️ before mock rounds |
-| ✅ **< 20** | Your resume outruns your current recall | **Highest-priority fix.** Study first, interview later |
+```self-check-score
+TOTAL: 34
+```
 
 **Every ❌ in Tier 4 should become a resume edit this week**, not a study task.
 
