@@ -26,9 +26,179 @@ Then mark yourself honestly:
 
 Every ❌ is a decision, not a failure. A term you cannot defend is not an asset — it is an interrogation opening you handed over voluntarily.
 
-Rehearse one term at a time out loud — define it, then answer the follow-up — and get feedback before you self-mark:
+Rehearse one term at a time out loud — pick it, get asked a real interrogation question, record and review your answer, then reveal a detailed model answer to compare against. Do this *before* you self-mark below.
 
-<RehearsalStudio prompt="Pick your highest-risk term below. Define it in one clear sentence, then answer the follow-up out loud: &quot;why this, and not the obvious alternative?&quot; Name the term at the start so the review knows what you're defending." minSeconds="15" maxSeconds="45" rubric="tech-term" />
+```rehearsal-drill
+[[QLoRA]]
+T: 1
+Q: What is QLoRA, and why use it instead of full fine-tuning or plain LoRA?
+A: QLoRA fine-tunes a model whose frozen base weights are stored in 4-bit NF4, while training only small LoRA adapter matrices; gradients flow through the dequantized base but only the adapters update. **Why not full fine-tuning:** full FT of a 1.5B model needs weights + gradients + optimizer state + activations in 16-bit — tens of GB — whereas QLoRA fits it in ~`[FILL]` GB on one GPU. **Why not plain LoRA:** plain LoRA still stores the base in 16-bit; NF4 quantization is what makes it fit. The cost is a small quantization error plus a dequant step each forward pass.
+
+[[NF4]]
+T: 1
+Q: What is NF4, and why NF4 rather than int4 or FP4?
+A: NormalFloat4 is a 4-bit datatype whose 16 levels sit at the quantiles of a standard normal, so each level carries equal probability mass. **Why not int4:** int4 spaces levels uniformly and wastes resolution in the tails where pretrained weights — empirically ~N(0,1) — rarely land. NF4 is information-theoretically optimal *given* the normality assumption — say that caveat aloud, it turns a memorized phrase into an understood one. Levels are normalized to [−1, 1] and applied per block with a separate scale.
+
+[[LoRA adapters]]
+T: 1
+Q: What exactly is a LoRA adapter, and why does training under 2% of parameters work?
+A: For a frozen weight W, LoRA learns ΔW = BA where B (d×r) and A (r×k) are thin matrices of rank r ≪ d; only A and B train, scaled by α/r. **Why so few params suffice:** the task-specific update to a pretrained weight is empirically low-rank — most adaptation lives in a small subspace — so a rank-`[FILL]` update captures it. At inference you can merge BA back into W for zero added latency.
+
+[[macro-F1]]
+T: 1
+Q: Define macro-F1 as you computed it, and why macro-F1 rather than accuracy or micro-F1 on ESCI?
+A: Macro-F1 is the unweighted mean of per-class F1 across the four ESCI classes, so every class counts equally regardless of frequency. **Why not accuracy / micro-F1:** ESCI is dominated by 'Exact', so both reward the majority class and hide collapse on rare classes like Complement; macro-F1 penalizes that collapse. My value was `[FILL: macro-F1]`. What it hides: one weak class drags the mean far below the per-example hit rate.
+
+[[RoPE]]
+T: 1
+Q: Derive RoPE from what you want the attention score to satisfy, and why RoPE over learned absolute embeddings?
+A: I want ⟨f(q,m), f(k,n)⟩ to depend only on the offset m − n. Rotating each 2-D pair of the query and key by an angle proportional to position does exactly that: rotation matrices are orthogonal, so R(mθ)ᵀR(nθ) = R((n−m)θ) and the absolute positions cancel. Each dimension pair gets frequency θᵢ = 10000^(−2i/d), a multi-scale clock. **Why not learned absolute embeddings:** those fix a maximum length and encode absolute position; RoPE encodes relative position, extrapolates further, and is applied to q and k only, not v.
+
+[[Pre-LayerNorm]]
+T: 1
+Q: What is Pre-LN, and why Pre-LN over Post-LN?
+A: Pre-LN puts the LayerNorm inside each sublayer branch (norm → attention/FFN → add), so the residual path is a clean sum. **Why not Post-LN:** Post-LN normalizes after the residual add, so every layer's gradient passes through a LayerNorm; at depth that compounds and needs a warmup schedule to train stably. Pre-LN gives well-behaved gradients at initialization and trains without warmup. The cost: a slightly lower performance ceiling and a residual stream that grows across depth, which the final norm must absorb.
+
+[[Contrastive Loss]]
+T: 1
+Q: Write your contrastive loss and explain the temperature; what breaks if it's set wrong?
+A: For matched (anchor, positive) pairs I pull embeddings together and push mismatches apart, e.g. InfoNCE: −log[ exp(sim(zᵢ,zⱼ)/τ) / Σ exp(sim(zᵢ,z_k)/τ) ]. Temperature τ sharpens the softmax over similarities. **Wrong τ:** too low over-weights the hardest (often false) negatives and can collapse the space to a point; too high flattens gradients so fine distinctions never form. Sweet spot ≈ 0.05–0.1 for sentence tasks; mine was `[FILL]`. Watch false negatives — on QQP many in-batch "negatives" are true duplicates.
+
+[[ECE]]
+T: 1
+Q: Define ECE exactly as you computed it, then name three ways the number lies.
+A: Bin predictions by confidence; ECE is the population-weighted average of |accuracy − mean confidence| across bins. **Three ways it lies:** (1) binning — too few bins hide miscalibration, too many make bins noisy; (2) it's an average, so over- and under-confidence in different regions cancel; (3) it's top-label only, so a model can look calibrated overall yet be badly miscalibrated per class. My value was `[FILL]`; adaptive-bin ECE or Brier score address some of these.
+
+[[Temperature Scaling]]
+T: 1
+Q: Derive temperature scaling and its objective; why can one scalar never change accuracy?
+A: Divide every logit by a single learned T > 1 before softmax, and fit T by minimizing NLL on a held-out set. **Why NLL:** it's a proper scoring rule minimized at the true probabilities, and with logit *directions* fixed it has a clean 1-D optimum. **Why accuracy can't change:** dividing by a positive scalar is monotonic — it never moves the argmax, only the confidence. That's also its limit under shift: one global scalar can't track a miscalibration that varies across the input space.
+
+[[RAG]]
+T: 1
+Q: What is RAG, and why retrieve-then-generate instead of fine-tuning the knowledge into the model?
+A: Retrieve relevant documents by dense embedding search, then condition the generator on them so answers are grounded in retrieved text. **Why not bake it into the weights:** retrieval updates instantly (swap the index) with no retraining, can cite sources, and scales to corpora too large to memorize; fine-tuning bakes in stale facts and hallucinates beyond them. The cost is a retrieval stage that can itself fail — which is exactly the failure-mode analysis I did.
+
+[[Multi-Head Attention]]
+T: 2
+Q: Walk the shapes of multi-head attention; why multiple heads, and why the √d scaling?
+A: Each of h heads projects X to Qᵢ, Kᵢ, Vᵢ ∈ ℝ^(seq×d_head), computes softmax(QᵢKᵢᵀ / √d_head)·Vᵢ, and the heads concatenate back to d_model through W_O. **Why multiple heads:** each can attend to a different relation — syntax, position, rare tokens — in its own subspace; a single head must average them. **Why √d_head:** without it, dot products grow with dimension and push softmax into saturation where gradients vanish; dividing by √d_head restores unit variance.
+
+[[4-bit Quantization]]
+T: 2
+Q: What does 4-bit quantization actually store, and why doesn't it destroy the model?
+A: Instead of a 16-bit float per weight, store a 4-bit code indexing one of 16 levels, plus a shared (often per-block) scale to reconstruct approximate values. **Why it survives:** inference is dominated by matrix products that are robust to small per-weight error, per-block scales stop outliers from dominating, and the base is frozen so errors don't compound through training. It's lossy — you trade a small accuracy hit for roughly a 4× memory cut.
+
+[[PEFT]]
+T: 2
+Q: What is PEFT, and when would you NOT use it?
+A: Parameter-Efficient Fine-Tuning is the family (LoRA, adapters, prefix/prompt tuning) that adapts a model by training a small fraction of parameters while freezing the rest. **When not to:** with abundant data and compute where you need maximum task performance, full fine-tuning still edges it; and when the task needs to reshape low-level representations broadly, a tiny low-rank update can underfit. PEFT wins on memory, on storage (swap tiny per-task adapters), and on reduced overfitting with small data.
+
+[[Cross-encoder]]
+T: 2
+Q: What is a cross-encoder, and why is it structurally advantaged over your bi-encoder baseline?
+A: A cross-encoder feeds the query and document *together* through the model, so every query token attends to every document token, then outputs one relevance score. **Why advantaged:** that full cross-attention captures fine-grained interactions a bi-encoder — which embeds each side independently and then dots them — structurally cannot. The trade-off is cost: it must re-run per candidate and can't pre-index, so it's a reranker, not a first-stage retriever. That's the honest reason it beats my setup on accuracy but not on scalability.
+
+[[FAISS]]
+T: 2
+Q: What is FAISS doing, and exact vs approximate search — which did you use and why?
+A: FAISS indexes dense vectors for fast nearest-neighbor search under a chosen metric. **Exact (flat)** scans every vector — correct but O(N) per query. **Approximate (IVF / HNSW)** trades a little recall for large speedups by only searching likely regions. For `[FILL: corpus size]` I used `[FILL: flat/IVF]`; at my scale exact was fine, and I'd move to IVF/HNSW only when latency at N demanded it — knowing the recall@k I'd give up.
+
+[[Reliability diagram]]
+T: 2
+Q: What does a reliability diagram show, and how do you read miscalibration off it?
+A: It plots, per confidence bin, the model's mean confidence (x) against its actual accuracy (y); the 45° diagonal is perfect calibration. **Reading it:** points below the diagonal mean overconfidence (says 0.9, right 0.7 of the time), above means underconfidence. It's the visual companion to ECE — the diagram shows *where* on the confidence range the model is miscalibrated, which the single ECE number hides.
+
+[[Hallucination]]
+T: 2
+Q: Define hallucination precisely in a RAG system, and how do you attribute it?
+A: A hallucination is a fluent, confident output not supported by the retrieved evidence — distinct from a retrieval miss, where the right document was never fetched. **Attribution:** hand the generator the gold/oracle context; if it still fabricates, the fault is generation, if it's now correct, the fault was retrieval. That oracle-context test is how I separated generation-dominant from retrieval-dominant errors instead of lumping all wrong answers together.
+
+[[Distribution Shift]]
+T: 2
+Q: What is distribution shift, and which kind did your calibration project study?
+A: The input distribution P(x) changes between training and deployment while the task P(y|x) is assumed stable — that's covariate shift; the other kinds are label shift and concept drift. **Mine:** synthetic corruption severity (ImageNet-C-style) as a controlled covariate shift, so I could measure calibration as inputs move progressively off-distribution. Naming which shift you mean matters — the fix differs by type.
+
+[[bge-small]]
+T: 2
+Q: Why bge-small for retrieval, and what did you leave on the table?
+A: bge-small is a compact BAAI general-embedding model mapping text to retrieval vectors — cheap to run and index. **Trade-off:** a larger embedder (bge-base/large or an instruction-tuned model) would raise recall, and a cross-encoder reranker on top would raise precision; I chose small for speed and cost at `[FILL]` scale. The retrieval quality I gave up is exactly what a reranking stage would recover.
+
+[[Sentence-Transformers]]
+T: 2
+Q: What do Sentence-Transformers do that a raw BERT [CLS] embedding doesn't?
+A: They fine-tune an encoder — usually with a siamese/contrastive objective and mean-pooling — so cosine distance between sentence embeddings reflects semantic similarity. **Why not raw BERT:** off-the-shelf BERT embeddings are anisotropic and not trained for cosine comparison, so raw [CLS] similarity is weak. The contrastive training is what makes the embedding geometry meaningful.
+
+[[DeBERTa-v3]]
+T: 2
+Q: What makes DeBERTa-v3 strong, and is it a fair baseline for your decoder?
+A: DeBERTa uses disentangled attention — separate content and relative-position vectors — and v3 adds ELECTRA-style replaced-token-detection pretraining, making it very strong per parameter. **Fairness:** as a cross-encoder it's structurally advantaged for pairwise relevance and is far smaller than my 1.5B decoder — so if it wins it may be the architecture, not the size, and if my decoder wins that's a real result. State which won (`[FILL]`) and attribute it to architecture vs scale, not just the number.
+
+[[Qwen2.5-1.5B]]
+T: 2
+Q: Why a 1.5B decoder-only model for a classification task instead of an encoder?
+A: Qwen2.5-1.5B is a decoder-only LM; I adapt it to 4-class relevance by reading logits over the label tokens (or a head on the last hidden state). **Why a decoder for classification:** to demonstrate PEFT on a generative LM, and because the same setup extends to generative relevance and explanations — but I'll own that an encoder like DeBERTa is the more natural, cheaper choice for pure classification. That trade-off is exactly what the project compares.
+
+[[ESCI dataset]]
+T: 3
+Q: What is the ESCI dataset, and what makes its labels tricky?
+A: Amazon's Shopping Queries dataset labels query–product pairs as Exact, Substitute, Complement, or Irrelevant. **Tricky part:** the classes are heavily imbalanced toward Exact, and Substitute vs Complement is genuinely ambiguous even for humans — so label noise bounds achievable accuracy, and macro-F1 is needed to see minority-class performance.
+
+[[Class imbalance]]
+T: 3
+Q: How did class imbalance affect your ESCI work, and what did you do beyond picking macro-F1?
+A: Exact dominates, so a naive model maximizes accuracy by under-predicting rare classes. **Beyond the metric:** the training-side options are class-weighted loss, resampling/oversampling the minority classes, or focal loss; I `[FILL: what you did / would do]`. The honest answer names the metric choice *and* a training-side mitigation, since the metric only measures the problem — it doesn't fix it.
+
+[[Quora Question Pairs]]
+T: 3
+Q: What is QQP, and what is its main evaluation pitfall?
+A: QQP is a paraphrase dataset of question pairs labeled duplicate / not-duplicate, used to train and evaluate sentence similarity. **Pitfall:** transitivity leakage — if (A,B) and (B,C) are duplicates, a random pair-level split can put A–B in train and A–C in test, letting the model memorize the cluster; proper evaluation splits by question cluster. Labels are also crowd-noisy on borderline paraphrases.
+
+[[Representation Learning]]
+T: 3
+Q: What is representation learning, and how do you know a representation is good?
+A: Learning vector encodings where geometric structure — distance, direction — carries semantics, rather than hand-engineering features. **How you know it's good:** it transfers — the embeddings support downstream tasks with little extra training, cluster by meaning, and stay useful off the training distribution. For my contrastive model, "good" meant positives close and negatives far under cosine, verified on held-out pairs.
+
+[[Attention Mechanisms]]
+T: 3
+Q: Explain attention as a mechanism, not a formula; why did it replace recurrence?
+A: Attention lets each output position pull a weighted combination of all input positions, where the weights come from query–key similarity — so the model routes information directly between any two tokens. **Why over recurrence:** RNNs pass information step by step, so long-range dependencies decay and computation is sequential; attention connects distant tokens in one hop and parallelizes across the sequence, which is what let transformers scale.
+
+[[Semantic Search]]
+T: 3
+Q: How is semantic search different from keyword search, and when does it lose?
+A: Semantic search embeds query and documents into a vector space and retrieves by similarity, matching meaning even without shared words. **When it loses:** exact-match needs — part numbers, names, rare tokens — where lexical/BM25 search is stronger, and out-of-domain terms the embedder never learned. The robust answer is hybrid retrieval (dense + sparse), not treating semantic as strictly better.
+
+[[Vector Databases]]
+T: 3
+Q: What does a vector database add over just calling FAISS?
+A: It indexes dense vectors for approximate nearest-neighbor retrieval like FAISS, but adds production concerns: persistence, metadata filtering, CRUD/updates, sharding, and concurrency. **Why it matters:** FAISS is an in-process index; a vector DB is the serving layer around it. At my project scale FAISS alone sufficed — I'd reach for a vector DB when the corpus changes continuously or must be queried by a service.
+
+[[Failure-Mode Analysis]]
+T: 3
+Q: What is failure-mode analysis, and why is it more useful than an accuracy number?
+A: Systematically categorizing *how* a system produces wrong outputs — retrieval miss vs. generation hallucination vs. chunking artifact — not just how often. **Why more useful:** an aggregate error rate tells you nothing about what to fix; a taxonomy with per-mode frequencies tells you where a week of effort buys the most error reduction. It turns "12% wrong" into a prioritized action list.
+
+[[Distribution-Shift Robustness]]
+T: 3
+Q: What does robustness to distribution shift mean, and is calibration part of it?
+A: Robustness is maintaining performance — and honest uncertainty — as inputs drift from training. **Calibration angle:** accuracy robustness and calibration robustness are different; my project showed a model can keep predicting while its confidence becomes a lie under shift. So "robust" must specify which — a model that fails but *knows* it's unsure is safer than one that's confidently wrong.
+
+[[timm]]
+T: 3
+Q: What is timm, and what did you use it for?
+A: timm (PyTorch Image Models) is a library of image architectures and pretrained weights. **Use:** in the calibration project I *consumed* a pretrained classifier from timm as the fixed model whose confidence I measured under shift — I didn't train it, I instrumented it. Being precise that I consumed rather than trained it keeps the claim honest.
+
+[[Fine-Tuning]]
+T: 3
+Q: What is fine-tuning, and how do you decide full vs parameter-efficient?
+A: Continuing training of a pretrained model on task data so its weights specialize. **Full vs PEFT:** full fine-tuning updates all weights — best raw performance, but heavy on memory/storage and prone to overfitting on small data; PEFT (LoRA/adapters) trains a small fraction, fits one GPU, and stores tiny per-task deltas. Decide by data size, compute budget, and whether you need many swappable task variants.
+
+[[Transformer Architectures]]
+T: 3
+Q: What defines a transformer, and what's the difference between encoder-only, decoder-only, and encoder–decoder?
+A: A transformer stacks self-attention and feed-forward blocks with residual connections and no recurrence. **The three forms:** encoder-only (bidirectional attention — BERT/DeBERTa, good for understanding/classification); decoder-only (causal masked attention — Qwen, good for generation); encoder–decoder (T5 — the encoder reads, the decoder generates conditioned on it). Both my projects live here: a decoder I fine-tuned and an encoder I built from scratch.
+```
 
 > [!IMPORTANT]
 > Do this **before** reading Sessions 1–2's answers. Reading the model answer first and then rating yourself ✅ produces a comfortable, useless self-assessment.
