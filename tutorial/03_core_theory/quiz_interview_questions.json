@@ -1,0 +1,232 @@
+{
+  "lesson_title": "Session 3 Chapter Quiz - ML Fundamentals: Core Theory",
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "cq_j1",
+        "question": "What are the three terms in the bias-variance decomposition, and which one can no model reduce?",
+        "complexity": "Easy",
+        "companies": [
+          "General"
+        ],
+        "core_intent": "Fast recall check on the decomposition and the noise floor.",
+        "preparation_guide": "Name all three, then identify irreducible noise as the floor.",
+        "explanation": "Bias squared, variance, and irreducible noise. Bias squared measures how wrong the model class is on average, variance measures sensitivity to the training sample, and the noise term reflects randomness in the data-generating process that no model can predict. Only bias and variance are the model's to trade.",
+        "star_framework_tip": "Answer in one sentence; this is a warm-up and over-explaining wastes round time.",
+        "common_pitfalls": [
+          "Omitting the noise term",
+          "Claiming enough capacity drives all three to zero"
+        ],
+        "references": [
+          {
+            "title": "Hastie, Tibshirani & Friedman — The Elements of Statistical Learning",
+            "url": "https://hastie.su.domains/ElemStatLearn/"
+          }
+        ]
+      },
+      {
+        "id": "cq_j2",
+        "question": "Which prior corresponds to an L1 penalty, and what property does it produce?",
+        "complexity": "Easy",
+        "companies": [
+          "General",
+          "Google"
+        ],
+        "core_intent": "Checks the Laplace/sparsity link rather than rote 'L1 gives sparsity'.",
+        "preparation_guide": "Laplace prior; its sharp peak at zero makes the MAP solution set coefficients exactly to zero.",
+        "explanation": "L1 corresponds to a Laplace, or double-exponential, prior. Its non-smooth peak at zero means the MAP solution frequently sits exactly at zero for many coefficients, producing genuine sparsity and hence feature selection. A Gaussian prior, corresponding to L2, only shrinks coefficients smoothly and essentially never reaches exact zero.",
+        "star_framework_tip": "Give the prior and the geometric reason in one breath.",
+        "common_pitfalls": [
+          "Naming the prior without the sparsity mechanism",
+          "Swapping the Gaussian and Laplace correspondences"
+        ],
+        "references": [
+          {
+            "title": "Hastie, Tibshirani & Friedman — The Elements of Statistical Learning",
+            "url": "https://hastie.su.domains/ElemStatLearn/"
+          }
+        ]
+      },
+      {
+        "id": "cq_j3",
+        "question": "Cross-entropy loss is the negative log-likelihood of which model?",
+        "complexity": "Easy",
+        "companies": [
+          "General"
+        ],
+        "core_intent": "Quick check on the loss-as-likelihood framing.",
+        "preparation_guide": "The categorical (softmax) model; the Gaussian analogue gives MSE.",
+        "explanation": "Cross-entropy is the negative log-likelihood of a categorical model whose class probabilities come from a softmax. The same construction under a Gaussian output distribution yields mean squared error, which is why the choice of loss is really a choice of assumed output noise.",
+        "star_framework_tip": "Add the MSE/Gaussian counterpart unprompted; it shows the pattern rather than a memorized pair.",
+        "common_pitfalls": [
+          "Treating cross-entropy as unrelated to likelihood"
+        ],
+        "references": [
+          {
+            "title": "Hastie, Tibshirani & Friedman — The Elements of Statistical Learning",
+            "url": "https://hastie.su.domains/ElemStatLearn/"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "cq_m1",
+        "question": "A colleague reports that setting weight_decay in Adam changes nothing. Explain and fix.",
+        "complexity": "Medium",
+        "companies": [
+          "Amazon",
+          "Meta"
+        ],
+        "core_intent": "Applied version of the AdamW question, framed as a debugging report.",
+        "preparation_guide": "The L2 term is normalized by the second-moment estimate; switch to AdamW so decay is decoupled.",
+        "explanation": "When weight decay is implemented as an L2 term added to the loss, its gradient passes through Adam's division by the square root of the second-moment estimate. Because that denominator scales with the gradient itself, the decay contribution is largely normalized away, so turning the coefficient up produces little change. The fix is AdamW, which applies the decay directly to the weights outside the adaptive scaling, restoring a monotonic relationship between the coefficient and the resulting weight norm.",
+        "star_framework_tip": "Diagnose the mechanism before prescribing AdamW; the mechanism is what is being tested.",
+        "common_pitfalls": [
+          "Recommending a larger coefficient instead of decoupling",
+          "Claiming the optimizer ignores the argument"
+        ],
+        "references": [
+          {
+            "title": "Loshchilov & Hutter 2019 — Decoupled Weight Decay Regularization",
+            "url": "https://arxiv.org/abs/1711.05101"
+          }
+        ]
+      },
+      {
+        "id": "cq_m2",
+        "question": "You fit a scaler on the full dataset then run k-fold CV. What is wrong and how wrong?",
+        "complexity": "Medium",
+        "companies": [
+          "Amazon",
+          "General"
+        ],
+        "core_intent": "Tests whether the candidate recognizes label-free leakage.",
+        "preparation_guide": "It is leakage; the estimate is optimistically biased. Fit inside each training fold via a pipeline.",
+        "explanation": "The scaler absorbed the mean and variance of the held-out folds, so those folds are no longer genuinely unseen and the cross-validation estimate is optimistically biased. Severity grows as the dataset shrinks and as the preprocessing becomes more data-dependent, so it is mild for simple standardization on large data but severe for feature selection or target-derived encodings. The fix is to place preprocessing inside a pipeline object fitted per fold.",
+        "star_framework_tip": "Note that severity depends on the step and the sample size rather than declaring it uniformly catastrophic.",
+        "common_pitfalls": [
+          "Believing label-free steps cannot leak",
+          "Not proposing the pipeline-per-fold fix"
+        ],
+        "references": [
+          {
+            "title": "Kaufman et al. 2012 — Leakage in Data Mining: Formulation, Detection, and Avoidance",
+            "url": "https://doi.org/10.1145/2382577.2382579"
+          }
+        ]
+      },
+      {
+        "id": "cq_m3",
+        "question": "When does macro-F1 mislead, despite being the right choice for imbalanced data?",
+        "complexity": "Medium",
+        "companies": [
+          "Amazon",
+          "General"
+        ],
+        "core_intent": "Pushes past the standard 'use macro-F1' answer into its limitations.",
+        "preparation_guide": "It hides which class failed and can be dominated by a tiny, noisy class.",
+        "explanation": "Macro-F1 averages per-class F1 with equal weight, which correctly exposes minority-class collapse but conceals which class collapsed, so it must be reported alongside the per-class table. It can also be dominated by an extremely small class whose F1 is high-variance, making the average unstable across evaluation samples. And like every threshold metric it says nothing about calibration, so a model that is well-ranked but overconfident looks fine.",
+        "star_framework_tip": "Give at least two distinct limitations; one sounds rehearsed, two sounds understood.",
+        "common_pitfalls": [
+          "Defending macro-F1 as universally correct",
+          "Missing the small-class variance issue"
+        ],
+        "references": [
+          {
+            "title": "Saito & Rehmsmeier 2015 — The Precision-Recall Plot Is More Informative than the ROC Plot",
+            "url": "https://doi.org/10.1371/journal.pone.0118432"
+          },
+          {
+            "title": "Guo et al. 2017 — On Calibration of Modern Neural Networks",
+            "url": "https://arxiv.org/abs/1706.04599"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "cq_s1",
+        "question": "Connect capacity, regularization, likelihood, optimization, and validation into one causal chain.",
+        "complexity": "Hard",
+        "companies": [
+          "Amazon",
+          "Google",
+          "Meta"
+        ],
+        "core_intent": "The synthesis question; tests whether the fundamentals are one framework or five memorized topics.",
+        "preparation_guide": "Capacity sets the bias-variance position; regularization controls it by encoding a prior; the prior turns MLE into MAP; the optimizer walks that objective; validation determines whether the number means anything.",
+        "explanation": "A model generalizes when capacity is matched to the data, which is the bias-variance position, bounded below by irreducible noise. Regularization controls that capacity without changing architecture, and because a weight penalty is a prior, it is not an arbitrary knob: L2 is a Gaussian prior, L1 a Laplace prior. That prior converts maximum likelihood into maximum a posteriori, so the regularized loss and the MAP estimate are the same object described in two vocabularies. The optimizer, whether SGD with momentum or AdamW, is the machinery that walks that penalized objective downhill, with the learning-rate schedule typically mattering more than the choice itself. Finally, none of it is meaningful without honest measurement: a metric matched to the cost structure and a split that rehearses deployment. If the validation design leaks, every number upstream is fiction.",
+        "star_framework_tip": "Deliver it as a chain with explicit connectives, and end on the validation point so the last thing they hear is rigour.",
+        "common_pitfalls": [
+          "Reciting five definitions with no causal links",
+          "Omitting validation, which is the link that makes the rest measurable"
+        ],
+        "references": [
+          {
+            "title": "Hastie, Tibshirani & Friedman — The Elements of Statistical Learning",
+            "url": "https://hastie.su.domains/ElemStatLearn/"
+          },
+          {
+            "title": "Loshchilov & Hutter 2019 — Decoupled Weight Decay Regularization",
+            "url": "https://arxiv.org/abs/1711.05101"
+          },
+          {
+            "title": "Kaufman et al. 2012 — Leakage in Data Mining: Formulation, Detection, and Avoidance",
+            "url": "https://doi.org/10.1145/2382577.2382579"
+          }
+        ]
+      },
+      {
+        "id": "cq_s2",
+        "question": "You inherit a model with strong offline metrics and no documentation. What do you check first?",
+        "complexity": "Hard",
+        "companies": [
+          "Amazon",
+          "Meta"
+        ],
+        "core_intent": "Tests skeptical audit instincts and prioritization.",
+        "preparation_guide": "Audit the split and the pipeline for leakage first, then metric-to-objective fit, then distribution match.",
+        "explanation": "Start with the evaluation, not the model. Reconstruct how the split was made and check whether it rehearses deployment: grouped entities split randomly, temporal peeking, or preprocessing fitted outside the folds are the highest-prior failures and the ones that most inflate offline numbers. Next check whether the reported metric matches the decision the system drives, since a strong number on the wrong metric is common. Then compare the evaluation distribution against current live traffic for shift. Only after that examine architecture and hyperparameters, because a modelling review conditioned on an invalid evaluation wastes effort.",
+        "star_framework_tip": "Justify the ordering by prior probability and by damage; that reasoning is the senior signal.",
+        "common_pitfalls": [
+          "Beginning with architecture review",
+          "Trusting the reported metric without reconstructing the split"
+        ],
+        "references": [
+          {
+            "title": "Kaufman et al. 2012 — Leakage in Data Mining: Formulation, Detection, and Avoidance",
+            "url": "https://doi.org/10.1145/2382577.2382579"
+          }
+        ]
+      },
+      {
+        "id": "cq_s3",
+        "question": "Under what circumstances would you deliberately accept a higher-bias model?",
+        "complexity": "Hard",
+        "companies": [
+          "Amazon",
+          "General"
+        ],
+        "core_intent": "Tests engineering judgment beyond metric maximization.",
+        "preparation_guide": "Small data, latency and cost budgets, interpretability or regulatory requirements, robustness under shift, and maintainability.",
+        "explanation": "Several circumstances justify it. With little data, a lower-variance high-bias model often generalizes better despite a worse fit. Latency, memory, and cost budgets can rule out the accurate model entirely, and a slightly worse model that meets the service budget is the better system. Interpretability or regulatory requirements may demand a model whose decisions can be explained and audited. Robustness matters too: simpler models frequently degrade more gracefully under distribution shift, and Session 2's calibration work shows that confidence reliability, not just accuracy, is what fails first. Finally, maintainability is a real criterion, since a model the team can debug and retrain reliably beats one that is marginally more accurate and operationally fragile.",
+        "star_framework_tip": "Give at least three distinct categories and tie one to your own project evidence; breadth plus evidence outperforms a single reason.",
+        "common_pitfalls": [
+          "Treating accuracy as the only objective",
+          "Failing to connect the choice to a concrete deployment constraint"
+        ],
+        "references": [
+          {
+            "title": "Hastie, Tibshirani & Friedman — The Elements of Statistical Learning",
+            "url": "https://hastie.su.domains/ElemStatLearn/"
+          },
+          {
+            "title": "Guo et al. 2017 — On Calibration of Modern Neural Networks",
+            "url": "https://arxiv.org/abs/1706.04599"
+          }
+        ]
+      }
+    ]
+  }
+}

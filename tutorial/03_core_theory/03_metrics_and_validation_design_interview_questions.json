@@ -1,0 +1,241 @@
+{
+  "lesson_title": "Metrics & Validation Design",
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "met_j1",
+        "question": "Define precision and recall, and give a scenario where you would prioritize each.",
+        "complexity": "Easy",
+        "companies": [
+          "General",
+          "Amazon"
+        ],
+        "core_intent": "Foundational metric literacy plus whether the candidate reasons from cost structure.",
+        "preparation_guide": "Define both by their denominators, then map to asymmetric costs with one concrete example each.",
+        "explanation": "Precision is the fraction of predicted positives that are correct, so it penalizes false alarms. Recall is the fraction of true positives that were found, so it penalizes misses. Prioritize recall when a miss is expensive, such as screening for a serious disease or flagging fraud for review. Prioritize precision when a false alarm is expensive, such as auto-blocking legitimate email or paging an on-call engineer. The choice is a statement about which error costs more, and the decision threshold is what moves you along the tradeoff.",
+        "star_framework_tip": "State the costs before naming the metric; that ordering is what separates a considered answer from a recited one.",
+        "common_pitfalls": [
+          "Reciting formulas without a cost-based selection rule",
+          "Forgetting that the threshold, not the model, sets the operating point"
+        ],
+        "references": [
+          {
+            "title": "Saito & Rehmsmeier 2015 — The Precision-Recall Plot Is More Informative than the ROC Plot",
+            "url": "https://doi.org/10.1371/journal.pone.0118432"
+          }
+        ]
+      },
+      {
+        "id": "met_j2",
+        "question": "What is cross-validation and why use it instead of a single train/test split?",
+        "complexity": "Easy",
+        "companies": [
+          "General",
+          "Microsoft"
+        ],
+        "core_intent": "Basic validation methodology and awareness of estimator variance.",
+        "preparation_guide": "Rotating folds gives a lower-variance estimate; note the compute cost and that the test set stays separate.",
+        "explanation": "K-fold cross-validation partitions the data into k folds, trains on k-1 and validates on the held-out fold, rotates, and averages the results. Compared with a single split it uses all data for both training and validation across the rotation and yields a lower-variance estimate of generalization, which matters most when the dataset is small. The costs are k times the training compute and the requirement that folds be constructed correctly. The final test set stays outside the entire loop and is touched once.",
+        "star_framework_tip": "Volunteer that the test set stays out of the loop; interviewers listen for it.",
+        "common_pitfalls": [
+          "Confusing the validation folds with the test set",
+          "Assuming random k-fold is always valid regardless of data structure"
+        ],
+        "references": [
+          {
+            "title": "Hastie, Tibshirani & Friedman — The Elements of Statistical Learning",
+            "url": "https://hastie.su.domains/ElemStatLearn/"
+          }
+        ]
+      },
+      {
+        "id": "met_j3",
+        "question": "Why is accuracy a poor metric for imbalanced classification?",
+        "complexity": "Easy",
+        "companies": [
+          "General",
+          "Amazon"
+        ],
+        "core_intent": "Checks the most common metric trap with a concrete illustration.",
+        "preparation_guide": "Give the numeric example of a trivial majority classifier, then name what to use instead.",
+        "explanation": "With heavy imbalance a classifier that always predicts the majority class achieves accuracy equal to the majority prevalence, for example 99 percent when positives are 1 percent, while providing no value. Accuracy also implicitly assumes false positives and false negatives cost the same. Better choices depend on the goal: precision and recall or their F-score at a chosen operating point, PR-AUC for ranking quality on rare positives, and macro-averaged F1 when every class must count equally regardless of frequency.",
+        "star_framework_tip": "Lead with the numeric example. It is faster and more convincing than the abstract statement.",
+        "common_pitfalls": [
+          "Not quantifying the trivial-classifier baseline",
+          "Suggesting ROC-AUC as the fix without noting its own imbalance weakness"
+        ],
+        "references": [
+          {
+            "title": "Saito & Rehmsmeier 2015 — The Precision-Recall Plot Is More Informative than the ROC Plot",
+            "url": "https://doi.org/10.1371/journal.pone.0118432"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "met_m1",
+        "question": "Why can ROC-AUC look excellent under heavy class imbalance while the model is practically useless?",
+        "complexity": "Medium",
+        "companies": [
+          "Amazon",
+          "Google",
+          "Meta"
+        ],
+        "core_intent": "The classic trap; the bar is naming the denominator mechanism, not just 'use PR instead'.",
+        "preparation_guide": "Contrast the denominators of FPR and precision, then give the operating-point consequence.",
+        "explanation": "ROC plots true positive rate against false positive rate, and FPR divides false positives by the entire negative class. When negatives vastly outnumber positives, even a large absolute number of false positives is a tiny rate, so the ROC curve stays close to the top-left and AUC looks excellent. Precision instead divides by predicted positives, a much smaller denominator, so the same false positives collapse it. Concretely, at 0.5 percent prevalence a model can post ROC-AUC near 0.95 while a realistic operating point yields several false alarms per true hit. PR-AUC reflects what an alert consumer experiences, and should be quoted against its baseline, which is the prevalence.",
+        "star_framework_tip": "Give the denominator contrast as a single sentence; it is the crispest possible form of this answer.",
+        "common_pitfalls": [
+          "Stating the preference for PR without the mechanism",
+          "Quoting PR-AUC without its prevalence baseline",
+          "Confusing this with a calibration problem"
+        ],
+        "references": [
+          {
+            "title": "Saito & Rehmsmeier 2015 — The Precision-Recall Plot Is More Informative than the ROC Plot",
+            "url": "https://doi.org/10.1371/journal.pone.0118432"
+          },
+          {
+            "title": "Davis & Goadrich 2006 — The Relationship Between Precision-Recall and ROC Curves",
+            "url": "https://doi.org/10.1145/1143844.1143874"
+          }
+        ]
+      },
+      {
+        "id": "met_m2",
+        "question": "What is data leakage? Give two mechanisms by which it enters a careful pipeline.",
+        "complexity": "Medium",
+        "companies": [
+          "Amazon",
+          "Meta"
+        ],
+        "core_intent": "High-signal question because leakage is the most common cause of validation-to-production collapse.",
+        "preparation_guide": "Define it, then give distinct mechanisms: preprocessing fitted outside folds, grouped rows split randomly, temporal peeking, target-derived features.",
+        "explanation": "Leakage is any information from outside the training fold influencing the model, inflating validation scores that then collapse in deployment. One mechanism is preprocessing fitted on the full dataset, such as scaler statistics, feature selection, or vocabulary, which carries distributional information about held-out folds into training even though no labels were used. A second is grouped data split randomly, so the same user, patient, or question cluster appears in both train and test and the model memorizes the entity; the transitivity structure of duplicate-question datasets is a concrete case. Others include temporal peeking and target-derived features available only after the outcome. The audit rule is that everything fitted is fitted inside the fold, and every split rehearses deployment.",
+        "star_framework_tip": "Name the audit rule at the end; it compresses the whole answer into something memorable.",
+        "common_pitfalls": [
+          "Only citing the obvious 'test data in training' case",
+          "Believing unsupervised preprocessing is automatically safe"
+        ],
+        "references": [
+          {
+            "title": "Kaufman et al. 2012 — Leakage in Data Mining: Formulation, Detection, and Avoidance",
+            "url": "https://doi.org/10.1145/2382577.2382579"
+          }
+        ]
+      },
+      {
+        "id": "met_m3",
+        "question": "You must evaluate a model that will predict next quarter's demand. Design the validation.",
+        "complexity": "Medium",
+        "companies": [
+          "Amazon",
+          "General"
+        ],
+        "core_intent": "Applied validation design where the naive default is actively wrong.",
+        "preparation_guide": "Temporal split with rolling-origin evaluation; no shuffling; features computed only from past data.",
+        "explanation": "Because the model will always meet future data, validation must rehearse that: train on the past and evaluate on a later held-out period, never a random shuffle. Rolling-origin or expanding-window evaluation repeats this across several cut points so the estimate is not hostage to one period's idiosyncrasies. Every feature must be computable from information available at prediction time, which rules out aggregates spanning the target window. Report performance per period rather than only pooled, since a single average hides degradation over time, and compare against a seasonal-naive baseline so the number has context.",
+        "star_framework_tip": "Mention the seasonal-naive baseline; forecasting interviewers weight it heavily.",
+        "common_pitfalls": [
+          "Proposing random k-fold on time series",
+          "Computing features with windows that span the prediction target",
+          "Reporting only a pooled average across periods"
+        ],
+        "references": [
+          {
+            "title": "Kaufman et al. 2012 — Leakage in Data Mining: Formulation, Detection, and Avoidance",
+            "url": "https://doi.org/10.1145/2382577.2382579"
+          },
+          {
+            "title": "Hastie, Tibshirani & Friedman — The Elements of Statistical Learning",
+            "url": "https://hastie.su.domains/ElemStatLearn/"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "met_s1",
+        "question": "A stakeholder asks whether the model is good enough to ship. How do you answer?",
+        "complexity": "Hard",
+        "companies": [
+          "Amazon",
+          "Meta"
+        ],
+        "core_intent": "Tests translation from metrics into decisions, which is much of the Applied Scientist job.",
+        "preparation_guide": "Start from the decision and the cost structure, choose the metric at the deployment operating point, quantify uncertainty, and state what would change the answer.",
+        "explanation": "Begin from the decision the number drives and who bears each error type, because that determines which metric is honest. Then report performance at the operating point the product will actually use, not an aggregate over thresholds, and alongside a meaningful baseline such as the current system or a naive rule. Attach uncertainty: confidence intervals from bootstrapping matter when the evaluation set is small, and a difference inside the interval is not a difference. If the system acts on predicted probabilities rather than rankings, include calibration, since accuracy metrics cannot see confidence reliability. Finally state the conditions under which the answer changes, such as shifted traffic mix, and propose the monitoring that would detect it.",
+        "star_framework_tip": "Structure as decision, metric, baseline, uncertainty, monitoring. Ending on what would change your answer signals genuine calibration.",
+        "common_pitfalls": [
+          "Answering with a single context-free number",
+          "Omitting uncertainty or a baseline",
+          "Ignoring calibration when probabilities drive downstream actions"
+        ],
+        "references": [
+          {
+            "title": "Guo et al. 2017 — On Calibration of Modern Neural Networks",
+            "url": "https://arxiv.org/abs/1706.04599"
+          },
+          {
+            "title": "Saito & Rehmsmeier 2015 — The Precision-Recall Plot Is More Informative than the ROC Plot",
+            "url": "https://doi.org/10.1371/journal.pone.0118432"
+          }
+        ]
+      },
+      {
+        "id": "met_s2",
+        "question": "Two models differ by 0.4 points of macro-F1 on your evaluation set. Is that a real difference?",
+        "complexity": "Hard",
+        "companies": [
+          "Google",
+          "Amazon"
+        ],
+        "core_intent": "Statistical rigour about model comparison, which most candidates skip entirely.",
+        "preparation_guide": "Probably not without evidence: quantify uncertainty via bootstrap or paired tests, and account for selection effects.",
+        "explanation": "Not without evidence. A point estimate difference of that size is often inside the sampling noise of a modest evaluation set, so the first step is to quantify it: bootstrap the evaluation set to obtain a confidence interval on the difference, or use a paired test over per-example outcomes since the two models see identical data and pairing removes much of the variance. Also consider selection effects: if the better model was chosen after many comparisons on the same set, the winner's advantage is optimistically biased and needs confirmation on a fresh split. Finally ask whether 0.4 points is material to the decision at all, since a statistically real but operationally irrelevant gap should not drive a migration.",
+        "star_framework_tip": "Separate statistical significance from practical significance explicitly; senior interviewers listen for both.",
+        "common_pitfalls": [
+          "Accepting the point estimate as decisive",
+          "Using an unpaired test when the models were evaluated on identical examples",
+          "Ignoring multiple-comparison effects from repeated model selection"
+        ],
+        "references": [
+          {
+            "title": "Hastie, Tibshirani & Friedman — The Elements of Statistical Learning",
+            "url": "https://hastie.su.domains/ElemStatLearn/"
+          }
+        ]
+      },
+      {
+        "id": "met_s3",
+        "question": "Your offline metric improves but the online A/B test shows no lift. Enumerate the possible explanations.",
+        "complexity": "Hard",
+        "companies": [
+          "Amazon",
+          "Meta",
+          "Google"
+        ],
+        "core_intent": "The classic offline-online gap; tests systematic reasoning about measurement validity.",
+        "preparation_guide": "Cover metric-objective mismatch, distribution mismatch, feedback loops, experiment power, and system-level effects such as latency.",
+        "explanation": "Several explanations compete. The offline metric may not be a proxy for the business objective, so genuine improvement in ranking quality need not move engagement or revenue. The offline evaluation distribution may differ from live traffic, particularly when logged data comes from the previous policy, which creates selection bias that off-policy correction is designed to address. Feedback loops mean the new model changes the data it later sees, so short-horizon effects can be misleading. The experiment itself may be underpowered or contaminated by network effects between arms. And system-level factors such as added latency can offset model gains, since slower responses reduce engagement independently of quality. Distinguish them by checking power first, then comparing offline and online input distributions, then instrumenting the serving path.",
+        "star_framework_tip": "Order the hypotheses and give the discriminating check for each. Mentioning the logging-policy bias is a strong differentiator.",
+        "common_pitfalls": [
+          "Assuming the online test must be wrong",
+          "Overlooking latency or other serving-side effects",
+          "Not questioning experiment power before reasoning about modelling"
+        ],
+        "references": [
+          {
+            "title": "Saito & Rehmsmeier 2015 — The Precision-Recall Plot Is More Informative than the ROC Plot",
+            "url": "https://doi.org/10.1371/journal.pone.0118432"
+          },
+          {
+            "title": "Kaufman et al. 2012 — Leakage in Data Mining: Formulation, Detection, and Avoidance",
+            "url": "https://doi.org/10.1145/2382577.2382579"
+          }
+        ]
+      }
+    ]
+  }
+}

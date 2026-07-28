@@ -1,0 +1,239 @@
+{
+  "lesson_title": "Generalization: Bias-Variance & Regularization-as-Priors",
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "gen_j1",
+        "question": "Explain the bias-variance tradeoff.",
+        "complexity": "Easy",
+        "companies": [
+          "General",
+          "Amazon"
+        ],
+        "core_intent": "Checks whether the candidate can state the decomposition rather than gesture at 'simple vs complex'.",
+        "preparation_guide": "Name the three terms, say which direction each moves with capacity, and mention the noise floor. Thirty seconds, no more.",
+        "explanation": "For squared-error loss, expected test error at a point decomposes into bias squared (error from the model class being wrong on average), variance (sensitivity of the fit to the particular training sample), and irreducible noise. Increasing capacity lowers bias and raises variance, so total error is U-shaped with a minimum at intermediate capacity. The noise term is a property of the data-generating process and no model can beat it.",
+        "star_framework_tip": "Lead with the three terms by name, then the direction each moves. Stop and let them ask the follow-up.",
+        "common_pitfalls": [
+          "Describing it only qualitatively as 'simple vs complex models'",
+          "Forgetting the irreducible noise term",
+          "Claiming the decomposition holds for any loss function"
+        ],
+        "references": [
+          {
+            "title": "Hastie, Tibshirani & Friedman — The Elements of Statistical Learning",
+            "url": "https://hastie.su.domains/ElemStatLearn/"
+          },
+          {
+            "title": "Belkin et al. 2019 — Reconciling modern ML practice and the bias-variance trade-off",
+            "url": "https://arxiv.org/abs/1812.11118"
+          }
+        ]
+      },
+      {
+        "id": "gen_j2",
+        "question": "What is overfitting, and how would you detect it from learning curves?",
+        "complexity": "Easy",
+        "companies": [
+          "General",
+          "Microsoft"
+        ],
+        "core_intent": "Tests whether the candidate can diagnose from evidence rather than define from memory.",
+        "preparation_guide": "Contrast the two signatures: both-high-and-close means bias; low-train-with-a-large-gap means variance. Then give the different fixes.",
+        "explanation": "Overfitting is fitting sample-specific noise so that training error is low while validation error is much higher. The learning-curve signature is a large and widening train-validation gap. Underfitting instead shows both curves high and close together, because the model cannot fit even the training data. The fixes differ: overfitting wants more data, stronger regularization, or less capacity; underfitting wants more capacity, better features, or less regularization.",
+        "star_framework_tip": "Name the signature first, then the fix that follows from it. Diagnosis before prescription.",
+        "common_pitfalls": [
+          "Prescribing 'more data' for every problem including underfitting",
+          "Reading a small gap as proof of a good model when both errors are high"
+        ],
+        "references": [
+          {
+            "title": "Hastie, Tibshirani & Friedman — The Elements of Statistical Learning",
+            "url": "https://hastie.su.domains/ElemStatLearn/"
+          }
+        ]
+      },
+      {
+        "id": "gen_j3",
+        "question": "What is the difference between L1 and L2 regularization?",
+        "complexity": "Easy",
+        "companies": [
+          "General",
+          "Google"
+        ],
+        "core_intent": "The most common regularization opener; checks for the sparsity property, not just 'both shrink weights'.",
+        "preparation_guide": "L1 zeroes coefficients exactly (feature selection); L2 shrinks smoothly. Add when you would choose each.",
+        "explanation": "L1 penalizes the sum of absolute weights and drives many coefficients to exactly zero, producing sparse, feature-selected models. L2 penalizes squared weights and shrinks them smoothly toward zero without eliminating them, which is more stable when features are correlated. Choose L1 when you want selection or interpretability, L2 as the stable default, and elastic net when you want both.",
+        "star_framework_tip": "Give the sparsity contrast in one sentence, then the selection criterion in one more.",
+        "common_pitfalls": [
+          "Saying only 'both prevent overfitting' without the sparsity distinction",
+          "Claiming L1 is always better for high-dimensional data, ignoring its instability among correlated features"
+        ],
+        "references": [
+          {
+            "title": "Hastie, Tibshirani & Friedman — The Elements of Statistical Learning",
+            "url": "https://hastie.su.domains/ElemStatLearn/"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "gen_m1",
+        "question": "Show that L2 regularization is equivalent to a Gaussian prior on the weights.",
+        "complexity": "Medium",
+        "companies": [
+          "Amazon",
+          "Google",
+          "Meta"
+        ],
+        "core_intent": "The key bridge between regularization and Bayesian estimation; separates memorizers from candidates who understand why penalties work.",
+        "preparation_guide": "Write the MAP objective, substitute the Gaussian log-prior, and identify the penalty coefficient. Three lines.",
+        "explanation": "MAP estimation maximizes log p(D|w) + log p(w). Under a zero-mean Gaussian prior w ~ N(0, tau^2 I), the log-prior is -||w||^2/(2 tau^2) plus a constant. Negating to a minimization gives the negative log-likelihood plus an L2 penalty with lambda = sigma^2/tau^2 once the Gaussian likelihood's noise variance is folded in. So the penalty strength is the ratio of noise variance to prior variance: more noise or a tighter prior both mean stronger regularization. L1 arises identically from a Laplace prior, whose sharp peak at zero produces exact sparsity.",
+        "star_framework_tip": "Derive it rather than assert it; then state the physical meaning of lambda = sigma^2/tau^2, which shows understanding beyond the algebra.",
+        "common_pitfalls": [
+          "Asserting the equivalence without deriving it",
+          "Getting the direction backwards: larger lambda is a tighter, not wider, prior",
+          "Not knowing the L1/Laplace counterpart"
+        ],
+        "references": [
+          {
+            "title": "Hastie, Tibshirani & Friedman — The Elements of Statistical Learning",
+            "url": "https://hastie.su.domains/ElemStatLearn/"
+          },
+          {
+            "title": "Bishop — Pattern Recognition and Machine Learning (ch. 3)",
+            "url": "https://www.microsoft.com/en-us/research/publication/pattern-recognition-machine-learning/"
+          }
+        ]
+      },
+      {
+        "id": "gen_m2",
+        "question": "Name three ways to regularize a neural network that do not add a penalty term to the loss.",
+        "complexity": "Medium",
+        "companies": [
+          "Meta",
+          "General"
+        ],
+        "core_intent": "Tests breadth beyond L1/L2 and whether the candidate understands regularization as variance reduction rather than as a formula.",
+        "preparation_guide": "Early stopping, dropout, data augmentation. Explain the mechanism of each in one clause.",
+        "explanation": "Early stopping halts training before the model fits sample noise, which implicitly limits effective capacity. Dropout randomly zeroes units during training, injecting noise and forcing redundant representations, and approximates an ensemble average at test time. Data augmentation applies label-preserving transformations, enlarging the effective dataset and encoding invariances directly. Label smoothing and batch normalization also act as mild regularizers. The unifying idea is that regularization is any mechanism that reduces variance, not specifically an L-p term.",
+        "star_framework_tip": "List three with mechanisms, then give the unifying definition. The definition is what scores.",
+        "common_pitfalls": [
+          "Listing techniques without mechanisms",
+          "Claiming dropout is used at inference time"
+        ],
+        "references": [
+          {
+            "title": "Srivastava et al. 2014 — Dropout",
+            "url": "https://jmlr.org/papers/v15/srivastava14a.html"
+          }
+        ]
+      },
+      {
+        "id": "gen_m3",
+        "question": "How do you choose the regularization strength lambda in practice?",
+        "complexity": "Medium",
+        "companies": [
+          "General",
+          "Amazon"
+        ],
+        "core_intent": "Checks practical judgment and whether the candidate protects the test set.",
+        "preparation_guide": "Cross-validated search on the metric you actually care about; never tune on test; watch for leakage in the CV pipeline.",
+        "explanation": "Sweep lambda over a log-spaced grid and select by cross-validated performance on the metric that matches the deployment cost structure, not on training loss. The test set stays untouched throughout. Two practical cautions: everything fitted (scalers, feature selection) must be fitted inside each training fold or the selection is optimistically biased, and when the validation set is small the selected lambda is itself noisy, so prefer a value in a stable region of the curve rather than the exact argmin.",
+        "star_framework_tip": "Mention protecting the test set unprompted; interviewers notice when a candidate volunteers it.",
+        "common_pitfalls": [
+          "Tuning on the test set",
+          "Selecting by training loss",
+          "Fitting preprocessing outside the CV folds"
+        ],
+        "references": [
+          {
+            "title": "Hastie, Tibshirani & Friedman — The Elements of Statistical Learning",
+            "url": "https://hastie.su.domains/ElemStatLearn/"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "gen_s1",
+        "question": "What is double descent, and how does it revise the classical bias-variance picture?",
+        "complexity": "Hard",
+        "companies": [
+          "Google",
+          "Meta",
+          "OpenAI"
+        ],
+        "core_intent": "Frontier awareness: whether the candidate knows the classical U-curve is incomplete for over-parameterized models.",
+        "preparation_guide": "Describe the curve shape, name the interpolation threshold, and give the implicit-regularization explanation.",
+        "explanation": "As capacity grows, test error first follows the classical U-curve, peaks at the interpolation threshold where the model exactly fits the training set, and then descends again in the over-parameterized regime. The mechanism is that past interpolation there are many zero-training-error solutions, and the optimizer's implicit bias selects a low-norm, smoother one, so effective variance falls again. This means the monotonic rule 'more capacity implies more variance' holds only below the interpolation threshold, which is why very large models can generalize well despite classical theory predicting otherwise.",
+        "star_framework_tip": "Volunteer this unprompted when asked the basic bias-variance question at a senior level; it signals you read past the textbook.",
+        "common_pitfalls": [
+          "Treating double descent as contradicting bias-variance rather than extending it",
+          "Being unable to name the interpolation threshold as the peak location"
+        ],
+        "references": [
+          {
+            "title": "Belkin et al. 2019 — Reconciling modern ML practice and the bias-variance trade-off",
+            "url": "https://arxiv.org/abs/1812.11118"
+          },
+          {
+            "title": "Nakkiran et al. 2021 — Deep Double Descent",
+            "url": "https://arxiv.org/abs/1912.02292"
+          }
+        ]
+      },
+      {
+        "id": "gen_s2",
+        "question": "A model has high bias and high variance simultaneously. Is that possible, and how would you proceed?",
+        "complexity": "Hard",
+        "companies": [
+          "Amazon",
+          "General"
+        ],
+        "core_intent": "Probes whether the candidate treats bias and variance as a rigid dichotomy or as independent quantities.",
+        "preparation_guide": "Yes, it is possible; they are separate terms, not endpoints of one slider. Diagnose which dominates before acting.",
+        "explanation": "Yes. Bias and variance are separate non-negative terms, not two ends of one axis, so a badly specified model fitted on too little data can be wrong on average and unstable across samples at once. A deep network on a few hundred noisy examples with poor features is a typical case. Proceed by diagnosing the dominant term rather than guessing: learning curves versus training-set size separate them, since variance-dominated error falls with more data while bias-dominated error plateaus. Fix the dominant term first, because the corrective actions oppose each other.",
+        "star_framework_tip": "Reject the false dichotomy explicitly, then give the diagnostic that distinguishes them. Do not just answer 'yes'.",
+        "common_pitfalls": [
+          "Insisting the two must trade off, so both cannot be high",
+          "Prescribing fixes before diagnosing which term dominates"
+        ],
+        "references": [
+          {
+            "title": "Hastie, Tibshirani & Friedman — The Elements of Statistical Learning",
+            "url": "https://hastie.su.domains/ElemStatLearn/"
+          }
+        ]
+      },
+      {
+        "id": "gen_s3",
+        "question": "Your model performs well in cross-validation but degrades badly in production. Walk through your hypotheses in priority order.",
+        "complexity": "Hard",
+        "companies": [
+          "Amazon",
+          "Meta"
+        ],
+        "core_intent": "The most realistic senior scenario; tests systematic debugging rather than a single guess.",
+        "preparation_guide": "Order by prior probability: leakage, split design mismatch, distribution shift, then the metric itself.",
+        "explanation": "First hypothesis is leakage, because it is both the most common and the most damaging: any quantity fitted outside the training folds, a target-derived feature, or grouped rows split randomly will inflate cross-validation without helping production. Second is split design not rehearsing deployment, for example random splits when the model actually meets future data or unseen users. Third is genuine distribution shift between training data and live traffic, which the calibration literature shows can hold accuracy while destroying confidence reliability. Fourth is the metric itself measuring something other than the business decision. Distinguish them by evidence: leakage shows implausibly high validation scores and feature importance dominated by ID-like features; shift shows input-distribution drift with a stable pipeline.",
+        "star_framework_tip": "Give the ordered list with the reason for the ordering, then say how you would distinguish the top hypotheses. Ordering is the senior signal.",
+        "common_pitfalls": [
+          "Jumping straight to 'distribution shift' without ruling out leakage",
+          "Offering a flat list with no prioritization or discriminating test"
+        ],
+        "references": [
+          {
+            "title": "Kaufman et al. 2012 — Leakage in Data Mining: Formulation, Detection, and Avoidance",
+            "url": "https://doi.org/10.1145/2382577.2382579"
+          },
+          {
+            "title": "Guo et al. 2017 — On Calibration of Modern Neural Networks",
+            "url": "https://arxiv.org/abs/1706.04599"
+          }
+        ]
+      }
+    ]
+  }
+}

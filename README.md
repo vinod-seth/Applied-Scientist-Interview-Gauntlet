@@ -93,7 +93,7 @@ Built to the **Resume-to-Offer** archetype: the syllabus below is *derived* from
 |---|---|---|---|
 | 1 | Project Deep-Dives: Fine-Tuning & Architecture | QLoRA/NF4, LoRA math, GPU memory accounting, RoPE derivation, Pre-LN, contrastive loss | ✅ Delivered |
 | 2 | Project Deep-Dives: Systems & Evaluation | Failure-mode definitions, sweep design & oracle test, chunking mechanics, judge validity, ECE pathologies, temperature scaling limits, shift mechanism, abstention | ✅ Delivered |
-| 3 | ML Fundamentals: Core Theory | Bias–variance, regularization, probabilistic foundations, optimization, metrics | 🔒 Locked |
+| 3 | ML Fundamentals: Core Theory | Bias–variance, regularization-as-priors, MLE/MAP, SGD→AdamW, metrics & validation design | ✅ Delivered |
 | 4 | ML Fundamentals: Deep Learning & Transformers | Backprop mechanics, normalization, attention variants, training pathologies | 🔒 Locked |
 | 5 | LLMs, Fine-Tuning & Retrieval | PEFT landscape, decoding, scaling behavior, RAG design, evaluating LLM systems | 🔒 Locked |
 | 6 | Coding: DSA & Algorithms | Interview patterns under pressure; clarify → approach → narrate → test → optimize | 🔒 Locked |

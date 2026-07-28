@@ -2,6 +2,26 @@
 
 All notable changes to this course are documented here. Versioning follows `MAJOR.MINOR`.
 
+## [1.5] — 2026-07-28
+
+### Added
+- **Session 3 — ML Fundamentals: Core Theory** (`tutorial/03_core_theory/`), replacing its locked stub. This session targets the ML-breadth round's rapid-fire fundamentals, where the bar is *correct → compressed → caveated*, not depth-per-topic:
+  - Session README with the scope brief framed as "the headline everyone knows vs. the caveat that actually scores," plus the connective chain **capacity → prior → penalized likelihood → optimizer → honest measurement**.
+  - Lesson 1: Generalization — the bias–variance decomposition (with the irreducible-noise floor and double descent as its limit), regularization as variance-for-bias, and the L2 = Gaussian prior / L1 = Laplace prior derivation.
+  - Lesson 2: Estimation & Optimization — cross-entropy as negative log-likelihood, MLE→MAP, the SGD→momentum→adaptive→Adam→AdamW genealogy with the problem each step fixes, and why decoupled weight decay is not cosmetic.
+  - Lesson 3: Metrics & Validation Design — metric choice as a statement about cost structure, the ROC-vs-PR imbalance mechanism, and split design as deployment rehearsal (grouped/temporal splits, the leakage audit rule).
+  - Lesson 4: Rapid-fire rehearsal plus a 12-question **mock breadth round** delivered turn-by-turn, an honest self-assessment table, and the synthesis "chain question."
+  - Chapter quiz (12 questions + 2 reflections) and four interview suites (junior/mid/senior, 3 each) totalling **36 questions**.
+  - Armory notebook `core_theory_lab.ipynb`: bias–variance measured by Monte-Carlo resampling, L1/L2 shrinkage paths, numerical verification that Ridge equals Gaussian-prior MAP, optimizer trajectories on an ill-conditioned quadratic, the Adam-vs-AdamW decay sweep, and the ROC/PR imbalance trap.
+- Rehearsal drills embedded in every Session 3 lesson, using the iterative coaching loop (coach evaluates → you refine → re-evaluate until an interviewer would move on).
+
+### Changed
+- Session 3 uses the **simplified, de-gamed format** — no XP, tiers, or assessment gating — matching the updated `course-generation-guidelines/interview_prep` rules. Sessions 1–2 retain their original game mechanics; the course README's global mastery rules still describe those.
+
+### Fixed
+- Core Theory Lab optimizer demo: the initial configuration compared SGD, momentum, and Adam at learning rates where **momentum and Adam both finished worse than plain SGD**, contradicting the lesson they were built to demonstrate. SGD and momentum now share a matched learning rate (the fair comparison, where momentum wins ~6×), and the adaptive methods use their own. The table now reports loss at three checkpoints so momentum's characteristic early overshoot is visible rather than looking like a failure.
+- Core Theory Lab AdamW demo: the original two-coordinate version showed both coordinates landing on identical values, so it did not actually demonstrate the decoupling claim. Replaced with a decay-coefficient sweep, which shows the sharper and more useful result — under L2-in-Adam the final weight is **unchanged to five decimal places as λ sweeps 0 → 1.0** (the knob normalizes itself away), while AdamW's weight shrinks monotonically.
+
 ## [1.3] — 2026-07-14
 
 ### Added

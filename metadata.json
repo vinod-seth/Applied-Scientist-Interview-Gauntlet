@@ -4,17 +4,24 @@
   "visibility": "public",
   "visibility_note": "Public temporarily so Colab notebook links resolve without auth. Contains a scored assessment of a named candidate; guideline 04 default is private. Revisit before wider sharing.",
   "domain": "Machine Learning Interview Preparation",
-  "tech_stack": ["Python", "PyTorch", "Hugging Face", "PEFT", "FAISS", "C++"],
+  "tech_stack": [
+    "Python",
+    "PyTorch",
+    "Hugging Face",
+    "PEFT",
+    "FAISS",
+    "C++"
+  ],
   "difficulty": "advanced",
   "prerequisites": [
     "M.Tech-level ML and deep learning theory",
     "Hands-on experience with the four resume projects this course defends",
     "Comfort with PyTorch and C++ DSA"
   ],
-  "estimated_hours": 45,
+  "estimated_hours": 49,
   "modules": 9,
-  "lessons": 27,
-  "version": "1.4",
+  "lessons": 31,
+  "version": "1.5",
   "delivery_note": "Sessions are generated one at a time. The curriculum lists ONLY delivered content so the portal never points at a file that does not exist yet. Each new session appends a module here. The full 9-session plan lives in README.md.",
   "curriculum": [
     {
@@ -25,19 +32,25 @@
           "id": "m0_l1",
           "title": "Course Overview & Structure",
           "defaultMode": "mdx",
-          "modes": { "mdx": "README.md" }
+          "modes": {
+            "mdx": "README.md"
+          }
         },
         {
           "id": "m0_l2",
           "title": "Progress & Metric Vault",
           "defaultMode": "mdx",
-          "modes": { "mdx": "PROGRESS.md" }
+          "modes": {
+            "mdx": "PROGRESS.md"
+          }
         },
         {
           "id": "m0_l3",
           "title": "The Round Playbook: Four AS Round Types",
           "defaultMode": "mdx",
-          "modes": { "mdx": "playbooks/round_playbook.md" }
+          "modes": {
+            "mdx": "playbooks/round_playbook.md"
+          }
         }
       ]
     },
@@ -49,37 +62,49 @@
           "id": "d_ch0",
           "title": "Chapter 0 — Target Lock",
           "defaultMode": "mdx",
-          "modes": { "mdx": "dossier/00_target_lock.md" }
+          "modes": {
+            "mdx": "dossier/00_target_lock.md"
+          }
         },
         {
           "id": "d_ch1",
           "title": "Chapter 1 — The Amazon Applied Scientist Loop",
           "defaultMode": "mdx",
-          "modes": { "mdx": "dossier/01_company_dossier.md" }
+          "modes": {
+            "mdx": "dossier/01_company_dossier.md"
+          }
         },
         {
           "id": "d_ch2",
           "title": "Chapter 2 — Resume Audit & Score",
           "defaultMode": "mdx",
-          "modes": { "mdx": "dossier/02_resume_audit_and_score.md" }
+          "modes": {
+            "mdx": "dossier/02_resume_audit_and_score.md"
+          }
         },
         {
           "id": "d_ch3",
           "title": "Chapter 3 — Your Own Tech Stack, Defined",
           "defaultMode": "mdx",
-          "modes": { "mdx": "dossier/03_your_tech_stack_defined.md" }
+          "modes": {
+            "mdx": "dossier/03_your_tech_stack_defined.md"
+          }
         },
         {
           "id": "d_ch4",
           "title": "Chapter 4 — The Introduction",
           "defaultMode": "mdx",
-          "modes": { "mdx": "dossier/04_the_introduction.md" }
+          "modes": {
+            "mdx": "dossier/04_the_introduction.md"
+          }
         },
         {
           "id": "d_ch5",
           "title": "Chapter 5 — Gap Map & Study Plan",
           "defaultMode": "mdx",
-          "modes": { "mdx": "dossier/05_gap_map_and_study_plan.md" }
+          "modes": {
+            "mdx": "dossier/05_gap_map_and_study_plan.md"
+          }
         }
       ]
     },
@@ -91,7 +116,9 @@
           "id": "m1_l0",
           "title": "Session 1 Overview & Scope Brief",
           "defaultMode": "mdx",
-          "modes": { "mdx": "tutorial/01_finetuning_and_architecture/README.md" }
+          "modes": {
+            "mdx": "tutorial/01_finetuning_and_architecture/README.md"
+          }
         },
         {
           "id": "m1_l1",
@@ -141,7 +168,9 @@
           "id": "m2_l0",
           "title": "Session 2 Overview & Scope Brief",
           "defaultMode": "mdx",
-          "modes": { "mdx": "tutorial/02_systems_and_evaluation/README.md" }
+          "modes": {
+            "mdx": "tutorial/02_systems_and_evaluation/README.md"
+          }
         },
         {
           "id": "m2_l1",
@@ -167,7 +196,9 @@
           "id": "m2_l3",
           "title": "Tiered Challenges & Assessment: Systems Bar Raiser",
           "defaultMode": "mdx",
-          "modes": { "mdx": "tutorial/02_systems_and_evaluation/03_tiered_challenges_and_boss_fight.md" }
+          "modes": {
+            "mdx": "tutorial/02_systems_and_evaluation/03_tiered_challenges_and_boss_fight.md"
+          }
         },
         {
           "id": "m2_l4",
@@ -182,52 +213,146 @@
     },
     {
       "module_id": "module_03",
-      "title": "🔒 Session 3: ML Fundamentals — Core Theory",
+      "title": "Session 3: ML Fundamentals — Core Theory",
       "lessons": [
-        { "id": "m3_locked", "title": "Locked — clear the Session 2 assessment", "defaultMode": "mdx", "modes": { "mdx": "tutorial/03_core_theory/00_locked.md" } }
-      ],
-      "_note": "Unlocks after the Session 2 Systems Bar Raiser."
+        {
+          "id": "m3_l0",
+          "title": "Session 3 Overview & Scope Brief",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/03_core_theory/README.md"
+          }
+        },
+        {
+          "id": "m3_l1",
+          "title": "Generalization: Bias–Variance & Regularization-as-Priors",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/03_core_theory/01_generalization_bias_variance_regularization.md",
+            "notebook": "tutorial/03_core_theory/core_theory_lab.ipynb",
+            "interview": "tutorial/03_core_theory/01_generalization_bias_variance_regularization_interview_questions.json"
+          }
+        },
+        {
+          "id": "m3_l2",
+          "title": "Estimation & Optimization: MLE/MAP → SGD to AdamW",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/03_core_theory/02_estimation_and_optimization.md",
+            "notebook": "tutorial/03_core_theory/core_theory_lab.ipynb",
+            "interview": "tutorial/03_core_theory/02_estimation_and_optimization_interview_questions.json"
+          }
+        },
+        {
+          "id": "m3_l3",
+          "title": "Metrics & Validation Design",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/03_core_theory/03_metrics_and_validation_design.md",
+            "interview": "tutorial/03_core_theory/03_metrics_and_validation_design_interview_questions.json"
+          }
+        },
+        {
+          "id": "m3_l4",
+          "title": "Rapid-Fire Rehearsal & Mock Breadth Round",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/03_core_theory/04_rapid_fire_and_mock_round.md"
+          }
+        },
+        {
+          "id": "m3_l5",
+          "title": "Session 3 Chapter Quiz",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/03_core_theory/quiz.md",
+            "interview": "tutorial/03_core_theory/quiz_interview_questions.json"
+          }
+        }
+      ]
     },
     {
       "module_id": "module_04",
       "title": "🔒 Session 4: ML Fundamentals — Deep Learning & Transformers",
       "lessons": [
-        { "id": "m4_locked", "title": "Locked — clear the Session 3 assessment", "defaultMode": "mdx", "modes": { "mdx": "tutorial/04_deep_learning_transformers/00_locked.md" } }
+        {
+          "id": "m4_locked",
+          "title": "Locked — clear the Session 3 assessment",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/04_deep_learning_transformers/00_locked.md"
+          }
+        }
       ]
     },
     {
       "module_id": "module_05",
       "title": "🔒 Session 5: LLMs, Fine-Tuning & Retrieval",
       "lessons": [
-        { "id": "m5_locked", "title": "Locked — clear the Session 4 assessment", "defaultMode": "mdx", "modes": { "mdx": "tutorial/05_llms_finetuning_retrieval/00_locked.md" } }
+        {
+          "id": "m5_locked",
+          "title": "Locked — clear the Session 4 assessment",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/05_llms_finetuning_retrieval/00_locked.md"
+          }
+        }
       ]
     },
     {
       "module_id": "module_06",
       "title": "🔒 Session 6: Coding — DSA & Algorithms",
       "lessons": [
-        { "id": "m6_locked", "title": "Locked — clear the Session 5 assessment", "defaultMode": "mdx", "modes": { "mdx": "tutorial/06_dsa_algorithms/00_locked.md" } }
+        {
+          "id": "m6_locked",
+          "title": "Locked — clear the Session 5 assessment",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/06_dsa_algorithms/00_locked.md"
+          }
+        }
       ]
     },
     {
       "module_id": "module_07",
       "title": "🔒 Session 7: Coding — ML From Scratch",
       "lessons": [
-        { "id": "m7_locked", "title": "Locked — clear the Session 6 assessment", "defaultMode": "mdx", "modes": { "mdx": "tutorial/07_ml_from_scratch/00_locked.md" } }
+        {
+          "id": "m7_locked",
+          "title": "Locked — clear the Session 6 assessment",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/07_ml_from_scratch/00_locked.md"
+          }
+        }
       ]
     },
     {
       "module_id": "module_08",
       "title": "🔒 Session 8: Behavioral — Leadership Principles & STAR",
       "lessons": [
-        { "id": "m8_locked", "title": "Locked — clear the Session 7 assessment", "defaultMode": "mdx", "modes": { "mdx": "tutorial/08_leadership_principles_star/00_locked.md" } }
+        {
+          "id": "m8_locked",
+          "title": "Locked — clear the Session 7 assessment",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/08_leadership_principles_star/00_locked.md"
+          }
+        }
       ]
     },
     {
       "module_id": "module_09",
       "title": "🔒 Session 9: Mock Loop & Integration",
       "lessons": [
-        { "id": "m9_locked", "title": "Locked — clear the Session 8 assessment", "defaultMode": "mdx", "modes": { "mdx": "tutorial/09_mock_loop_integration/00_locked.md" } }
+        {
+          "id": "m9_locked",
+          "title": "Locked — clear the Session 8 assessment",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/09_mock_loop_integration/00_locked.md"
+          }
+        }
       ]
     }
   ]

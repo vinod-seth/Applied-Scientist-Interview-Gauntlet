@@ -1,0 +1,239 @@
+{
+  "lesson_title": "Estimation & Optimization: MLE/MAP to SGD and AdamW",
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "est_j1",
+        "question": "What is maximum likelihood estimation, and how does it relate to the loss you actually minimize?",
+        "complexity": "Easy",
+        "companies": [
+          "General",
+          "Amazon"
+        ],
+        "core_intent": "Checks whether the candidate sees losses as likelihoods rather than an arbitrary menu.",
+        "preparation_guide": "Define MLE, take the negative log, and identify cross-entropy and MSE as the two familiar cases.",
+        "explanation": "Maximum likelihood chooses parameters maximizing the probability of the observed data under the model. Taking the negative logarithm turns the product over examples into a sum and maximization into minimization, which is exactly the loss you minimize in practice. For a softmax categorical model that negative log-likelihood is cross-entropy; for a Gaussian output model it is mean squared error. So choosing a loss is implicitly choosing an output noise distribution.",
+        "star_framework_tip": "End on 'choosing a loss is choosing a noise model' - it reframes a routine question into a demonstration of understanding.",
+        "common_pitfalls": [
+          "Treating cross-entropy and MLE as unrelated concepts",
+          "Not knowing MSE corresponds to Gaussian noise"
+        ],
+        "references": [
+          {
+            "title": "Bishop — Pattern Recognition and Machine Learning (ch. 3-4)",
+            "url": "https://www.microsoft.com/en-us/research/publication/pattern-recognition-machine-learning/"
+          }
+        ]
+      },
+      {
+        "id": "est_j2",
+        "question": "What is the difference between MLE and MAP estimation?",
+        "complexity": "Easy",
+        "companies": [
+          "General",
+          "Google"
+        ],
+        "core_intent": "Tests the prior/likelihood distinction and its link to regularization.",
+        "preparation_guide": "MAP adds a log-prior to the log-likelihood; that log-prior is the regularization penalty.",
+        "explanation": "MLE maximizes the likelihood alone. MAP maximizes likelihood times prior, equivalently minimizing the negative log-likelihood plus a negative log-prior term. That extra term is exactly the regularization penalty: a Gaussian prior gives L2, a Laplace prior gives L1. With abundant data the likelihood dominates and MAP approaches MLE; with little data the prior carries most of the weight, which is precisely when regularization matters most.",
+        "star_framework_tip": "Close with the data-size behaviour: it shows you understand the estimator, not just its formula.",
+        "common_pitfalls": [
+          "Describing MAP as 'fully Bayesian' - it is a point estimate, not a posterior",
+          "Missing that the prior term is the regularizer"
+        ],
+        "references": [
+          {
+            "title": "Hastie, Tibshirani & Friedman — The Elements of Statistical Learning",
+            "url": "https://hastie.su.domains/ElemStatLearn/"
+          }
+        ]
+      },
+      {
+        "id": "est_j3",
+        "question": "Why do we use stochastic gradient descent instead of full-batch gradient descent?",
+        "complexity": "Easy",
+        "companies": [
+          "General",
+          "Microsoft"
+        ],
+        "core_intent": "Basic optimization practicality; checks awareness of both compute and generalization arguments.",
+        "preparation_guide": "Cost per update and gradient noise. Mention that the noise itself can help.",
+        "explanation": "Full-batch gradient descent requires a pass over the entire dataset for a single update, which is infeasible at scale and wastes computation early in training when any reasonable descent direction helps. SGD estimates the gradient from a mini-batch, giving many more updates per unit of compute. The gradient noise also acts as a mild regularizer that can help escape sharp minima and saddle points. The tradeoff is a noisier trajectory, which is why learning-rate schedules and momentum matter.",
+        "star_framework_tip": "Mention the noise-as-regularizer benefit; most candidates give only the compute argument.",
+        "common_pitfalls": [
+          "Only citing memory or speed, missing the generalization angle",
+          "Confusing SGD's noise with the mini-batch size being a free parameter"
+        ],
+        "references": [
+          {
+            "title": "Hastie, Tibshirani & Friedman — The Elements of Statistical Learning",
+            "url": "https://hastie.su.domains/ElemStatLearn/"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "est_m1",
+        "question": "Walk me from vanilla SGD to Adam. What problem does each addition solve?",
+        "complexity": "Medium",
+        "companies": [
+          "Amazon",
+          "Google",
+          "Meta"
+        ],
+        "core_intent": "The canonical optimizer question; the bar is naming the specific pathology each step fixes.",
+        "preparation_guide": "SGD, then momentum for oscillation, then per-parameter adaptive rates, then Adam combining both with bias correction.",
+        "explanation": "Vanilla SGD steps along the negative gradient; it is cheap but oscillates across steep directions while crawling along flat ones, because a single learning rate cannot serve two curvatures. Momentum accumulates a velocity so oscillating components partially cancel while consistent directions accelerate. RMSProp and Adagrad attack the same problem differently, dividing each parameter's step by the square root of a running average of squared gradients so every coordinate gets an appropriate scale. Adam combines momentum as the first moment with adaptive scaling as the second moment, adding bias correction because both estimates start at zero. AdamW then fixes how weight decay interacts with that scaling.",
+        "star_framework_tip": "Structure as problem-then-fix at each step. The phrase 'momentum fixes oscillation, adaptivity fixes per-parameter scaling' compresses the whole answer.",
+        "common_pitfalls": [
+          "Listing optimizers without the problem each solves",
+          "Confusing momentum with adaptive learning rates",
+          "Forgetting bias correction in Adam"
+        ],
+        "references": [
+          {
+            "title": "Kingma & Ba 2015 — Adam: A Method for Stochastic Optimization",
+            "url": "https://arxiv.org/abs/1412.6980"
+          },
+          {
+            "title": "Loshchilov & Hutter 2019 — Decoupled Weight Decay Regularization",
+            "url": "https://arxiv.org/abs/1711.05101"
+          }
+        ]
+      },
+      {
+        "id": "est_m2",
+        "question": "What is the difference between Adam and AdamW, and why does it matter?",
+        "complexity": "Medium",
+        "companies": [
+          "Amazon",
+          "Meta",
+          "OpenAI"
+        ],
+        "core_intent": "Highly diagnostic: most candidates know the names but not the mechanism.",
+        "preparation_guide": "In Adam, L2 added to the loss is normalized by the second-moment estimate; AdamW applies decay directly to the weights.",
+        "explanation": "Implementing weight decay as an L2 term in the loss means its gradient flows through Adam's per-parameter division by the square root of the second moment. Because that denominator is itself driven by the gradient, the decay is effectively normalized away, and in practice turning the coefficient up can barely change the result. AdamW decouples it, applying eta times lambda times w directly to the weights outside the adaptive scaling, so every parameter shrinks at the same rate and the coefficient behaves like a real hyperparameter. This is why AdamW is the default for transformer and LLM training, and it means L2 regularization and weight decay are equivalent for plain SGD but not for adaptive optimizers.",
+        "star_framework_tip": "The one-line kill shot: 'L2 and weight decay are equivalent for SGD but not for adaptive optimizers.' Say it early.",
+        "common_pitfalls": [
+          "Claiming they are the same algorithm with different names",
+          "Saying AdamW removes momentum or adaptivity",
+          "Asserting L2 and weight decay are always equivalent"
+        ],
+        "references": [
+          {
+            "title": "Loshchilov & Hutter 2019 — Decoupled Weight Decay Regularization",
+            "url": "https://arxiv.org/abs/1711.05101"
+          }
+        ]
+      },
+      {
+        "id": "est_m3",
+        "question": "Why do transformer training recipes use learning-rate warmup, and what happens without it?",
+        "complexity": "Medium",
+        "companies": [
+          "Google",
+          "Meta",
+          "OpenAI"
+        ],
+        "core_intent": "Tests whether the candidate understands schedules as more than a convention.",
+        "preparation_guide": "Early second-moment estimates are noisy and early gradients large; warmup avoids destabilizing updates before the estimates settle.",
+        "explanation": "At the start of training Adam's second-moment estimate is built from very few samples, so the per-parameter scaling is unreliable, while gradients are simultaneously large because the model is far from any good solution. Applying the full learning rate then produces oversized, poorly scaled updates that can destabilize training, and with Post-LayerNorm architectures the gradient imbalance across depth compounds the problem. Warmup ramps the learning rate from near zero over the first small fraction of steps, letting the moment estimates stabilize before large steps are taken. Without it you typically see early loss spikes or divergence, especially at large batch sizes.",
+        "star_framework_tip": "Connect it to the second-moment estimate specifically, not just 'it stabilizes training'.",
+        "common_pitfalls": [
+          "Explaining warmup as merely conventional",
+          "Not linking it to Adam's moment estimates or to normalization placement"
+        ],
+        "references": [
+          {
+            "title": "Kingma & Ba 2015 — Adam: A Method for Stochastic Optimization",
+            "url": "https://arxiv.org/abs/1412.6980"
+          },
+          {
+            "title": "Xiong et al. 2020 — On Layer Normalization in the Transformer Architecture",
+            "url": "https://arxiv.org/abs/2002.04745"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "est_s1",
+        "question": "If Adam converges faster, why do many vision results still use SGD with momentum?",
+        "complexity": "Hard",
+        "companies": [
+          "Google",
+          "Meta"
+        ],
+        "core_intent": "Tests nuance about optimization versus generalization, and intellectual honesty about an unsettled question.",
+        "preparation_guide": "Faster training loss reduction is not the same as better test error; discuss the minima-sharpness argument and label it as contested.",
+        "explanation": "Adam reduces training loss faster, but final generalization is a different objective. Empirically, well-tuned SGD with momentum often matches or beats Adam on convolutional vision benchmarks, and the common explanation is that adaptive methods can converge to sharper minima with worse generalization while SGD's isotropic noise biases it toward flatter regions. That explanation is plausible but contested, and part of the historical gap was simply that Adam's weight decay was implemented incorrectly, which AdamW fixed. The practical position is: AdamW for transformers and quick convergence, SGD with momentum when you can afford tuning and final accuracy matters most.",
+        "star_framework_tip": "Explicitly flag the sharp-minima account as contested rather than stating it as fact; calibrated uncertainty reads as senior.",
+        "common_pitfalls": [
+          "Stating the sharp-minima explanation as settled science",
+          "Claiming one optimizer is universally superior"
+        ],
+        "references": [
+          {
+            "title": "Loshchilov & Hutter 2019 — Decoupled Weight Decay Regularization",
+            "url": "https://arxiv.org/abs/1711.05101"
+          },
+          {
+            "title": "Wilson et al. 2017 — The Marginal Value of Adaptive Gradient Methods",
+            "url": "https://arxiv.org/abs/1705.08292"
+          }
+        ]
+      },
+      {
+        "id": "est_s2",
+        "question": "Your training loss spikes to NaN after several thousand steps. Walk through your diagnosis.",
+        "complexity": "Hard",
+        "companies": [
+          "Amazon",
+          "OpenAI"
+        ],
+        "core_intent": "Practical debugging under pressure; tests systematic elimination rather than random remedies.",
+        "preparation_guide": "Order the hypotheses: numerical overflow in mixed precision, exploding gradients, bad data batch, learning rate too high, then division-by-zero paths in the loss.",
+        "explanation": "Start by localizing in time and space: log gradient norms and per-layer activation statistics to find whether the blow-up is gradual or instantaneous, and which layer moves first. Gradual growth points to exploding gradients, addressed by clipping and by checking normalization placement. An instantaneous jump more often indicates a bad batch, such as a corrupted label or a degenerate sequence, or a numerical edge case like a log of zero or a division by a near-zero denominator. In mixed precision, overflow in fp16 is a frequent culprit, which is why loss scaling exists; check whether the scaler is skipping steps. Learning rate too high, or warmup that ended too early, is also common. The discriminating evidence is whether the same batch reproduces the failure deterministically.",
+        "star_framework_tip": "Emphasize localizing before fixing, and name the deterministic-reproduction test. That is what distinguishes a senior debugging answer.",
+        "common_pitfalls": [
+          "Immediately lowering the learning rate without diagnosis",
+          "Not mentioning mixed-precision overflow or gradient clipping"
+        ],
+        "references": [
+          {
+            "title": "Kingma & Ba 2015 — Adam: A Method for Stochastic Optimization",
+            "url": "https://arxiv.org/abs/1412.6980"
+          }
+        ]
+      },
+      {
+        "id": "est_s3",
+        "question": "How would you decide between spending your remaining budget on optimizer tuning versus learning-rate schedule tuning?",
+        "complexity": "Hard",
+        "companies": [
+          "Meta",
+          "General"
+        ],
+        "core_intent": "Judgment under constraints, plus awareness that the schedule frequently dominates.",
+        "preparation_guide": "Argue from sensitivity: peak LR and schedule usually dominate; run a cheap sensitivity study before committing.",
+        "explanation": "Empirically, peak learning rate and schedule shape usually explain more variance in final quality than the choice among modern adaptive optimizers, so the default allocation favours the schedule. The defensible way to decide is not assertion but a cheap sensitivity study: hold everything fixed and sweep peak learning rate over a small log grid on a shortened run, then sweep warmup fraction and decay shape, and compare the spread in outcomes against the spread from swapping optimizers. Spend the remaining budget where the observed spread is largest. Also weigh transferability: schedule findings tend to transfer across model scales more predictably than optimizer idiosyncrasies.",
+        "star_framework_tip": "Propose a measurement rather than asserting a preference; that converts an opinion question into an experimental-design answer.",
+        "common_pitfalls": [
+          "Answering purely from opinion with no proposed experiment",
+          "Ignoring that the two interact, so they cannot be tuned entirely independently"
+        ],
+        "references": [
+          {
+            "title": "Kingma & Ba 2015 — Adam: A Method for Stochastic Optimization",
+            "url": "https://arxiv.org/abs/1412.6980"
+          },
+          {
+            "title": "Loshchilov & Hutter 2019 — Decoupled Weight Decay Regularization",
+            "url": "https://arxiv.org/abs/1711.05101"
+          }
+        ]
+      }
+    ]
+  }
+}
