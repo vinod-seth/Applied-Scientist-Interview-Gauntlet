@@ -1,5 +1,22 @@
 {
   "lesson_title": "Metrics & Validation Design",
+  "rehearsal": {
+    "prompt": "Rapid-fire rehearsal on metrics and validation. These are judgment questions with no formula to recite: name the cost structure or the leakage risk FIRST, then the metric or split that follows from it. Use your own projects as evidence where they fit.",
+    "minSeconds": 20,
+    "maxSeconds": 60,
+    "rubric": "tech-term",
+    "questions": [
+      "Define precision and recall, and give a scenario where you would prioritize each.",
+      "What is cross-validation and why use it instead of a single train/test split?",
+      "Why is accuracy a poor metric for imbalanced classification?",
+      "Why can ROC-AUC look excellent under heavy class imbalance while the model is practically useless?",
+      "What is data leakage? Give two mechanisms by which it enters a careful pipeline.",
+      "You must evaluate a model that will predict next quarter's demand. Design the validation.",
+      "A stakeholder asks whether the model is good enough to ship. How do you answer?",
+      "Two models differ by 0.4 points of macro-F1 on your evaluation set. Is that a real difference?",
+      "Your offline metric improves but the online A/B test shows no lift. Enumerate the possible explanations."
+    ]
+  },
   "experience_levels": {
     "junior": [
       {

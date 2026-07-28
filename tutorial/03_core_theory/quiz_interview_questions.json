@@ -1,5 +1,22 @@
 {
   "lesson_title": "Session 3 Chapter Quiz - ML Fundamentals: Core Theory",
+  "rehearsal": {
+    "prompt": "A consolidated Session 3 rehearsal. Twelve fundamentals delivered the way a breadth round delivers them — fast, in sequence, no thinking time between. Finish the whole sequence even if one stalls you; a real interviewer keeps going.",
+    "minSeconds": 20,
+    "maxSeconds": 60,
+    "rubric": "tech-term",
+    "questions": [
+      "What are the three terms in the bias-variance decomposition, and which one can no model reduce?",
+      "Which prior corresponds to an L1 penalty, and what property does it produce?",
+      "Cross-entropy loss is the negative log-likelihood of which model?",
+      "A colleague reports that setting weight_decay in Adam changes nothing. Explain and fix.",
+      "You fit a scaler on the full dataset then run k-fold CV. What is wrong and how wrong?",
+      "When does macro-F1 mislead, despite being the right choice for imbalanced data?",
+      "Connect capacity, regularization, likelihood, optimization, and validation into one causal chain.",
+      "You inherit a model with strong offline metrics and no documentation. What do you check first?",
+      "Under what circumstances would you deliberately accept a higher-bias model?"
+    ]
+  },
   "experience_levels": {
     "junior": [
       {

@@ -1,5 +1,22 @@
 {
   "lesson_title": "Estimation & Optimization: MLE/MAP to SGD and AdamW",
+  "rehearsal": {
+    "prompt": "Rapid-fire rehearsal on estimation and optimization. The prize here is showing that the loss you minimise IS a likelihood, and that 'Adam' is not one undifferentiated thing. One or two clean sentences each, then stop.",
+    "minSeconds": 20,
+    "maxSeconds": 60,
+    "rubric": "tech-term",
+    "questions": [
+      "What is maximum likelihood estimation, and how does it relate to the loss you actually minimize?",
+      "What is the difference between MLE and MAP estimation?",
+      "Why do we use stochastic gradient descent instead of full-batch gradient descent?",
+      "Walk me from vanilla SGD to Adam. What problem does each addition solve?",
+      "What is the difference between Adam and AdamW, and why does it matter?",
+      "Why do transformer training recipes use learning-rate warmup, and what happens without it?",
+      "If Adam converges faster, why do many vision results still use SGD with momentum?",
+      "Your training loss spikes to NaN after several thousand steps. Walk through your diagnosis.",
+      "How would you decide between spending your remaining budget on optimizer tuning versus learning-rate schedule tuning?"
+    ]
+  },
   "experience_levels": {
     "junior": [
       {

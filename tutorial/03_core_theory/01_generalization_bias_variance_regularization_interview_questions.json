@@ -1,5 +1,22 @@
 {
   "lesson_title": "Generalization: Bias-Variance & Regularization-as-Priors",
+  "rehearsal": {
+    "prompt": "Rapid-fire rehearsal on generalization. These arrive fast in an ML-breadth round and you have about 30 seconds each. Answer correct, compressed, caveated — then stop and let the interviewer ask the follow-up. The caveat is what scores, not the headline.",
+    "minSeconds": 20,
+    "maxSeconds": 60,
+    "rubric": "tech-term",
+    "questions": [
+      "Explain the bias-variance tradeoff.",
+      "What is overfitting, and how would you detect it from learning curves?",
+      "What is the difference between L1 and L2 regularization?",
+      "Show that L2 regularization is equivalent to a Gaussian prior on the weights.",
+      "Name three ways to regularize a neural network that do not add a penalty term to the loss.",
+      "How do you choose the regularization strength lambda in practice?",
+      "What is double descent, and how does it revise the classical bias-variance picture?",
+      "A model has high bias and high variance simultaneously. Is that possible, and how would you proceed?",
+      "Your model performs well in cross-validation but degrades badly in production. Walk through your hypotheses in priority order."
+    ]
+  },
   "experience_levels": {
     "junior": [
       {
