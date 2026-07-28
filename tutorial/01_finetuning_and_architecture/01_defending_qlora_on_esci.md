@@ -97,7 +97,7 @@ Your own observed peak — `[FILL: peak GPU memory]` — is the number that prov
 
 **How a causal LM emits 4 classes.** You must be able to state your exact mechanism — this is *your* code. The two standard designs: (a) a classification head over the hidden state of the **last non-padding token** (causal attention means only that token has seen the full pair), which is what `AutoModelForSequenceClassification` does; or (b) a verbalizer — score the logits of four label tokens in a prompt template. Each has failure trapdoors: for (a), padding side and pad-token configuration (Qwen ships without a pad token; if you set `pad_token = eos`, say so and why it's safe for classification); for (b), template sensitivity and multi-token labels. `[FILL: which design + config]`.
 
-**<abbr title="The unweighted mean of per-class F1 scores. Every class counts equally however rare, so a collapsed minority class drags the average down.">Macro-F1</abbr>.** Unweighted mean of per-class F1 — each class counts equally regardless of <abbr title="The number of true examples of a class in the evaluation set.">support</abbr>, which is exactly why it's the right headline metric when Exact dominates: accuracy or micro-F1 would let a majority-class-happy model look strong. Now the part that earns Gold: say what macro-F1 *hides*. It hides *which* class is failing (Complement, usually, with the least data), it hides asymmetric error costs (E→I is a catastrophic search failure; E→S is mild, and macro-F1 charges the same), and it ignores the ordinal structure. Your per-class F1 breakdown — `[FILL: per-class F1]` — is the strongest artifact you can bring to this discussion.
+**<abbr title="The unweighted mean of per-class F1 scores. Every class counts equally however rare, so a collapsed minority class drags the average down.">Macro-F1</abbr>.** Unweighted mean of per-class F1 — each class counts equally regardless of <abbr title="The number of true examples of a class in the evaluation set.">support</abbr>, which is exactly why it's the right headline metric when Exact dominates: accuracy or micro-F1 would let a majority-class-happy model look strong. Now the part that wins the exchange: say what macro-F1 *hides*. It hides *which* class is failing (Complement, usually, with the least data), it hides asymmetric error costs (E→I is a catastrophic search failure; E→S is mild, and macro-F1 charges the same), and it ignores the ordinal structure. Your per-class F1 breakdown — `[FILL: per-class F1]` — is the strongest artifact you can bring to this discussion.
 
 ## 🟢 Concept Check
 
@@ -111,7 +111,7 @@ Your model predicts Exact for almost everything and still shows 70%+ accuracy. W
 <details>
 <summary>🔑 Click to Reveal Answer & Explanation</summary>
 
-**Correct answer: option 2.** Equal class weighting is the whole point of "macro." A degenerate majority-class predictor scores high accuracy and high *micro*-F1 (which aggregates over instances), but near-zero F1 on S/C/I pulls macro-F1 toward 0.25 of its potential. The trade-off to mention unprompted: macro-F1 can *over*-reward tiny-class gains — a two-point jump on Complement moves the headline as much as two points on Exact, despite a fraction of the traffic. That cuts both ways in your comparison against DeBERTa, and noticing it is Gold-tier.
+**Correct answer: option 2.** Equal class weighting is the whole point of "macro." A degenerate majority-class predictor scores high accuracy and high *micro*-F1 (which aggregates over instances), but near-zero F1 on S/C/I pulls macro-F1 toward 0.25 of its potential. The trade-off to mention unprompted: macro-F1 can *over*-reward tiny-class gains — a two-point jump on Complement moves the headline as much as two points on Exact, despite a fraction of the traffic. That cuts both ways in your comparison against DeBERTa, and noticing it is top-tier.
 </details>
 
 ---
@@ -176,11 +176,10 @@ Each entry: the question, why it gets asked, a model answer at AS depth, and the
 
 1. From your run logs, fill every QLoRA row of the Metric Vault in [PROGRESS.md](../../PROGRESS.md). Empty slots get marked `QUALITATIVE-ONLY`.
 2. Write your 4-minute project pitch (see [round playbook](../../playbooks/round_playbook.md), beat structure: result → framing → decision tour → invite the drill).
-3. Underline every technical term in the pitch. For each, self-assess Bronze/Silver/Gold honestly. **Delete or downgrade every hook that isn't Silver+.** A pitch with six defensible hooks beats one with twelve fragile ones.
+3. Underline every technical term in the pitch. For each, self-assess Level 1 / 2 / 3 honestly. **Delete or downgrade every hook you cannot at least derive.** A pitch with six defensible hooks beats one with twelve fragile ones.
 4. Say the pitch out loud, timed. Twice.
 
-Expected output: a pitch of ≤ 4 minutes containing zero unfilled numbers and zero Bronze hooks. You'll verify it against the assessment in lesson 3.
-
+Expected output: a pitch of ≤ 4 minutes containing zero unfilled numbers and zero hooks you cannot defend. You'll verify it against the mock round in lesson 3.
 
 ## 🟢 Concept Check
 

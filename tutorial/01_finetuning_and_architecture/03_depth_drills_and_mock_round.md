@@ -1,51 +1,51 @@
-# Lesson 3 — Tiered Challenges & Assessment: Architecture Bar Raiser
+# Lesson 3 — Depth Drills & Mock Round: Architecture Bar Raiser
 
 | | |
 |---|---|
 | **Prerequisites** | Lessons 1–2 complete; Metric Vault in PROGRESS.md filled from run logs |
-| **Session time** | ~90 min (drills + assessment; retries add time) |
-| **Domain tag** | Assessment / Interview Simulation |
-| **Objective** | Reach Gold on all 8 core topics to unlock Session 2 |
+| **Session time** | ~90 min (drills + mock round) |
+| **Domain tag** | Interview Simulation |
+| **Objective** | Reach Level 3 (can defend it) on all 8 core topics |
 
-🔬 **Interactive companion** (run this to fill the vault before the assessment): [▶ Open the Metric Vault Extractor notebook in Colab](https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/01_finetuning_and_architecture/03_metric_vault_extractor.ipynb)
+🔬 **Interactive companion** (run this to fill the vault before the mock round): [▶ Open the Metric Vault Extractor notebook in Colab](https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/01_finetuning_and_architecture/03_metric_vault_extractor.ipynb)
 
-> 📍 **Roadmap:** Tiered drills first (self-score honestly), then the Assessment. The assessment is a scripted Bar Raiser interrogation — five levels deep on the session's core topics. Passing it = Gold on every topic = Session 2 unlocked.
+> 📍 **Roadmap:** Depth drills first (self-score honestly), then the mock round. The mock round is a scripted Bar Raiser interrogation — five levels deep on the session's core topics. It shows you exactly where your depth runs out.
 
 ## 🟢 Before You Start
 
 1. Open [PROGRESS.md](../../PROGRESS.md) in a second window.
-2. Confirm every `[FILL]` slot in the Metric Vault is either filled from your run logs or explicitly marked `QUALITATIVE-ONLY`. The assessment will probe any slot you filled — an unsupported number ends the attempt.
+2. Confirm every `[FILL]` slot in the Metric Vault is either filled from your run logs or explicitly marked `QUALITATIVE-ONLY`. The mock round will probe any slot you filled — an unsupported number ends the attempt.
 3. Have your two pitch scripts (QLoRA, RoPE transformer) ready. You'll deliver them under time pressure.
 
 ---
 
-## 🟢 Tiered Drills
+## 🟢 Depth Drills
 
-For each of the 8 core topics, attempt all three tiers in order. Record your honest tier in PROGRESS.md. Skip to the next topic once you hit your floor — that's the gap log doing its job.
+For each of the 8 core topics, attempt all three levels in order. Record your honest level in PROGRESS.md. Skip to the next topic once you run out of depth — that's the gap log doing its job.
 
 ### Topic 1: NF4 / Quantile Quantization
 
-**🥉 Bronze — State it correctly (no notes)**
+**Level 1 — State it correctly** (no notes)
 
 Explain NF4 in ≤ 3 sentences. What is it, why does it beat uniform int4, and what assumption does it rely on?
 
 <details>
-<summary>🔑 Bronze check</summary>
+<summary>🔑 Level 1 check</summary>
 
-Must include: quantile-based levels, normal-distribution assumption, blockwise absmax scaling. If you said "it compresses weights" without the mechanism, that's below Bronze.
+Must include: quantile-based levels, normal-distribution assumption, blockwise absmax scaling. If you said "it compresses weights" without the mechanism, you have not reached Level 1.
 </details>
 
-**🥈 Silver — Derive it**
+**Level 2 — Derive it**
 
 Starting from a standard normal distribution, explain why equal-probability-mass bins minimize expected quantization error. Then calculate the storage overhead of double quantization: block size 64, fp32 → 8-bit constants, in blocks of 256.
 
 <details>
-<summary>🔑 Silver check</summary>
+<summary>🔑 Level 2 check</summary>
 
-Equal-mass bins: each level represents equal probability density, so the expected distance from any sample to its nearest level is minimized (minimax over the distribution). Double quantization: 64-block needs one fp32 (32 bits) per 64 params = 0.5 bits/param. Quantizing that fp32 to 8-bit in groups of 256 saves 24 bits per constant but adds one fp32 per 256 constants. Net: ~0.127 bits/param overhead. If you got the direction right but the numbers wrong, that's upper Bronze, not Silver.
+Equal-mass bins: each level represents equal probability density, so the expected distance from any sample to its nearest level is minimized (minimax over the distribution). Double quantization: 64-block needs one fp32 (32 bits) per 64 params = 0.5 bits/param. Quantizing that fp32 to 8-bit in groups of 256 saves 24 bits per constant but adds one fp32 per 256 constants. Net: ~0.127 bits/param overhead. If you got the direction right but the numbers wrong, that is Level 1, not Level 2.
 </details>
 
-**🥇 Gold — Defend it (5 follow-ups)**
+**Level 3 — Defend it** (5 follow-ups)
 
 Drill chain — answer each before reading the next:
 
@@ -56,7 +56,7 @@ Drill chain — answer each before reading the next:
 5. Design an experiment to measure the accuracy cost of NF4 vs. fp16 on your specific ESCI task.
 
 <details>
-<summary>🔑 Gold check</summary>
+<summary>🔑 Level 3 check</summary>
 
 1. Heavy-tailed weight distributions (e.g., from poorly trained models or models with activation outliers that propagate to weights) shift mass away from the assumed quantiles; NF4 levels misallocate, increasing error in the tails. The block absmax partially mitigates this per-block, but systematic non-normality (e.g., bimodal weights) defeats the scheme.
 2. Smaller blocks = more scaling constants = more memory overhead but better outlier isolation. Larger blocks amortize the constant but let one outlier distort 128 values. 64 is the empirical sweet spot from Dettmers et al. — but the right answer includes *why* it's a trade-off, not just the number.
@@ -71,11 +71,11 @@ All five must be directionally correct and mechanistic, not hand-waved. If you h
 
 ### Topic 2: LoRA Math (Rank, Alpha, Placement)
 
-**🥉 Bronze:** State the LoRA decomposition for a weight matrix W, including the scaling factor. What do A and B initialize to?
+**Level 1 — State it:** State the LoRA decomposition for a weight matrix W, including the scaling factor. What do A and B initialize to?
 
-**🥈 Silver:** Derive the trainable parameter count for your specific QLoRA setup: `[FILL: rank, target modules, model size]`. Then explain why α/r decouples the learning rate from the rank.
+**Level 2 — Derive it:** Derive the trainable parameter count for your specific QLoRA setup: `[FILL: rank, target modules, model size]`. Then explain why α/r decouples the learning rate from the rank.
 
-**🥇 Gold — 5 follow-ups:**
+**Level 3 — Defend it (5 follow-ups):**
 
 1. Why does LoRA work despite the low-rank constraint? (cite intrinsic dimensionality)
 2. What's the evidence that LoRA *doesn't* fully match full fine-tuning? (cite Biderman et al.)
@@ -84,7 +84,7 @@ All five must be directionally correct and mechanistic, not hand-waved. If you h
 5. Design a rank-sweep experiment for your ESCI task. What would a flat curve at r=16 tell you?
 
 <details>
-<summary>🔑 Gold check</summary>
+<summary>🔑 Level 3 check</summary>
 
 1. Aghajanyan et al. 2020: fine-tuning objectives have low intrinsic dimensionality; pretrained features already span the needed subspace; adaptation is reweighting, not learning new features.
 2. Biderman et al. 2024: LoRA underperforms full FT when the target task demands genuinely new capabilities; it forgets less of the base model (useful for multi-task).
@@ -97,11 +97,11 @@ All five must be directionally correct and mechanistic, not hand-waved. If you h
 
 ### Topic 3: GPU Memory Accounting (16GB Budget)
 
-**🥉 Bronze:** Name the four main consumers of GPU memory during full fine-tuning with AdamW.
+**Level 1 — State it:** Name the four main consumers of GPU memory during full fine-tuning with AdamW.
 
-**🥈 Silver:** Derive the byte counts for each consumer for Qwen2.5-1.5B in mixed-precision (bf16 weights, fp32 optimizer states). Show the total exceeds 16GB. Then show the QLoRA budget.
+**Level 2 — Derive it:** Derive the byte counts for each consumer for Qwen2.5-1.5B in mixed-precision (bf16 weights, fp32 optimizer states). Show the total exceeds 16GB. Then show the QLoRA budget.
 
-**🥇 Gold — 5 follow-ups:**
+**Level 3 — Defend it (5 follow-ups):**
 
 1. Why are optimizer moments kept in fp32 even in mixed-precision training?
 2. What does gradient checkpointing actually store, and what does it recompute?
@@ -110,7 +110,7 @@ All five must be directionally correct and mechanistic, not hand-waved. If you h
 5. "Could you have fully fine-tuned a 0.5B model on 16GB instead? Would it have been better?" (no memorized answer — reason it live.)
 
 <details>
-<summary>🔑 Gold check</summary>
+<summary>🔑 Level 3 check</summary>
 
 1. The second-moment EMA (v_t) involves squaring gradients and dividing by their root. In fp16/bf16, the limited mantissa causes precision loss in the running average, leading to unstable updates — especially for parameters with small gradients. fp32 moments keep the optimization numerically stable.
 2. Stores only the inputs to each checkpoint segment (every N transformer blocks, typically N=1). Discards intermediate activations. On the backward pass, recomputes the forward pass for each segment to regenerate the intermediates needed for gradient computation. Trade: ~30% extra compute for ~O(√L) memory (L = layers).
@@ -123,11 +123,11 @@ All five must be directionally correct and mechanistic, not hand-waved. If you h
 
 ### Topic 4: Causal-LM-as-Classifier Design
 
-**🥉 Bronze:** Explain why you use the *last* non-padding token's hidden state for classification in a causal LM.
+**Level 1 — State it:** Explain why you use the *last* non-padding token's hidden state for classification in a causal LM.
 
-**🥈 Silver:** Compare the classification-head approach vs. the verbalizer approach. When does each win? Describe the padding-side bug and how to prevent it.
+**Level 2 — Derive it:** Compare the classification-head approach vs. the verbalizer approach. When does each win? Describe the padding-side bug and how to prevent it.
 
-**🥇 Gold — 5 follow-ups:**
+**Level 3 — Defend it (5 follow-ups):**
 
 1. You set pad_token = eos_token. When is that *not* safe?
 2. Walk through the exact failure mode: right-padding, naive last-position indexing, variable-length batch.
@@ -139,11 +139,11 @@ All five must be directionally correct and mechanistic, not hand-waved. If you h
 
 ### Topic 5: Macro-F1 & ESCI Imbalance
 
-**🥉 Bronze:** Define macro-F1 and explain why it's preferred over accuracy for ESCI.
+**Level 1 — State it:** Define macro-F1 and explain why it's preferred over accuracy for ESCI.
 
-**🥈 Silver:** State what macro-F1 hides (which class is failing, asymmetric error costs, ordinal structure). Produce the argument for and against focal loss on your task.
+**Level 2 — Derive it:** State what macro-F1 hides (which class is failing, asymmetric error costs, ordinal structure). Produce the argument for and against focal loss on your task.
 
-**🥇 Gold — 5 follow-ups:**
+**Level 3 — Defend it (5 follow-ups):**
 
 1. Your per-class F1 is `[FILL]`. Which class drags the macro average, and why?
 2. "Macro-F1 treats E→I and E→S errors equally. Design a metric that doesn't."
@@ -155,11 +155,11 @@ All five must be directionally correct and mechanistic, not hand-waved. If you h
 
 ### Topic 6: RoPE Derivation
 
-**🥉 Bronze:** State what RoPE does and why it's applied to Q/K but not V.
+**Level 1 — State it:** State what RoPE does and why it's applied to Q/K but not V.
 
-**🥈 Silver:** Derive the 2D case from the relative-position inner-product requirement. Extend to d dimensions with the frequency schedule.
+**Level 2 — Derive it:** Derive the 2D case from the relative-position inner-product requirement. Extend to d dimensions with the frequency schedule.
 
-**🥇 Gold — 5 follow-ups:**
+**Level 3 — Defend it (5 follow-ups):**
 
 1. Why θᵢ = 10000^(−2i/d)? What does the base 10000 control?
 2. What happens at inference positions beyond the training length?
@@ -171,11 +171,11 @@ All five must be directionally correct and mechanistic, not hand-waved. If you h
 
 ### Topic 7: Pre-LN vs. Post-LN
 
-**🥉 Bronze:** State the difference in one sentence. Which did you use and why?
+**Level 1 — State it:** State the difference in one sentence. Which did you use and why?
 
-**🥈 Silver:** Explain the gradient-flow argument for why Pre-LN trains more stably. What does the residual-stream growth trade-off look like?
+**Level 2 — Derive it:** Explain the gradient-flow argument for why Pre-LN trains more stably. What does the residual-stream growth trade-off look like?
 
-**🥇 Gold — 5 follow-ups:**
+**Level 3 — Defend it (5 follow-ups):**
 
 1. "At what depth does Post-LN typically fail without warmup?"
 2. "What does the final LayerNorm in a Pre-LN model have to absorb?"
@@ -187,11 +187,11 @@ All five must be directionally correct and mechanistic, not hand-waved. If you h
 
 ### Topic 8: Contrastive Loss & Negatives
 
-**🥉 Bronze:** State your loss function from memory. What is the temperature parameter?
+**Level 1 — State it:** State your loss function from memory. What is the temperature parameter?
 
-**🥈 Silver:** Derive the gradient of InfoNCE w.r.t. the anchor embedding. Show why low temperature concentrates gradient on the hardest negative.
+**Level 2 — Derive it:** Derive the gradient of InfoNCE w.r.t. the anchor embedding. Show why low temperature concentrates gradient on the hardest negative.
 
-**🥇 Gold — 5 follow-ups:**
+**Level 3 — Defend it (5 follow-ups):**
 
 1. "QQP has ~37% duplicates. What's the false-negative contamination rate in a batch of 64?"
 2. "How would you mine hard negatives for QQP specifically?"
@@ -204,15 +204,15 @@ All five must be directionally correct and mechanistic, not hand-waved. If you h
 ## 🟢 Self-Scoring Protocol
 
 After completing the drills, update PROGRESS.md:
-- Mark each topic as `[B]`, `[S]`, or `[G]` based on where you hit your floor.
+- Mark each topic as `[k]` (knows it), `[d]` (can derive it), or `[D]` (can defend it) based on where you run out of depth.
 - Log every gap in the Gap Log: the exact question chain, the depth you reached, and the point where depth ran out.
-- No mastery credit for tiers below the assessment bar. Gold on all 8 topics is required to attempt the assessment.
+- There is no score to collect here — the only question is whether you can defend each topic. Aim to reach Level 3 on all 8 before the mock round; nothing is locked if you do not.
 
-If you're not Gold on all 8: study your gap log, revisit Lessons 1–2's refreshers at the exact point you stalled, and re-drill. The assessment will wait.
+Not at Level 3 on all 8 yet? Study your gap log, revisit the refresher at the exact point you stalled, and re-drill. The mock round is there whenever you want it — nothing is gated on it.
 
 ---
 
-## 🟢 Assessment: Architecture Bar Raiser
+## 🟢 Mock Round: Architecture Bar Raiser
 
 > ⚔️ **Format:** Simulated 50-minute science-depth round. The "interviewer" drills five levels deep on topics drawn from all 8 core areas. You answer out loud (or written, but out loud is better practice). Score yourself honestly per the rubric below.
 
@@ -249,7 +249,7 @@ Record both pitches back-to-back under time pressure, then review the delivery b
 
 > **Follow-up 4:** "Fair. Now switch to the other project. Derive RoPE from the requirement."
 
-*(Expecting: the full 2D derivation → d-dimensional extension → frequency schedule → why q/k only. If you stall on the orthogonality step, that's a Gold-failing floor hit.)*
+*(Expecting: the full 2D derivation → d-dimensional extension → frequency schedule → why q/k only. If you stall on the orthogonality step, that is a real gap.)*
 
 **Transition — RoPE project:**
 
@@ -271,7 +271,7 @@ Record both pitches back-to-back under time pressure, then review the delivery b
 
 ### Scoring Rubric
 
-| Question | Gold standard | Floor indicators |
+| Question | Bar-clearing answer | Floor indicators |
 |---|---|---|
 | NF4 optimality caveat | States assumption, explains failure modes | Says "optimal" without qualification |
 | Memory derivation | Live arithmetic, reaches observed peak | Can't separate optimizer states from weights |
@@ -283,26 +283,26 @@ Record both pitches back-to-back under time pressure, then review the delivery b
 | False negatives | Quantitative estimate, gradient explanation | "I don't think false negatives matter" |
 | From-scratch justification | Mastery frame, honest gap, proposes comparison | "Mine is better because it's from scratch" |
 
-**Passing condition:** All 9 rubric items scored at Gold standard. Zero hand-waves, zero unsupported numbers.
+**What a clear round looks like:** all 9 rubric items answered at the bar-clearing standard, with zero hand-waves and zero unsupported numbers.
 
-### After the Assessment
+### After the Mock Round
 
 1. **Update PROGRESS.md:**
-   - Mark all 8 core topics with their earned tier: `[B]`, `[S]`, or `[G]`.
-   - Log each drill: depth survived, where you hit your floor, and the exact question.
+   - Mark all 8 core topics with their level: `[k]` (knows it), `[d]` (can derive it), or `[D]` (can defend it).
+   - Log each drill: depth survived, where you run out of depth, and the exact question.
    - Record gaps in the Gap Log with exact question and depth.
 
-2. **If passed (Gold on all topics):** 🎉 Session 2 is unlocked. Update the Consistency Tracker. Move to Session 2 when ready.
+2. **If it went well (Level 3 on all topics):** update the Consistency Tracker and move to Session 2 when you're ready.
 
-3. **If not passed:** Study the gap log. Re-read the specific refresher section where depth ran out. Re-drill the failed topic's Gold chain. Retry the assessment — each attempt restarts from question one.
+3. **If it didn't:** study the gap log, re-read the refresher where your depth ran out, re-drill that topic's Level 3 chain, and run the mock round again whenever you like — each attempt restarts from question one.
 
 ---
 
 ## 🟢 Summary
 
-- The tiered drills are self-scored: Bronze = states correctly, Silver = derives it, Gold = defends 5 follow-ups. Only Gold meets the assessment bar.
-- The assessment simulates a 50-minute science-depth round across both projects. It probes all 8 core topics at five-plus levels.
-- Every number must trace to a run log. Every gap goes in the log. Every hand-wave costs a tier.
-- Passing unlocks Session 2: Project Deep-Dives — Systems & Evaluation (RAG + Calibration).
+- The depth drills are self-scored: Level 1 = states it correctly, Level 2 = derives it, Level 3 = defends five follow-ups. Level 3 is the hiring bar.
+- The mock round simulates a 50-minute science-depth round across both projects. It probes all 8 core topics at five-plus levels.
+- Every number must trace to a run log. Every gap goes in the log. Every hand-wave is a gap worth logging.
+- Next: Session 2 — Project Deep-Dives: Systems & Evaluation (RAG + Calibration).
 
 **The enemy is not the assessment. The enemy is an empty gap log.**

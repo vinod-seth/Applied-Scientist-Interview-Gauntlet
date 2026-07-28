@@ -5,7 +5,7 @@
 | **Projects defended** | RAG failure-mode analysis · Calibration under distribution shift |
 | **Prerequisites** | Session 1 assessment passed; your run logs and eval artifacts for both projects |
 | **Session length** | 3 lessons, ~4–6 hours including drills and assessment |
-| **Assessment** | Systems Bar Raiser (lesson 3) — passing it unlocks Session 3 |
+| **Assessment** | Systems Bar Raiser (lesson 3) — passing it is followed by Session 3 |
 
 ---
 
@@ -49,7 +49,7 @@ The two projects also share a failure pattern to defend against: both make a *ca
 
 1. [Lesson 1 — Defending the RAG Failure-Mode Analysis](01_defending_rag_failure_modes.md)
 2. [Lesson 2 — Defending Calibration Under Distribution Shift](02_defending_calibration_under_shift.md)
-3. [Lesson 3 — Tiered Challenges & Assessment](03_tiered_challenges_and_boss_fight.md)
+3. [Lesson 3 — Depth Drills & Mock Round](03_depth_drills_and_mock_round.md)
 
 Before lesson 3, fill the Session 2 rows of the **Metric Vault** in [PROGRESS.md](../../PROGRESS.md). Same law as Session 1: every number from run logs, `[FILL]` or silence.
 
@@ -69,7 +69,7 @@ Same rules as Session 1: notebooks produce evidence, and defense in drills remai
 
 ---
 
-## 🟢 Session 2 Core Topics (Gold required to pass the assessment)
+## 🟢 Session 2 Core Topics (aim for Level 3 — can defend it — on each)
 
 - Failure-mode operational definitions
 - Sweep design & the oracle-context test

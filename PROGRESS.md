@@ -1,12 +1,12 @@
 # Course Progress
 
-> Update this file after every drill session. Mastery levels here must trace back to an actual scored drill attempt — there is no credit for a made-up number, including here.
+> Update this file after every drill session. Every mark here must trace back to an actual attempt you made out loud — there is no credit for a made-up number, including in your own tracker.
 
 ---
 
 ## 🟢 Mastery Tracker
 
-Legend: `[ ]` untouched · `[B]` Bronze · `[S]` Silver · `[G]` Gold (assessment bar)
+Legend: `[ ]` untouched · `[k]` knows it · `[d]` can derive it · `[D]` **can defend it** (the hiring bar)
 
 ```text
 SESSION 1 — FINE-TUNING & ARCHITECTURE          SESSION 2 — SYSTEMS & EVALUATION
@@ -15,33 +15,33 @@ SESSION 1 — FINE-TUNING & ARCHITECTURE          SESSION 2 — SYSTEMS & EVALUA
 ├─ [ ] GPU memory accounting (16GB budget)      ├─ [ ] Chunking mechanics & position effects
 ├─ [ ] Causal-LM-as-classifier design           ├─ [ ] Judge validity & measurement error
 ├─ [ ] Macro-F1 & ESCI imbalance                ├─ [ ] ECE & estimator pathologies
-│                                               ├─ [ ] Temperature scaling: derivation & limits
-│                                               ├─ [ ] Why calibration breaks under shift
-│                                               ├─ [ ] Acting under miscalibration (abstention)
-│                                               └─ [ ] ASSESSMENT: Systems Bar Raiser
-├─ [ ] RoPE derivation
-├─ [ ] Pre-LN vs Post-LN                        SESSION 3 — CORE THEORY
-├─ [ ] Contrastive loss & negatives             ├─ [ ] Bias–variance / regularization
-└─ [ ] ASSESSMENT: Architecture Bar Raiser       ├─ [ ] Probabilistic foundations
-                                                ├─ [ ] Optimization
-SESSION 4 — DL & TRANSFORMERS                   ├─ [ ] Metrics & validation
-├─ [ ] Backprop mechanics                       └─ [ ] ASSESSMENT: Theory Bar Raiser
-├─ [ ] Normalization family
-├─ [ ] Attention variants                       SESSION 5 — LLMs & RETRIEVAL
-├─ [ ] Training pathologies                     ├─ [ ] PEFT landscape
-└─ [ ] ASSESSMENT: DL Bar Raiser                ├─ [ ] Decoding & sampling
-                                                ├─ [ ] RAG design space
-SESSION 6 — DSA                                 ├─ [ ] LLM evaluation
-├─ [ ] Pattern fluency                          └─ [ ] ASSESSMENT: LLM Bar Raiser
-├─ [ ] Interview protocol
-└─ [ ] ASSESSMENT: Coding Bar Raiser             SESSION 8 — LP & STAR
-                                                ├─ [ ] Story bank (12 stories)
-SESSION 7 — ML FROM SCRATCH                     ├─ [ ] STAR with quantified results
-├─ [ ] Attention from blank editor              ├─ [ ] Failure/conflict sourcing
-├─ [ ] Classic ML from blank editor             └─ [ ] ASSESSMENT: Behavioral Bar Raiser
-└─ [ ] ASSESSMENT: Whiteboard Bar Raiser
-                                                SESSION 9 — MOCK LOOP
-                                                └─ [ ] FINAL ASSESSMENT: Full Loop
+├─ [ ] RoPE derivation                          ├─ [ ] Temperature scaling: derivation & limits
+├─ [ ] Pre-LN vs Post-LN                        ├─ [ ] Why calibration breaks under shift
+├─ [ ] Contrastive loss & negatives             ├─ [ ] Acting under miscalibration (abstention)
+└─ [ ] MOCK ROUND: Architecture                 └─ [ ] MOCK ROUND: Systems
+
+SESSION 3 — CORE THEORY                         SESSION 4 — DL & TRANSFORMERS
+├─ [ ] Bias–variance decomposition              ├─ [ ] Backprop mechanics
+├─ [ ] Regularization as priors (L2/L1)         ├─ [ ] Normalization family
+├─ [ ] MLE / MAP / cross-entropy                ├─ [ ] Attention variants
+├─ [ ] SGD → momentum → Adam → AdamW            ├─ [ ] Training pathologies
+├─ [ ] Metrics & validation design              └─ [ ] MOCK ROUND: DL
+└─ [ ] MOCK ROUND: ML breadth
+                                                SESSION 6 — DSA
+SESSION 5 — LLMs & RETRIEVAL                    ├─ [ ] Pattern fluency
+├─ [ ] PEFT landscape                           ├─ [ ] Interview protocol
+├─ [ ] Decoding & sampling                      └─ [ ] MOCK ROUND: Coding
+├─ [ ] RAG design space
+├─ [ ] LLM evaluation                           SESSION 8 — LP & STAR
+└─ [ ] MOCK ROUND: LLMs                         ├─ [ ] Story bank (12 stories)
+                                                ├─ [ ] STAR with quantified results
+SESSION 7 — ML FROM SCRATCH                     ├─ [ ] Failure/conflict sourcing
+├─ [ ] Attention from blank editor              └─ [ ] MOCK ROUND: Behavioral
+├─ [ ] Classic ML from blank editor
+└─ [ ] MOCK ROUND: Whiteboard
+
+SESSION 9 — MOCK LOOP
+└─ [ ] FINAL MOCK LOOP: all four rounds
 ```
 
 ---
@@ -52,7 +52,7 @@ SESSION 7 — ML FROM SCRATCH                     ├─ [ ] STAR with quantifie
 |---|---|---|---|---|
 | | | | | |
 
-Recording reminder: log depth survived per chain, note where you hit your floor, and mark whether hand-waving or unbacked numbers caused a level drop.
+Recording reminder: log depth survived per chain, note where you run out of depth, and mark whether hand-waving or unbacked numbers caused a level drop.
 
 ---
 
@@ -73,7 +73,7 @@ Mark ✅ for any day with at least one drill attempt. Even an unsuccessful attem
 
 Log every point where you ran out of depth. This is next session's study map, not a failure record.
 
-| Date | Session | Question chain | Depth reached (1–5) | Exact point the floor hit | Follow-up action |
+| Date | Session | Question chain | Depth reached (1–5) | Exact point your depth ran out | Follow-up action |
 |---|---|---|---|---|---|
 | | | | | | |
 
@@ -81,7 +81,7 @@ Log every point where you ran out of depth. This is next session's study map, no
 
 ## 🟢 [FILL] Metric Vault
 
-Before Session 1's assessment, pull these from your actual run logs. Any slot you cannot fill becomes a "qualitative-only" topic — you may describe direction and method, never a number.
+Before Session 1's mock round, pull these from your actual run logs. Any slot you cannot fill becomes a "qualitative-only" topic — you may describe direction and method, never a number.
 
 | Slot | Value from run logs | Source (log/notebook path) |
 |---|---|---|
@@ -98,7 +98,7 @@ Before Session 1's assessment, pull these from your actual run logs. Any slot yo
 
 ### Session 2 — Systems & Evaluation
 
-Fill before the Systems assessment. Same law: run logs or `QUALITATIVE-ONLY`. The armory notebooks show the *machinery*; only your own artifacts fill these rows.
+Fill before the Systems mock round. Same law: run logs or `QUALITATIVE-ONLY`. The armory notebooks show the *machinery*; only your own artifacts fill these rows.
 
 | Slot | Value from run logs | Source (log/notebook path) |
 |---|---|---|

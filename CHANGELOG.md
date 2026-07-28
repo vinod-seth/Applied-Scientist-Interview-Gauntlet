@@ -2,6 +2,22 @@
 
 All notable changes to this course are documented here. Versioning follows `MAJOR.MINOR`.
 
+## [1.6] — 2026-07-28
+
+### Changed
+- **The whole course is now de-gamed**, so Sessions 1–2 match Session 3 and the updated `course-generation-guidelines/interview_prep` rules. Removed XP, medal tiers, boss fights, and progress gating throughout; kept every drill, interrogation chain, and rubric intact — only the framing changed.
+  - **Mastery levels** are now plain language everywhere: **Level 1 — state it correctly**, **Level 2 — derive it**, **Level 3 — defend it against five follow-ups**. Level 3 is described as the hiring bar rather than a medal to collect. PROGRESS.md marks change from `[B]`/`[S]`/`[G]` to `[k]`/`[d]`/`[D]`.
+  - **No session is locked.** Session assessments are now "mock rounds" that exist to show where your depth runs out, not to gate the next session. The six locked stubs (Sessions 4–9) lost their "reach Gold and pass" unlock conditions.
+  - **Session 1 and 2 lesson 3 renamed** from `03_tiered_challenges_and_boss_fight.md` to `03_depth_drills_and_mock_round.md`, with metadata paths and all cross-links updated.
+  - **Resume-score bands** in the Chapter 2 dossier renamed from Gold/Silver/Bronze to **Strong / Sound / Needs Work**, matching the guideline rubric. The candidate's scores are unchanged (58/100 is now "Needs Work" rather than "Bronze").
+  - Medal names used as prose quality descriptors ("the Gold move", "Silver at best", "zero Bronze hooks") replaced with plain equivalents.
+- PROGRESS.md mastery tracker rebuilt: Session 3's real core topics added, and the two-column ASCII layout re-aligned after drifting.
+
+### Preserved deliberately
+- **"Bar Raiser"** and **"Dive Deep"** remain throughout — they are real Amazon interview vocabulary, not game mechanics.
+- **"Gold passage" / "gold labels" / "gold context"** remain in the RAG material — standard ML terminology for ground-truth data, unrelated to the medal tiers.
+- The repository name (`Applied-Scientist-Interview-Gauntlet`) is unchanged, since every Colab badge and notebook link resolves through it.
+
 ## [1.5] — 2026-07-28
 
 ### Added
@@ -16,7 +32,7 @@ All notable changes to this course are documented here. Versioning follows `MAJO
 - Rehearsal drills embedded in every Session 3 lesson, using the iterative coaching loop (coach evaluates → you refine → re-evaluate until an interviewer would move on).
 
 ### Changed
-- Session 3 uses the **simplified, de-gamed format** — no XP, tiers, or assessment gating — matching the updated `course-generation-guidelines/interview_prep` rules. Sessions 1–2 retain their original game mechanics; the course README's global mastery rules still describe those.
+- Session 3 uses the **simplified, de-gamed format** — no XP, tiers, or assessment gating — matching the updated `course-generation-guidelines/interview_prep` rules. (Sessions 1–2 and the course-level docs were brought to the same format in 1.6.)
 
 ### Fixed
 - Core Theory Lab optimizer demo: the initial configuration compared SGD, momentum, and Adam at learning rates where **momentum and Adam both finished worse than plain SGD**, contradicting the lesson they were built to demonstrate. SGD and momentum now share a matched learning rate (the fair comparison, where momentum wins ~6×), and the adaptive methods use their own. The table now reports loss at three checkpoints so momentum's characteristic early overshoot is visible rather than looking like a failure.

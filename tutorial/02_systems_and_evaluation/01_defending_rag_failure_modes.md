@@ -127,7 +127,7 @@ An answer is wrong; the gold passage IS in the retrieved context; the wrong answ
 
 **Why they ask:** the whole taxonomy sits on top of the judge; scientists are expected to calibrate their instruments.
 
-**Model answer:** name the judge (`[FILL]`), its bias direction — exact-match/F1 over-flags paraphrases as wrong (inflating "ignored"), LLM judges under-flag fluent hallucinations (deflating "hallucination") — and the audit: `[FILL: human agreement on a sample, or "unaudited" + the audit design: stratified sample per bucket, two annotators, report agreement]`. The Gold move is showing you know which *direction* each bucket is biased, not just that bias exists.
+**Model answer:** name the judge (`[FILL]`), its bias direction — exact-match/F1 over-flags paraphrases as wrong (inflating "ignored"), LLM judges under-flag fluent hallucinations (deflating "hallucination") — and the audit: `[FILL: human agreement on a sample, or "unaudited" + the audit design: stratified sample per bucket, two annotators, report agreement]`. The strongest move is showing you know which *direction* each bucket is biased, not just that bias exists.
 
 **The chain:** "if judge precision on 'wrong' is 85%, rebuild your headline numbers" (propagate: some 'ignored' were actually right) → "would you trust an LLM judging its own family's output?" → "design the cheapest audit that would change your conclusion."
 

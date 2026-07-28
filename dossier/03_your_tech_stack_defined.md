@@ -316,7 +316,7 @@ TOTAL: 34
 
 1. Record your counts in [PROGRESS.md](../PROGRESS.md).
 2. **Chapter 2's Depth Signals sub-score (currently a provisional 2/6) is recomputed from this.** Mostly ✅ → it rises toward 6 and your intrinsic score improves. Mostly ⚠️/❌ → it stays low and honestly reflects the risk.
-3. Every ⚠️ and ❌ in Tiers 1–2 enters the Chapter 5 study plan, ordered by tier.
+3. Every ⚠️ and ❌ in Tiers 1–2 enters the Chapter 5 study plan, ordered by interrogation risk.
 
 > The point of this chapter is not to feel bad about gaps. It is that **you get to choose which of these conversations you have.** Every term you keep is a conversation you have chosen; every term you cut is one you declined.
 

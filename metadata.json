@@ -21,7 +21,7 @@
   "estimated_hours": 49,
   "modules": 9,
   "lessons": 31,
-  "version": "1.5",
+  "version": "1.6",
   "delivery_note": "Sessions are generated one at a time. The curriculum lists ONLY delivered content so the portal never points at a file that does not exist yet. Each new session appends a module here. The full 9-session plan lives in README.md.",
   "curriculum": [
     {
@@ -142,10 +142,10 @@
         },
         {
           "id": "m1_l3",
-          "title": "Tiered Challenges & Assessment: Architecture Bar Raiser",
+          "title": "Depth Drills & Mock Round: Architecture Bar Raiser",
           "defaultMode": "mdx",
           "modes": {
-            "mdx": "tutorial/01_finetuning_and_architecture/03_tiered_challenges_and_boss_fight.md",
+            "mdx": "tutorial/01_finetuning_and_architecture/03_depth_drills_and_mock_round.md",
             "notebook": "tutorial/01_finetuning_and_architecture/03_metric_vault_extractor.ipynb"
           }
         },
@@ -194,10 +194,10 @@
         },
         {
           "id": "m2_l3",
-          "title": "Tiered Challenges & Assessment: Systems Bar Raiser",
+          "title": "Depth Drills & Mock Round: Systems Bar Raiser",
           "defaultMode": "mdx",
           "modes": {
-            "mdx": "tutorial/02_systems_and_evaluation/03_tiered_challenges_and_boss_fight.md"
+            "mdx": "tutorial/02_systems_and_evaluation/03_depth_drills_and_mock_round.md"
           }
         },
         {

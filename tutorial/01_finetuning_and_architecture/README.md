@@ -5,7 +5,7 @@
 | **Projects defended** | QLoRA on ESCI · From-scratch RoPE transformer |
 | **Prerequisites** | Course README (course structure), your own run logs for both projects |
 | **Session length** | 3 lessons, ~4–6 hours including drills and assessment |
-| **Assessment** | Architecture Bar Raiser (lesson 3) — passing it unlocks Session 2 |
+| **Mock round** | Architecture Bar Raiser (lesson 3) — a full simulated depth round |
 
 ---
 
@@ -51,7 +51,7 @@ If it’s on this list, it’s fair game in the assessment. Nothing outside this
 
 1. [Lesson 1 — Defending QLoRA on ESCI](01_defending_qlora_on_esci.md): concept refreshers at peer level + the 6 hardest follow-ups with model answers.
 2. [Lesson 2 — Defending the RoPE Transformer](02_defending_the_rope_transformer.md): same format.
-3. [Lesson 3 — Tiered Challenges & Assessment](03_tiered_challenges_and_boss_fight.md): Bronze/Silver/Gold drills per core topic, then the Architecture Bar Raiser.
+3. [Lesson 3 — Depth Drills & Mock Round](03_depth_drills_and_mock_round.md): Level 1 / 2 / 3 drills per core topic, then the Architecture Bar Raiser.
 
 Before lesson 3, fill the **Metric Vault** in [PROGRESS.md](../../PROGRESS.md) from your run logs. The assessment assumes it’s filled; every unfilled slot becomes a "qualitative-only" topic in your answers.
 
@@ -75,7 +75,7 @@ Three Colab-ready notebooks accompany this session. They are the **armory, not a
 
 ---
 
-## 🟢 Session 1 Core Topics (Gold required to pass the assessment)
+## 🟢 Session 1 Core Topics (aim for Level 3 — can defend it — on each)
 
 - NF4 / quantile quantization
 - LoRA math (rank, alpha, placement)

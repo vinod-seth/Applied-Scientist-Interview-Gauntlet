@@ -15,7 +15,7 @@
 
 | Score | Result | Band |
 |---|---|---|
-| **Resume-Intrinsic** | **58 / 100** | 🥉 **Bronze** — real content, exposed claims need work |
+| **Resume-Intrinsic** | **58 / 100** | **Needs Work** — real content, exposed claims need work |
 | **Company-Relative** (Amazon AS, entry-level) | **54 / 100** | **Gap** — identifiable, and largely closable in your 12-month runway |
 
 **These are never averaged.** They answer different questions, and the gap between them is itself information.
@@ -185,10 +185,10 @@ C Depth Signals                12 / 20
 D Interrogation Hygiene         9 / 15
 E Communication                15 / 15
                               ──────────
-  RESUME-INTRINSIC             58 / 100   →  🥉 Bronze
+  RESUME-INTRINSIC             58 / 100   →  Needs Work
 ```
 
-**Bronze (50–69):** real content, but exposed claims need work before the loop. **Finding A alone is worth roughly +18** — recovering your metrics moves you to Silver without writing a single new line of code.
+**Needs Work (50–69):** real content, but exposed claims need work before the loop. **Finding A alone is worth roughly +18** — recovering your metrics moves you to *Sound* without writing a single new line of code.
 
 ---
 
@@ -289,7 +289,7 @@ Every number your resume implies, and whether you can source it. **Fill from run
 
 ## 🟢 What This Audit Is Not Saying
 
-To be precise about the verdict, because Bronze/Gap read harsher than intended:
+To be precise about the verdict, because "Needs Work"/Gap read harsher than intended:
 
 - **Not** that the projects are weak. They are well-chosen and current.
 - **Not** that you are unqualified. You are mid-M.Tech with 12 months of runway.

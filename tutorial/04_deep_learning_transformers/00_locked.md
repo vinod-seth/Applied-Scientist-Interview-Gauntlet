@@ -12,7 +12,7 @@ Backprop mechanics, the normalization family, attention variants (MHA/MQA/GQA), 
 
 ## 🟢 How to Unlock
 
-1. Reach **Gold** on all of Session 3's core topics and pass its assessment.
+1. Work through Session 3's core topics until you can defend each one, and run its mock round.
 2. Log your gaps in [PROGRESS.md](../../PROGRESS.md) — they shape how this session gets built.
 3. Say **"next"** and this session is generated with the same structure: scope brief, hardest follow-ups with model answers, tiered challenges, armory notebooks, and an assessment.
 

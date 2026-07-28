@@ -79,7 +79,7 @@ No job description captured, so these branches stay open. Each is flagged `⚠�
 
 ## 🟢 Confirm-With-Recruiter Checklist
 
-Carry this into your first recruiter conversation. Answers unlock the ⚠️ markers throughout the course.
+Carry this into your first recruiter conversation. Answers resolve the ⚠️ markers throughout the course.
 
 ```markdown
 - [ ] What level is this role, and what does the bar look like at that level?

@@ -325,10 +325,10 @@ Your contrastive model's cosine similarities all cluster near 0.98 for both posi
    - **Frame as mastery, not SOTA.**
    - **Decision tour:** RoPE over learned embeddings · Pre-LN over Post-LN · contrastive loss over cross-entropy.
    - **Invite:** stop at ~4 minutes.
-3. Underline every technical term. Self-assess Bronze/Silver/Gold honestly. **Delete or downgrade every hook that isn't Silver+.**
+3. Underline every technical term. Self-assess Level 1 / 2 / 3 honestly. **Delete or downgrade every hook you cannot at least derive.**
 4. Say the pitch out loud, timed. Twice.
 
-Expected output: a pitch ≤ 4 minutes, zero unfilled numbers, zero Bronze hooks.
+Expected output: a pitch ≤ 4 minutes, zero unfilled numbers, zero hooks you cannot defend.
 
 <RehearsalStudio prompt="Deliver your 4-minute from-scratch RoPE transformer pitch: result first → frame as demonstrated mastery, not a SOTA claim → decision tour (RoPE over learned embeddings, Pre-LN over Post-LN, contrastive loss) → invite the drill." minSeconds="210" maxSeconds="240" rubric="project-pitch" />
 
@@ -339,8 +339,8 @@ Expected output: a pitch ≤ 4 minutes, zero unfilled numbers, zero Bronze hooks
 - RoPE = rotations on q/k pairs, derived from "score must depend on offset only"; orthogonality does the work; $d/2$ frequency pairs give a multi-resolution position spectrum.
 - Pre-LN trades a small performance ceiling for a clean gradient highway and warmup-free training — the right call at your scale, and you can name the cost.
 - Your loss, your $\tau$, your false-negative story are *your code* — reproduce them from memory or the round stalls there.
-- Frame the project as demonstrated mastery. QQP's label noise and transitivity leakage bound achievable performance — knowing that bound is Gold-tier.
+- Frame the project as demonstrated mastery. QQP's label noise and transitivity leakage bound achievable performance — knowing that bound is top-tier.
 
 **References:** Su et al. 2021 (RoPE, arXiv:2104.09864) · Xiong et al. 2020 (Pre-LN, arXiv:2002.04745) · Voita et al. 2019 (head analysis, arXiv:1905.09418) · Chen et al. 2020 (SimCLR, arXiv:2002.05709) · Shazeer 2019 (MQA, arXiv:1911.02150) · Ainslie et al. 2023 (GQA, arXiv:2305.13245) · Peng et al. 2023 (YaRN, arXiv:2309.00071)
 
-**Next:** [Lesson 3 — Tiered Challenges & Assessment](03_tiered_challenges_and_boss_fight.md)
+**Next:** [Lesson 3 — Depth Drills & Mock Round](03_depth_drills_and_mock_round.md)

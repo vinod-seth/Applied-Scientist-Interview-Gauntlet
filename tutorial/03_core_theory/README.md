@@ -52,4 +52,4 @@ flowchart LR
 🔬 **Interactive companion** (CPU-only, runs instantly): [▶ Open the Core Theory Lab in Colab](https://colab.research.google.com/github/vinod-seth/Applied-Scientist-Interview-Gauntlet/blob/main/tutorial/03_core_theory/core_theory_lab.ipynb) — watch bias and variance trade off on a real fit, see L2/L1 shrinkage, and compare SGD vs. AdamW trajectories.
 
 > [!NOTE]
-> This session uses the **simplified format** — drills, model answers, iterative rehearsal, and an honest self-assessment. There is no XP or boss-fight gate here; the goal is that you can answer each fundamental cleanly and out loud, then walk the chain that connects them.
+> Like every session in this course, this one is drills, model answers, iterative rehearsal, and an honest self-assessment. Nothing is scored or gated — the goal is simply that you can answer each fundamental cleanly and out loud, then walk the chain that connects them.

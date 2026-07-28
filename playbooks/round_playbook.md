@@ -31,8 +31,8 @@ The round your resume was written for. One project, 45–55 minutes, five-plus l
 
 ### 🟢 Candidate levers
 
-- **The pitch is a menu.** Every term you volunteer ("NF4", "double quantization", "contrastive loss") is a dish the interviewer may order. Only surface hooks you can defend five levels down. If your paged-optimizer knowledge is Bronze, don't say "paged optimizers" — say "memory-efficient optimizer states" and be ready for one follow-up.
-- **Choose which project leads.** You'll usually be asked "pick a project." Pick the one with the deepest Gold coverage, not the most impressive-sounding one.
+- **The pitch is a menu.** Every term you volunteer ("NF4", "double quantization", "contrastive loss") is a dish the interviewer may order. Only surface hooks you can defend five levels down. If you can only state what paged optimizers are, don't say "paged optimizers" — say "memory-efficient optimizer states" and be ready for one follow-up.
+- **Choose which project leads.** You'll usually be asked "pick a project." Pick the one with the deepest defensible coverage, not the most impressive-sounding one.
 - **Numbers you introduce set the terrain.** A metric you quote must have a run log behind it. A number you can't decompose (per-class, per-slice) is a liability, not an asset.
 - **Own the transitions.** After surviving a chain, bridge: "…and that limitation is actually what motivated my calibration project." You choose the next battlefield.
 
@@ -66,7 +66,7 @@ Rapid topic-hopping across fundamentals. Less depth per topic than Round 1, but 
 
 - **Guessing at fundamentals.** A wrong answer on backprop or bias–variance is close to fatal in an AS loop; a confident wrong answer is worse than a slow right one.
 - **Over-bridging.** Steering every question back to QLoRA looks like a one-trick script.
-- **Depth-baiting.** Some interviewers offer a rabbit hole ("want to go deeper on that?") to test judgment. Take it only if you're Gold there.
+- **Depth-baiting.** Some interviewers offer a rabbit hole ("want to go deeper on that?") to test judgment. Take it only if you can defend that area five deep.
 
 ---
 
@@ -118,7 +118,7 @@ The round that fails the most technically strong candidates. The Bar Raiser is f
 
 - **"We" answers.** The Bar Raiser needs *your* decision under pressure; team narration gives them nothing to score — and follow-ups will expose that you're hiding in the plural.
 - **Recycled generic stories.** Bar Raisers hear the same three internet stories weekly. A specific, small, true story outperforms a grand vague one.
-- **Unquantified results.** "It went well" ends a STAR at Bronze. If no metric exists, quantify scope honestly: "cut re-run time from overnight to under an hour" — only if true.
+- **Unquantified results.** "It went well" leaves a STAR unfinished. If no metric exists, quantify scope honestly: "cut re-run time from overnight to under an hour" — only if true.
 - **Contradicting your own resume.** The Bar Raiser has read it. Any tension between the story and the resume line becomes the interrogation.
 
 ---

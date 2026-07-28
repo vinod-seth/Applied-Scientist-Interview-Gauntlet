@@ -88,7 +88,7 @@ Nothing here requires new learning. This is the highest value-per-hour week in t
 ```markdown
 - [ ] Session 1 assessment: QLoRA + RoPE depth        (Gap #1 defence)
 - [ ] Session 2 assessment: RAG + calibration depth   (Gap #1 defence)
-- [ ] Every ⚠️/❌ from Chapter 3 Tiers 1–2 → Gold
+- [ ] Every ⚠️/❌ from Chapter 3 Tiers 1–2 → can defend it
 - [ ] Rehearse the Chapter 4 introduction to the readiness checklist
 ```
 

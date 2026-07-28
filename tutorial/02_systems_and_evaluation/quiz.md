@@ -87,7 +87,7 @@
 <details>
 <summary>🔑 Click to Reveal Answer & Explanation</summary>
 
-**Correct: option 3.** A confident single-direction answer is the trap. Larger chunks dilute embeddings (misses up) but keep evidence intact (fragmentation down), and chunk×k jointly set context length, so the two sweep axes aren't independent conditions. Naming the tension plus the interaction is the Gold answer; picking a direction without it is Silver at best.
+**Correct: option 3.** A confident single-direction answer is the trap. Larger chunks dilute embeddings (misses up) but keep evidence intact (fragmentation down), and chunk×k jointly set context length, so the two sweep axes aren't independent conditions. Naming the tension plus the interaction is the complete answer; picking a direction without it is a Level 2 answer at best.
 </details>
 
 **Q7.** ECE with 15 fixed-width bins = 2.9%; with 15 equal-mass bins = 6.4%. What do you report?
@@ -192,6 +192,6 @@ The strong shape: no defensiveness, no invented novelty. "The result is known; w
 
 ## 🟢 Summary
 
-- 12 quiz questions + 2 reflections here, plus the concept checks in lessons 1–2 and 8 five-deep Gold chains: Session 2's full question volume.
+- 12 quiz questions + 2 reflections here, plus the concept checks in lessons 1–2 and 8 five-deep defence chains: Session 2's full question volume.
 - Miss a question → it’s a gap. Log it in [PROGRESS.md](../../PROGRESS.md) like any drill failure.
 - Cleared everything? Deliver both pitches cold tomorrow morning. If the scoped claims survive a night of forgetting, take the assessment.

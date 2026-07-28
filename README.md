@@ -31,39 +31,41 @@ This course attacks both. Depth is the only thing that counts. Consistency is th
 
 ## 🟢 Mastery Levels
 
-### 🟢 Tiered Mastery (per topic)
+### 🟢 What "knowing" a topic means here
 
 | Level | Meaning | Interview reality |
 |---|---|---|
-| 🥉 **Bronze** | You know it — can state the concept correctly | Survives the *first* question only |
-| 🥈 **Silver** | You can derive it — equations, memory math, design rationale from first principles | Survives 2–3 follow-ups |
-| 🥇 **Gold** | You can defend it — five consecutive why/how follow-ups without hand-waving | **This is the actual hiring bar.** Nothing below Gold counts as "done" |
+| **Knows it** | You can state the concept correctly | Survives the *first* question only |
+| **Can derive it** | Equations, memory math, design rationale from first principles | Survives 2–3 follow-ups |
+| **Can defend it** | Five consecutive why/how follow-ups without hand-waving | **This is the actual hiring bar.** Nothing below this counts as "done" |
+
+These are descriptions of your current state, not levels to collect. The only question that matters is whether you can defend a topic under sustained follow-up.
 
 ### 🟢 How Progress Is Measured
 
 - Reading a lesson alone does not demonstrate mastery. The interviewer does not care what you read.
 - Surviving a follow-up chain in a drill demonstrates real depth — aim for five levels.
 - Acknowledging your limits honestly ("I don't know, but here's how I'd find out") is a valuable skill — it is exactly what a Bar Raiser wants to see.
-- Hand-waving, buzzword-smuggling, or quoting a number you cannot back with a run log shows no mastery and the topic drops one level. There is no credit for a made-up number.
+- Hand-waving, buzzword-smuggling, or quoting a number you cannot back with a run log is not mastery. There is no credit for a made-up number — an honest "I'd have to check the exact figure" is strictly better.
 
 ### 🟢 Session Assessments
 
-Every session ends with a **Bar Raiser Simulation**: a structured interrogation that drills the session's core topics five levels deep. Passing it (Gold on the session's core topics) unlocks the next session. Retry as often as you need — each attempt restarts from question one.
+Every session ends with a **mock round**: a structured interrogation that drills the session's core topics five levels deep, plus an honest self-assessment. Nothing is locked — you decide when a session is done and when to move on. The assessment exists to show you *where* your depth runs out, not to gate you. Re-run it as often as you find it useful.
 
 ### 🟢 Gap Tracking
 
-Every time you run out of depth, log *where*. That log is not a failure record — it is your next study priority. The strongest predictor of passing an assessment on retry is a well-maintained gap log. The template lives in [PROGRESS.md](PROGRESS.md).
+Every time you run out of depth, log *where*. That log is not a failure record — it is your next study priority. The strongest predictor of a better second attempt is a well-maintained gap log. The template lives in [PROGRESS.md](PROGRESS.md).
 
-### 🟢 Consistency & Progress
+### 🟢 Consistency
 
-The progress tracker in [PROGRESS.md](PROGRESS.md) shows all 9 sessions and their core topics. Each Gold marks a topic as mastered. Consistency rule: any practice attempt (even an unsuccessful one) on a given day keeps your momentum. The real obstacle is not a failed drill — it is a zero-activity day.
+The tracker in [PROGRESS.md](PROGRESS.md) shows all 9 sessions and their core topics. Any practice attempt — even an unsuccessful one — on a given day is progress. The real obstacle is not a failed drill; it is a zero-activity day.
 
 ---
 
 ## 🟢 Non-Negotiable Constraints (read before Session 1)
 
 1. **Never fabricate metrics.** Every number in your answers comes from your own run logs. This course marks every such slot as `[FILL: metric]`. An unsupported resume number becomes a Dive Deep interrogation you will lose; an honest qualitative statement is strictly better than an invented figure.
-2. **Depth over coverage.** Gold always means "defends against five follow-ups." There is no partial credit for touching more topics shallowly.
+2. **Depth over coverage.** "Done" always means "defends against five follow-ups." There is no partial credit for touching more topics shallowly.
 3. **Assumption flags.** Where the answer depends on the specific JD or team, the material flags it with `⚠️ JD-DEPENDENT`. Example: ML system design is *excluded by default* in an entry-level AS loop, but flips *in* for some applied teams — check your recruiter briefing.
 4. **Leadership Principles carry heavy weight.** Technically strong candidates fail the AS loop most often on behavioral rounds. Sessions 8–9 are not garnish; they are half the loop. Priority principles for this candidate: Dive Deep, Learn and Be Curious, Invent and Simplify, Deliver Results, Insist on the Highest Standards.
 
@@ -109,8 +111,8 @@ Built to the **Resume-to-Offer** archetype: the syllabus below is *derived* from
 
 1. **Scope brief** — every topic an interviewer could raise from this session's material.
 2. **Deep-dive lessons** — peer-level explanations plus the 5–6 hardest follow-ups per project, with model answers at AS depth.
-3. **Tiered challenges** — Bronze / Silver / Gold drills per core topic.
-4. **Session assessment** — the Bar Raiser simulation. Pass it to unlock the next session.
+3. **Depth drills** — escalating follow-up chains per core topic, from stating the concept to defending it five deep.
+4. **Mock round** — a full simulated interrogation plus an honest self-assessment of where your depth ran out.
 5. **Gap logging** — update [PROGRESS.md](PROGRESS.md) before you close the session.
 
 ---

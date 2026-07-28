@@ -126,7 +126,7 @@ This bank brings Session 1 to interview-drill volume: 12 quiz questions plus 2 r
 <details>
 <summary>🔑 Click to Reveal Answer & Explanation</summary>
 
-**Correct: option 3.** Each negative's repulsive gradient is weighted by its softmax probability exp(sim/τ)/Z; lower τ sharpens that distribution toward the top-similarity items. On QQP, the "hardest negatives" are disproportionately *unlabeled true duplicates* — so aggressive τ actively corrupts the embedding space. That coupling is the Gold-tier observation.
+**Correct: option 3.** Each negative's repulsive gradient is weighted by its softmax probability exp(sim/τ)/Z; lower τ sharpens that distribution toward the top-similarity items. On QQP, the "hardest negatives" are disproportionately *unlabeled true duplicates* — so aggressive τ actively corrupts the embedding space. That coupling is the top-tier observation.
 </details>
 
 **Q10.** *Debugging.* Contrastive loss drops smoothly, but retrieval of held-out duplicates is at chance. The single most diagnostic quick check is:
@@ -192,6 +192,6 @@ Case 1 pattern: restate the question in your own terms → name the relevant mec
 
 ## 🟢 Summary
 
-- 12 quiz questions + 2 reflections here, 9 concept checks in lessons 1–2, plus 8 five-deep Gold chains and a 9-item assessment: Session 1's full question volume.
+- 12 quiz questions + 2 reflections here, 9 concept checks in lessons 1–2, plus 8 five-deep defence chains and a 9-item mock round: Session 1's full question volume.
 - Miss a quiz question → it’s a gap. Log it in [PROGRESS.md](../../PROGRESS.md) like any drill failure.
 - Cleared everything? Deliver the two pitches once more, cold, tomorrow morning. If they survive a day of forgetting, say "next" for Session 2.
