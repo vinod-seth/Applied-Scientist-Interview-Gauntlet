@@ -1,0 +1,231 @@
+{
+  "lesson_title": "Evaluating LLM Systems: Statistics, Judges and Contamination",
+  "rehearsal": {
+    "prompt": "Evaluation rehearsal. Two gates before any number counts - is the instrument valid, and is the difference real. If an answer can contain a number, a test name, or a sample size, it must.",
+    "minSeconds": 40,
+    "maxSeconds": 100,
+    "rubric": "mechanism",
+    "questions": [
+      "How would you evaluate a text generation system?",
+      "What is an LLM judge, and what biases does it have?",
+      "A prompt change moved accuracy from 71 to 74 percent on 200 examples. Did it improve?",
+      "You tried 20 prompt variants and shipped the best. What is wrong with that number?",
+      "A vendor claims 92 percent on a public benchmark. What is your first question?",
+      "Design the evaluation suite for a RAG assistant.",
+      "How do you validate an LLM judge against human labels?",
+      "Arena-style pairwise rankings are popular. What do they hide?",
+      "Your offline metric improved but users complained. Diagnose it."
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "ev_j1",
+        "question": "How would you evaluate a text generation system?",
+        "complexity": "Easy",
+        "core_intent": "Checks whether the candidate reaches for the cheapest valid instrument first.",
+        "preparation_guide": "Match the instrument to the task: deterministic checks, reference metrics, judges, humans.",
+        "explanation": "Choose the cheapest instrument that is actually valid for the task. If there is a deterministic ground truth - exact match, unit tests for code, schema validation, retrieval recall against gold passages - use it, because it is free, reproducible and unbiased. If the task has reference outputs but many valid phrasings, reference-based metrics such as ROUGE or BERTScore give a weak signal that is useful for regression detection but poor for ranking systems. If quality is open-ended, use pairwise comparison, either by an LLM judge validated against human labels or by humans directly. Whatever the instrument, three things must accompany the number: the sample size, a confidence interval, and a statement of the instrument's own error rate. A common and serious mistake is using a judge where a deterministic check exists, which adds measurement error for no benefit.",
+        "star_framework_tip": "Say 'cheapest valid instrument' and give the ordering - it structures the whole answer.",
+        "common_pitfalls": [
+          "Naming metrics without matching them to task structure",
+          "Reporting a single number with no sample size or interval"
+        ],
+        "references": [
+          {
+            "title": "Zheng et al. 2023 - Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena",
+            "url": "https://arxiv.org/abs/2306.05685"
+          }
+        ]
+      },
+      {
+        "id": "ev_j2",
+        "question": "What is an LLM judge, and what biases does it have?",
+        "complexity": "Easy",
+        "core_intent": "Tests whether the candidate treats a judge as an instrument with error.",
+        "preparation_guide": "Name the four documented biases and the fix for each.",
+        "explanation": "An LLM judge is a model asked to score or compare outputs in place of a human annotator. It is an instrument with measurement error, and its errors are documented and systematic. Position bias: it prefers whichever response appears first, fixed by evaluating both orders and averaging, which also yields a free noise estimate from the disagreement rate. Verbosity bias: it prefers longer answers regardless of content, checked by testing whether the gap survives length matching. Self-preference: it favours text from its own model family, fixed by judging with a different family than the one generating. Style over substance: it rewards confident, well-formatted prose, mitigated by supplying an explicit rubric and a reference answer rather than asking for a score out of ten. Two design choices do most of the work - pairwise comparison beats absolute scoring, and a reference answer anchors the judgment.",
+        "star_framework_tip": "Pair every bias with its fix; a list of biases alone reads as something you read rather than used.",
+        "common_pitfalls": [
+          "Naming biases with no mitigation",
+          "Using absolute 1-to-10 scoring, which is much noisier than pairwise comparison"
+        ],
+        "references": [
+          {
+            "title": "Zheng et al. 2023 - Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena",
+            "url": "https://arxiv.org/abs/2306.05685"
+          },
+          {
+            "title": "Wang et al. 2023 - Large Language Models Are Not Fair Evaluators",
+            "url": "https://arxiv.org/abs/2305.17926"
+          }
+        ]
+      },
+      {
+        "id": "ev_j3",
+        "question": "A vendor claims 92 percent on a public benchmark. What is your first question?",
+        "complexity": "Easy",
+        "core_intent": "Skepticism with a named mechanism rather than general doubt.",
+        "preparation_guide": "Ask whether the benchmark was in the training data, then say how you would check.",
+        "explanation": "The first question is whether the benchmark was in the training data. Contamination is the default assumption for any public benchmark old enough to be scraped, since popular test sets appear verbatim in web crawls, code repositories and papers that quote examples. The concrete evidence is Zhang et al., who built GSM1k as a fresh set matched in difficulty to GSM8K and found accuracy drops of up to about thirteen points for some model families while others held steady - a gap hard to explain except by memorization. Checks, in increasing order of effort: n-gram overlap between test items and any accessible training corpus, commonly using thirteen-gram matching; perturbation tests that rename entities, change numbers or shuffle option order, since memorized items degrade sharply while genuine ability does not; canary strings where the benchmark ships them; and ultimately a private evaluation set built from your own data. The practical summary is that public benchmarks are for coarse screening and a private task-specific set decides.",
+        "star_framework_tip": "Give the perturbation test - it is something you can run today without access to the training corpus.",
+        "common_pitfalls": [
+          "Expressing general skepticism without naming contamination as the mechanism",
+          "Assuming a leaderboard number transfers to a specific production task"
+        ],
+        "references": [
+          {
+            "title": "Zhang et al. 2024 - A Careful Examination of Large Language Model Performance on Grade School Arithmetic",
+            "url": "https://arxiv.org/abs/2405.00332"
+          },
+          {
+            "title": "Sainz et al. 2023 - NLP Evaluation in Trouble: On the Need to Measure LLM Data Contamination",
+            "url": "https://arxiv.org/abs/2310.18018"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "ev_m1",
+        "question": "A prompt change moved accuracy from 71 to 74 percent on 200 examples. Did it improve?",
+        "complexity": "Medium",
+        "core_intent": "The highest-value statistics question in applied LLM work.",
+        "preparation_guide": "Compute the standard error, then note that the comparison is paired and use McNemar's test.",
+        "explanation": "Not established. Unpaired first, to show the scale of the noise: at p near 0.72 with n = 200, the standard error is the square root of 0.72 times 0.28 divided by 200, about 0.032, so each estimate carries roughly plus or minus three percentage points and a three-point gap sits inside noise. But both systems ran on the same 200 examples, so the comparison is paired and should be analyzed that way, which is far more powerful. Only the discordant examples carry information - those the new prompt fixed and those it broke - because items both systems got right or both got wrong say nothing about the difference. A three-point net gain might be twelve fixed against six broken, and McNemar's test on those counts gives roughly p = 0.24, still not significant. So the honest answer is that no improvement is demonstrated. What I would do: run McNemar's, report a bootstrap confidence interval on the difference, and read the eighteen examples that flipped, because their pattern is more informative than the aggregate. Roughly four times the examples halves the interval.",
+        "star_framework_tip": "Do the standard-error arithmetic out loud, then upgrade to the paired analysis - the sequence itself is the signal.",
+        "common_pitfalls": [
+          "Accepting the difference because the number is larger",
+          "Using an unpaired two-proportion test and discarding the pairing that makes the comparison powerful"
+        ],
+        "references": [
+          {
+            "title": "Card et al. 2020 - With Little Power Comes Great Responsibility",
+            "url": "https://arxiv.org/abs/2010.02405"
+          },
+          {
+            "title": "Dror et al. 2018 - The Hitchhiker's Guide to Testing Statistical Significance in Natural Language Processing (ACL 2018)",
+            "url": "https://aclanthology.org/P18-1128/"
+          }
+        ]
+      },
+      {
+        "id": "ev_m2",
+        "question": "You tried 20 prompt variants and shipped the best. What is wrong with that number?",
+        "complexity": "Medium",
+        "core_intent": "Multiple comparisons - the most common silent error in prompt engineering.",
+        "preparation_guide": "Selecting the maximum over many noisy estimates inflates it.",
+        "explanation": "Selection on noise inflates the winner. With twenty variants, the maximum observed score is biased upward even if every variant is identical in truth, because you have partly selected the variant that got lucky on this evaluation set. The reported number is therefore an optimistic estimate of the chosen variant's true performance, and the more variants tried, the worse the inflation. The fix is to re-measure the selected variant on a held-out set it was never selected on, and report that number as the result. If the search itself is being reported, correct for multiplicity or report the full distribution of variant scores rather than the maximum. The same logic applies to choosing a checkpoint by validation score and then quoting that validation score, to picking the best of several random seeds, and to tuning a decoding configuration on the test set. This error is invisible because trying many variants feels like diligence rather than a statistical hazard.",
+        "star_framework_tip": "Name the general pattern - selecting and reporting on the same data - so it clearly transfers beyond prompts.",
+        "common_pitfalls": [
+          "Reporting the selected variant's selection-set score as its performance",
+          "Not recognizing checkpoint and seed selection as the same error"
+        ],
+        "references": [
+          {
+            "title": "Card et al. 2020 - With Little Power Comes Great Responsibility",
+            "url": "https://arxiv.org/abs/2010.02405"
+          },
+          {
+            "title": "Dodge et al. 2019 - Show Your Work: Improved Reporting of Experimental Results",
+            "url": "https://arxiv.org/abs/1909.03004"
+          }
+        ]
+      },
+      {
+        "id": "ev_m3",
+        "question": "How do you validate an LLM judge against human labels?",
+        "complexity": "Medium",
+        "core_intent": "Turns judge usage from an assumption into a measured claim.",
+        "preparation_guide": "Sample, label by hand, report agreement and a chance-corrected statistic.",
+        "explanation": "Sample one to two hundred items stratified across the outcome types you care about, label them yourself or with trained annotators under the same rubric the judge receives, and compare. Report raw agreement and Cohen's kappa - the chance-corrected statistic - because raw agreement on a skewed set can look high while carrying almost no information; on a set that is ninety percent one class, a judge that always predicts that class agrees ninety percent of the time and is useless. Also report the direction of disagreement, since a judge that is systematically lenient can still be usable as a relative instrument even when its absolute numbers are wrong. The honest bar is human-to-human agreement on the same items, because annotators disagree with each other too; Zheng et al. found strong judges reaching roughly that level on MT-Bench. Then state the judge's agreement rate alongside every result it produced, exactly as you would report an annotator's, and re-audit whenever the rubric, the judge model, or the task distribution changes.",
+        "star_framework_tip": "Give the skewed-class example for why kappa matters - it makes the point concrete in one sentence.",
+        "common_pitfalls": [
+          "Reporting raw agreement only, with no chance correction",
+          "Auditing once and never re-auditing after the judge model or rubric changes"
+        ],
+        "references": [
+          {
+            "title": "Zheng et al. 2023 - Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena",
+            "url": "https://arxiv.org/abs/2306.05685"
+          },
+          {
+            "title": "Liu et al. 2023 - G-Eval: NLG Evaluation using GPT-4 with Better Human Alignment",
+            "url": "https://arxiv.org/abs/2303.16634"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "ev_s1",
+        "question": "Design the evaluation suite for a RAG assistant.",
+        "complexity": "Hard",
+        "core_intent": "An open design question - the score is in the layering and in what is measured separately.",
+        "preparation_guide": "Four layers - component, end-to-end, regression, online - plus three non-obvious practices.",
+        "explanation": "Four layers, because one end-to-end number cannot attribute a failure to a stage. Component level: recall at k for retrieval and nDCG at ten for the reranker, which catches retrieval regressions that end-to-end accuracy can mask. End-to-end: answer correctness, groundedness - whether every claim is supported by a retrieved passage - citation precision, and correct refusal; hallucination and over-refusal pull in opposite directions, so both must be visible. Regression: a fixed suite containing every previously fixed failure, grown monotonically from production incidents. Online: thumbs, escalation rate and task completion, which measure the gap between the evaluation set and reality. Three practices I would insist on. The oracle-context run, feeding gold passages directly, separates the generation ceiling from retrieval quality and is the single most informative diagnostic in a RAG system. Groundedness must be measured separately from correctness, because an answer can be right but unsupported - lucky parametric knowledge - or supported but wrong. And refusal should be scored as a correct outcome when the corpus does not contain the answer, otherwise the suite trains you to build a system that always guesses. Evaluation questions should come from real user queries where possible, since synthetic questions generated from your own corpus bias toward questions the corpus answers well.",
+        "star_framework_tip": "Name the oracle-context run explicitly - it is the diagnostic most candidates never mention.",
+        "common_pitfalls": [
+          "Proposing a single end-to-end accuracy number with no component-level attribution",
+          "Collapsing groundedness into correctness, which hides both hallucination and retrieval failure"
+        ],
+        "references": [
+          {
+            "title": "Es et al. 2023 - RAGAS: Automated Evaluation of Retrieval Augmented Generation",
+            "url": "https://arxiv.org/abs/2309.15217"
+          },
+          {
+            "title": "Zheng et al. 2023 - Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena",
+            "url": "https://arxiv.org/abs/2306.05685"
+          }
+        ]
+      },
+      {
+        "id": "ev_s2",
+        "question": "Arena-style pairwise rankings are popular. What do they hide?",
+        "complexity": "Hard",
+        "core_intent": "Judgment about the field's own instrument, without dismissing it.",
+        "preparation_guide": "Credit what it solves first, then name four specific limitations.",
+        "explanation": "Credit first: pairwise human preference needs no reference answers, resists contamination because prompts are fresh and user-supplied, and aggregates cleanly into a Bradley-Terry or Elo rating. What it hides: preference is not correctness, since users reward tone, formatting, confidence and length, so a more agreeable model can outrank a more accurate one - the same style-over-substance bias as an LLM judge, now in humans. It averages over an unrepresentative prompt mix dominated by casual general queries, so a model ranked third overall can be clearly first on a specific task. Ratings assume a stable and transitive comparison, while models are updated behind the same name, so the population being measured drifts. And a single scalar compresses capabilities that genuinely trade off - refusal behavior, long-context ability, tool use. Category-level ratings and style-controlled variants address part of this and are now standard. The usable conclusion is to treat ratings as a prior for shortlisting and never as evidence for your task: two models within a few rating points are indistinguishable for your purposes until you run them on your own set.",
+        "star_framework_tip": "Open by crediting what it solves - criticism of a widely used instrument lands better when you show you know why it exists.",
+        "common_pitfalls": [
+          "Dismissing arena ratings entirely rather than scoping their validity",
+          "Quoting a rank without checking the published confidence interval"
+        ],
+        "references": [
+          {
+            "title": "Chiang et al. 2024 - Chatbot Arena: An Open Platform for Evaluating LLMs by Human Preference",
+            "url": "https://arxiv.org/abs/2403.04132"
+          },
+          {
+            "title": "Zheng et al. 2023 - Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena",
+            "url": "https://arxiv.org/abs/2306.05685"
+          }
+        ]
+      },
+      {
+        "id": "ev_s3",
+        "question": "Your offline metric improved but users complained. Diagnose it.",
+        "complexity": "Hard",
+        "core_intent": "The gap between an evaluation set and reality - a core applied-science skill.",
+        "preparation_guide": "Work through distribution mismatch, metric mismatch, aggregation, and instrument drift.",
+        "explanation": "Four hypotheses, each with a cheap test. Distribution mismatch: the evaluation set does not resemble production traffic - sample recent real queries, re-run both versions on them, and compare; this is the most common cause, especially when the eval set was synthetically generated. Metric mismatch: the metric does not capture what users value - if the metric is answer correctness but complaints are about verbosity, latency or tone, then the metric was never measuring the complaint, and the fix is to add those dimensions rather than to distrust the number. Aggregation hiding a slice: the average improved while an important segment regressed, so slice by query type, language, document source and length, since a large regression on a small critical slice is invisible in the mean. Instrument drift: if an LLM judge produced the offline number and the judge model or rubric changed, the two measurements are not comparable and the improvement may be an artifact - re-audit against human labels. The concluding practice is to add every user complaint to the regression suite, which is how the offline set converges toward reality over time.",
+        "star_framework_tip": "Give a test for each hypothesis - a list of causes without discriminating tests is not a diagnosis.",
+        "common_pitfalls": [
+          "Abandoning offline evaluation rather than fixing its distribution and metrics",
+          "Never slicing the metric, which is where most hidden regressions live"
+        ],
+        "references": [
+          {
+            "title": "Card et al. 2020 - With Little Power Comes Great Responsibility",
+            "url": "https://arxiv.org/abs/2010.02405"
+          },
+          {
+            "title": "Es et al. 2023 - RAGAS: Automated Evaluation of Retrieval Augmented Generation",
+            "url": "https://arxiv.org/abs/2309.15217"
+          }
+        ]
+      }
+    ]
+  }
+}

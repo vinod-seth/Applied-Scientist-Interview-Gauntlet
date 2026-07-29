@@ -29,10 +29,12 @@ SESSION 3 — CORE THEORY                         SESSION 4 — DL & TRANSFORMER
 └─ [ ] MOCK ROUND: ML breadth                   ├─ [ ] Training pathologies & debugging
                                                 └─ [ ] MOCK ROUND: DL breadth
 SESSION 5 — LLMs & RETRIEVAL
-├─ [ ] PEFT landscape                           SESSION 6 — DSA
-├─ [ ] Decoding & sampling                      ├─ [ ] Pattern fluency
-├─ [ ] RAG design space                         ├─ [ ] Interview protocol
-├─ [ ] LLM evaluation                           └─ [ ] MOCK ROUND: Coding
+├─ [ ] PEFT memory arithmetic & landscape       SESSION 6 — DSA
+├─ [ ] Decoding, sampling & speculative         ├─ [ ] Pattern fluency
+├─ [ ] Scaling laws & compute-optimal           ├─ [ ] Interview protocol
+├─ [ ] SFT / RLHF / DPO stack                   └─ [ ] MOCK ROUND: Coding
+├─ [ ] RAG design space & hybrid retrieval
+├─ [ ] LLM evaluation & paired statistics
 └─ [ ] MOCK ROUND: LLMs
                                                 SESSION 8 — LP & STAR
 SESSION 7 — ML FROM SCRATCH                     ├─ [ ] Story bank (12 stories)

@@ -1,0 +1,231 @@
+{
+  "lesson_title": "Scaling Behavior and the Post-Training Stack",
+  "rehearsal": {
+    "prompt": "Scaling and alignment rehearsal. Arithmetic for the scaling questions - C = 6ND and the token-per-parameter ratio - and explicit objectives for the alignment ones. Give the KL term and say what it prevents.",
+    "minSeconds": 30,
+    "maxSeconds": 90,
+    "rubric": "mechanism",
+    "questions": [
+      "What is a scaling law, and what does it predict?",
+      "How does a base model become an assistant? Name the stages.",
+      "Fixed compute budget - how big a model and how many tokens?",
+      "Modern models are trained far past 20 tokens per parameter. Why is that not a mistake?",
+      "Are emergent abilities real?",
+      "Why does RLHF need a KL penalty against the reference policy?",
+      "State the RLHF and DPO objectives and the real trade between them.",
+      "How would you tell whether your reward model is being hacked?",
+      "You have a fixed budget and must choose between a bigger model and more data. Walk me through the decision."
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "sc_j1",
+        "question": "What is a scaling law, and what does it predict?",
+        "complexity": "Easy",
+        "core_intent": "Checks whether the candidate knows scaling laws are quantitative predictions, not a slogan.",
+        "preparation_guide": "Power-law relationship between loss and parameters, data, or compute - plus an irreducible floor.",
+        "explanation": "A scaling law is an empirically fitted relationship showing that test loss falls as a power law in model parameters, training tokens and compute, over many orders of magnitude. The practical value is prediction: you can fit the curve on a scan of small runs and forecast the loss of a much larger one before paying for it, which is how large training runs are planned and sanity-checked. The Chinchilla parametric form makes the structure explicit - loss equals an irreducible term E plus A over N to the alpha plus B over D to the beta - so loss approaches a floor rather than zero. That floor is the entropy of the text itself: some next tokens are genuinely unpredictable. The important limitation is that scaling laws predict loss well and downstream task performance much less well.",
+        "star_framework_tip": "Mention the irreducible term - it shows you have read the functional form, not just the headline.",
+        "common_pitfalls": [
+          "Saying 'bigger is better' instead of stating a predictive relationship",
+          "Claiming loss can be driven to zero with enough scale"
+        ],
+        "references": [
+          {
+            "title": "Kaplan et al. 2020 - Scaling Laws for Neural Language Models",
+            "url": "https://arxiv.org/abs/2001.08361"
+          },
+          {
+            "title": "Hoffmann et al. 2022 - Training Compute-Optimal Large Language Models",
+            "url": "https://arxiv.org/abs/2203.15556"
+          }
+        ]
+      },
+      {
+        "id": "sc_j2",
+        "question": "How does a base model become an assistant? Name the stages and what each buys.",
+        "complexity": "Easy",
+        "core_intent": "The pipeline question - names alone score nothing.",
+        "preparation_guide": "Pretraining gives capability, SFT gives format, preference optimization gives ranking.",
+        "explanation": "Three stages. Pretraining on trillions of unlabeled tokens with a next-token objective installs capability and knowledge; the resulting base model completes text rather than answering questions. Supervised fine-tuning on a curated set of prompt-response demonstrations, usually thousands to tens of thousands of examples, installs the format of an answer: follow the instruction, adopt the assistant register, and stop. Preference optimization on ranked pairs, using RLHF or DPO, installs ranking - helpfulness, honesty, refusal behavior and tone. The reason the third stage exists is that a demonstration says 'this is a good answer' but never says 'this is better than that plausible alternative', and human annotators agree far more reliably on which of two responses is better than on what the ideal response should be. Cost profile: pretraining is millions of dollars, the two later stages are far cheaper, and most of the behavior a user perceives comes from them.",
+        "star_framework_tip": "Say what each stage buys, not just its name - that column is the whole answer.",
+        "common_pitfalls": [
+          "Listing the stages without explaining why preference data adds anything over demonstrations",
+          "Believing RLHF adds knowledge rather than shaping behavior"
+        ],
+        "references": [
+          {
+            "title": "Ouyang et al. 2022 - Training Language Models to Follow Instructions with Human Feedback",
+            "url": "https://arxiv.org/abs/2203.02155"
+          }
+        ]
+      },
+      {
+        "id": "sc_j3",
+        "question": "Why does RLHF need a KL penalty against the reference policy?",
+        "complexity": "Easy",
+        "core_intent": "Tests whether the objective is understood as a constrained optimization.",
+        "preparation_guide": "The reward model is a proxy; without a leash the policy exploits it.",
+        "explanation": "The reward model is a learned proxy for human preference, accurate near the distribution it was trained on and unreliable away from it. Optimizing reward without constraint drives the policy toward whatever maximizes the proxy, which is often degenerate text that scores highly and helps nobody - reward hacking. The objective therefore maximizes expected reward minus beta times the KL divergence between the current policy and the reference model it started from, so the policy may only move so far from a known-good distribution. Beta sets that leash: too large and the policy barely changes, too small and it drifts into exploitation. The same term reappears inside DPO, where the implicit reward is beta times the log ratio of the policy to the reference, so the constraint has not vanished, only been folded into the loss.",
+        "star_framework_tip": "Name reward hacking explicitly as the failure the term prevents.",
+        "common_pitfalls": [
+          "Describing the KL term as generic regularization with no named failure mode",
+          "Thinking DPO removed the KL constraint"
+        ],
+        "references": [
+          {
+            "title": "Ouyang et al. 2022 - Training Language Models to Follow Instructions with Human Feedback",
+            "url": "https://arxiv.org/abs/2203.02155"
+          },
+          {
+            "title": "Gao et al. 2022 - Scaling Laws for Reward Model Overoptimization",
+            "url": "https://arxiv.org/abs/2210.10760"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "sc_m1",
+        "question": "You have a fixed compute budget. How big a model and how many tokens?",
+        "complexity": "Medium",
+        "core_intent": "Pure arithmetic with a published answer - the candidate should produce numbers.",
+        "preparation_guide": "Start from C = 6ND, then apply the roughly 20-tokens-per-parameter result.",
+        "explanation": "Training compute is approximately C = 6ND for N parameters and D tokens, about two FLOPs per parameter for the forward pass and four for the backward. Hoffmann et al. fit loss as a function of both and minimized under that constraint, finding that parameters and tokens should scale in roughly equal proportion - about 20 tokens per parameter. The demonstration is the memorable part: Chinchilla at 70 billion parameters and 1.4 trillion tokens outperformed Gopher at 280 billion parameters and 300 billion tokens at the same training compute, so a model four times smaller trained on nearly five times more data won. That overturned the earlier reading of Kaplan et al., whose fit was biased toward parameters because it used a fixed learning-rate schedule not adapted to each run's token count. For a worked case, a budget of 1e22 FLOPs gives ND of about 1.67e21, so with D = 20N you get roughly a 9 billion parameter model on 180 billion tokens.",
+        "star_framework_tip": "Do one worked allocation out loud - it converts a remembered ratio into a demonstrated method.",
+        "common_pitfalls": [
+          "Quoting 20 tokens per parameter without the C = 6ND constraint it comes from",
+          "Not knowing why the earlier Kaplan recommendation differed"
+        ],
+        "references": [
+          {
+            "title": "Hoffmann et al. 2022 - Training Compute-Optimal Large Language Models",
+            "url": "https://arxiv.org/abs/2203.15556"
+          },
+          {
+            "title": "Kaplan et al. 2020 - Scaling Laws for Neural Language Models",
+            "url": "https://arxiv.org/abs/2001.08361"
+          }
+        ]
+      },
+      {
+        "id": "sc_m2",
+        "question": "Modern models are trained far past 20 tokens per parameter. Why is that not a mistake?",
+        "complexity": "Medium",
+        "core_intent": "Separates understanding the constraint from memorizing the ratio.",
+        "preparation_guide": "Chinchilla optimizes training compute only; inference cost scales with parameters.",
+        "explanation": "Chinchilla answers the question 'minimize loss for a fixed training budget', and almost nobody's real objective is training compute alone. If a model serves millions of requests, inference dominates lifetime cost, and inference cost scales with parameter count rather than with the number of tokens the model was trained on. So it pays to move away from the compute-optimal point: take a smaller model and train it far past the 20-to-1 ratio, accepting worse loss per training FLOP in exchange for a permanently cheaper model to serve. Llama-family releases did exactly this, training 8-billion-parameter models on multi-trillion-token corpora, roughly an order of magnitude past compute-optimal. Sardana et al. formalized it by adding expected inference volume to the objective, which shifts the optimum toward smaller models trained longer. The limits are that returns decay along the data term, repeated epochs lose value, and heavily overtrained models can be more sensitive to post-training quantization.",
+        "star_framework_tip": "State that the objective changed, not that the result was wrong.",
+        "common_pitfalls": [
+          "Saying Chinchilla was refuted rather than answering a different question",
+          "Missing that inference cost tracks parameters, not training tokens"
+        ],
+        "references": [
+          {
+            "title": "Sardana et al. 2023 - Beyond Chinchilla-Optimal: Accounting for Inference in Language Model Scaling Laws",
+            "url": "https://arxiv.org/abs/2401.00448"
+          },
+          {
+            "title": "Hoffmann et al. 2022 - Training Compute-Optimal Large Language Models",
+            "url": "https://arxiv.org/abs/2203.15556"
+          }
+        ]
+      },
+      {
+        "id": "sc_m3",
+        "question": "Are emergent abilities real?",
+        "complexity": "Medium",
+        "core_intent": "A judgment question; the strong answer is qualified rather than a side taken.",
+        "preparation_guide": "Distinguish smooth capability from discontinuous metrics.",
+        "explanation": "Partly. Wei et al. reported that some abilities appear abruptly past a scale threshold rather than improving smoothly. Schaeffer et al. then showed that a large share of those curves are artifacts of the scoring function: exact match and multi-step accuracy are discontinuous, so an answer that is ninety percent correct scores zero, and smooth improvement in per-token accuracy produces a step-shaped aggregate curve. Re-scoring the same outputs with a continuous metric such as token edit distance or the log-likelihood of the correct answer usually flattens the jump, and small test sets with log-scaled axes exaggerate it further. The balanced statement is that capabilities improve smoothly while the metrics we care about can improve abruptly, because a task requiring eight correct steps in a row stays at zero until per-step reliability is high enough. The practical consequence is to prefer partial-credit metrics when comparing model sizes, or a real trend will be hidden.",
+        "star_framework_tip": "Give both halves - the metric artifact and the operational reality - rather than picking a side.",
+        "common_pitfalls": [
+          "Answering only 'emergence is a mirage', which is as incomplete as the opposite",
+          "Not knowing the mechanism, which is metric discontinuity rather than measurement error"
+        ],
+        "references": [
+          {
+            "title": "Wei et al. 2022 - Emergent Abilities of Large Language Models",
+            "url": "https://arxiv.org/abs/2206.07682"
+          },
+          {
+            "title": "Schaeffer et al. 2023 - Are Emergent Abilities of Large Language Models a Mirage?",
+            "url": "https://arxiv.org/abs/2304.15004"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "sc_s1",
+        "question": "State the RLHF and DPO objectives and the real trade between them.",
+        "complexity": "Hard",
+        "core_intent": "The senior-signal question in this area - it requires both objectives, not a description.",
+        "preparation_guide": "Bradley-Terry reward model plus KL-regularized PPO, versus the closed-form inversion that yields a classification loss.",
+        "explanation": "RLHF has three stages: collect preference pairs, fit a reward model with the Bradley-Terry likelihood so that the probability of preferring the winner is sigmoid of the reward difference, then optimize the policy with PPO to maximize expected reward minus beta times the KL divergence to the reference policy. DPO removes the reward model. Its insight is that the KL-regularized objective has a closed-form optimal policy, which can be inverted to express the reward in terms of the policy; substituting that into the Bradley-Terry likelihood turns preference learning into a direct classification loss on the policy, with an implicit reward of beta times the log ratio of policy to reference. No reward model, no sampling loop, no PPO. The trade is that DPO is off-policy: it only ever sees a fixed preference dataset, whereas RLHF keeps sampling from the current policy and scoring those samples, supplying fresh signal exactly where the policy is now weak. With a strong reward model and compute to spare, online RLHF still tends to reach a higher ceiling, which is why iterative and online DPO variants exist.",
+        "star_framework_tip": "Say 'off-policy versus on-policy' - it is the sentence that shows you understand the trade rather than the recipe.",
+        "common_pitfalls": [
+          "Describing DPO as 'simpler RLHF' without the closed-form inversion that makes it work",
+          "Claiming DPO is strictly better, when its advantage is engineering simplicity rather than a higher ceiling"
+        ],
+        "references": [
+          {
+            "title": "Rafailov et al. 2023 - Direct Preference Optimization",
+            "url": "https://arxiv.org/abs/2305.18290"
+          },
+          {
+            "title": "Ouyang et al. 2022 - Training Language Models to Follow Instructions with Human Feedback",
+            "url": "https://arxiv.org/abs/2203.02155"
+          }
+        ]
+      },
+      {
+        "id": "sc_s2",
+        "question": "How would you tell whether your reward model is being hacked?",
+        "complexity": "Hard",
+        "core_intent": "Experimental judgment about optimizing a proxy - the same pattern as any proxy metric.",
+        "preparation_guide": "Track proxy reward against an independent evaluation and look for divergence.",
+        "explanation": "Track the proxy reward and an independent evaluation - held-out human judgments or a stronger model's assessment - along the same training curve. The fingerprint of overoptimization is reward climbing while the independent measure falls; Gao et al. characterized this divergence quantitatively as a function of KL distance from the initial policy. Supporting signals are the KL to the reference growing quickly, output length inflating, since length is the most common reward-model bias, and stereotyped phrasings appearing across unrelated prompts. Mitigations in rough order of cost: early-stop on the independent evaluation rather than on reward, raise beta to shorten the leash, ensemble several reward models so idiosyncratic exploits do not survive, and refresh preference data by collecting comparisons on the current policy's own samples so the reward model stays in distribution. The general lesson worth stating is that this is Goodhart's law with a measurable KL axis, and the same reasoning applies to optimizing prompts against an LLM judge.",
+        "star_framework_tip": "Connect it explicitly to overfitting an LLM judge - the same failure with a different proxy.",
+        "common_pitfalls": [
+          "Proposing only qualitative inspection with no independent metric tracked over training",
+          "Not naming length inflation, the most common and most measurable symptom"
+        ],
+        "references": [
+          {
+            "title": "Gao et al. 2022 - Scaling Laws for Reward Model Overoptimization",
+            "url": "https://arxiv.org/abs/2210.10760"
+          },
+          {
+            "title": "Bai et al. 2022 - Constitutional AI: Harmlessness from AI Feedback",
+            "url": "https://arxiv.org/abs/2212.08073"
+          }
+        ]
+      },
+      {
+        "id": "sc_s3",
+        "question": "Your team must improve a deployed assistant. Would you spend the budget on more pretraining, more SFT data, or preference data?",
+        "complexity": "Hard",
+        "core_intent": "Resource allocation under uncertainty - tests whether the candidate diagnoses before spending.",
+        "preparation_guide": "Diagnose the failure type first, then map each failure type to the stage that fixes it.",
+        "explanation": "Diagnose before allocating, because each stage fixes a different failure. Sample a few hundred real failures and classify them. Failures of knowledge or reasoning - the model does not know or cannot do the task at all - point at capability, which more pretraining or a larger base model addresses, and that is the most expensive option by orders of magnitude; retrieval is usually the cheaper substitute for the knowledge half. Failures of format, task compliance or register - correct content in the wrong shape - point at SFT, where a few thousand well-curated demonstrations are cheap and fast. Failures of judgment - the answer is valid but a better one was available, or the model refuses when it should answer and answers when it should refuse - point at preference data, since only comparisons express 'better than'. The answer an interviewer is listening for is the triage step and a stated expectation: most deployed-assistant complaints resolve to the two cheap stages, and buying pretraining before checking that is a common and expensive mistake.",
+        "star_framework_tip": "Lead with the failure-classification exercise; the allocation follows from it.",
+        "common_pitfalls": [
+          "Choosing a stage before characterizing the failures",
+          "Ignoring that retrieval may be the cheapest fix for the knowledge category"
+        ],
+        "references": [
+          {
+            "title": "Ouyang et al. 2022 - Training Language Models to Follow Instructions with Human Feedback",
+            "url": "https://arxiv.org/abs/2203.02155"
+          },
+          {
+            "title": "Zhou et al. 2023 - LIMA: Less Is More for Alignment",
+            "url": "https://arxiv.org/abs/2305.11206"
+          }
+        ]
+      }
+    ]
+  }
+}

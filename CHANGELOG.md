@@ -2,6 +2,32 @@
 
 All notable changes to this course are documented here. Versioning follows `MAJOR.MINOR`.
 
+## [1.8] — 2026-07-29
+
+### Added
+- **Session 5 — LLMs, Fine-Tuning & Retrieval** (`tutorial/05_llms_finetuning_retrieval/`), replacing its locked stub. Where Session 4 rewarded derivation, this session rewards **judgment under a stated constraint**: most of its questions have several defensible answers, and the score comes from naming the trade-off and the measurement that would settle it.
+  - Session README with the scope brief framed as "the version everyone gives vs. the version that scores", plus an explicit note on how this session relates to Sessions 1 and 2 — it places *your* QLoRA run inside the PEFT landscape and *your* RAG study inside the retrieval design space rather than repeating either.
+  - Lesson 1: The PEFT Landscape — the ≈16 bytes/param breakdown and what freezing removes, LoRA stated exactly ($W_0 + \frac{\alpha}{r}BA$, $B=0$ at init, $r(d+k)$ parameters), the mergeability axis across DoRA/IA³/adapters/soft prompts, multi-adapter serving, and the three cases where PEFT is the wrong choice.
+  - Lesson 2: Decoding & Sampling — why likelihood-maximizing text degenerates, top-k's failure mode against top-p and min-p, the reshape-then-truncate order of operations, repetition diagnosed in three causes (including the missing-EOS bug), speculative decoding as an **exact** bandwidth optimization, and constrained decoding as a syntax-only guarantee.
+  - Lesson 3: Scaling Behavior & the Post-Training Stack — $C \approx 6ND$ and the Chinchilla allocation, why serving-oriented models are deliberately overtrained, emergence as partly a metric artifact, and the capability → format → ranking pipeline with both the RLHF and DPO objectives stated and the off-policy trade named.
+  - Lesson 4: The RAG Design Space — the two-stage recall/precision split, hybrid retrieval with rank-based RRF, why cross-encoders cannot be indexed, the RAG vs fine-tuning vs long-context decision rule, and ANN search as a second independent recall loss.
+  - Lesson 5: Evaluating LLM Systems — the two gates (instrument validity, then statistics), paired analysis with McNemar's, judge bias and the human audit with Cohen's $\kappa$, benchmark contamination with the GSM1k evidence, four-layer suite design, and what arena ratings hide.
+  - Lesson 6: Mock Round — 14 turn-by-turn questions, three **set-piece design questions** (design the retrieval system; design the evaluation; spend one 24 GB GPU), a 15-row self-assessment, and a synthesis question tracing knowledge/behavior → retrieve/adapt → decode → evaluate.
+  - Chapter quiz (12 questions + 2 reflections, one of which re-audits the candidate's own RAG study under Lesson 5's methodology) and six interview suites (junior/mid/senior, 3 each) totalling **54 questions**, each carrying a `rehearsal` block.
+  - Armory notebook `llm_systems_lab.ipynb` (CPU-only, no model downloads): the 112 → 14.4 → 3.9 GB memory ladder computed, an SVD study showing a rank-12 update captured at ~98% with under 5% of the parameters, top-p's nucleus measured at 4 vs ~25,000 tokens across two contexts and its interaction with temperature, compute-optimal allocation solved numerically and then re-solved with inference cost, a hybrid retriever scoring 8/8 recall@3 against 5/8 and 6/8 for its components, and McNemar's test, a power curve, and a selection-bias simulation for the evaluation drills.
+
+### Changed
+- README course map: Session 5 marked delivered; version bumped to 1.8.
+- PROGRESS.md mastery tracker: Session 5's six core topics replace the four placeholders, and the two-column layout re-aligned.
+- metadata.json: `module_05` unlocked with eight lessons and per-lesson modes; lesson count 37 → 44; the Session 6 stub's unlock text no longer refers to "clearing" an assessment, which the de-gaming in 1.7 had left behind.
+- Session 4's mock round now links forward to the Session 5 README instead of the deleted locked stub.
+
+### Fixed
+- Lesson 3 and the Lab both note that the **≈20 tokens-per-parameter rule rests on Chinchilla's isoFLOP analysis, not its parametric fit**: solving the constrained optimization with the paper's published coefficients returns a substantially higher ratio, and Besiroglu et al. 2024 found those coefficients irreconcilable with the paper's own data. The Lab performs the calculation so the discrepancy is visible rather than asserted.
+
+### Removed
+- `tutorial/05_llms_finetuning_retrieval/00_locked.md`.
+
 ## [1.7] — 2026-07-29
 
 ### Added

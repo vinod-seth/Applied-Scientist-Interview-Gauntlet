@@ -1,0 +1,235 @@
+{
+  "lesson_title": "The PEFT Landscape: LoRA, QLoRA, Adapters and the Alternatives",
+  "rehearsal": {
+    "prompt": "Parameter-efficient fine-tuning rehearsal. Lead with memory arithmetic - bytes per parameter, then what freezing removes. Every answer needs either a number or a trade-off. Be exact that LoRA and QLoRA remove different terms.",
+    "minSeconds": 30,
+    "maxSeconds": 90,
+    "rubric": "mechanism",
+    "questions": [
+      "What is LoRA and why does it save memory?",
+      "How much memory does full fine-tuning a 7B model need, and where does it go?",
+      "What does the alpha parameter do in LoRA, and how do you choose the rank?",
+      "Is QLoRA's memory saving the same as LoRA's? Be exact.",
+      "Walk me through the PEFT landscape and what each method trades.",
+      "Which modules would you attach LoRA to, and why does that choice matter more than rank?",
+      "You must serve 50 customer-specific adapters on one model. Design the serving path.",
+      "When is PEFT the wrong choice?",
+      "Your LoRA fine-tune underperforms full fine-tuning on a new domain. Diagnose it."
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "pf_j1",
+        "question": "What is LoRA and why does it save memory?",
+        "complexity": "Easy",
+        "core_intent": "Checks whether the candidate knows the mechanism rather than the slogan.",
+        "preparation_guide": "State the parameterization first, then say which memory term disappears.",
+        "explanation": "LoRA freezes the pretrained weight matrix W0 and learns a low-rank update, so the effective weight is W0 + (alpha/r) * B @ A with B of shape (d, r) and A of shape (r, k) for a rank r much smaller than d and k. Trainable parameters drop from d*k to r*(d+k) - at d = k = 4096 and r = 8 that is 65,536 instead of 16.8 million, about 0.4 percent. The memory saving is larger than the parameter saving suggests: mixed-precision AdamW keeps gradients and two optimizer moments plus an fp32 master copy for every trainable parameter, roughly 14 bytes per parameter beyond the weights themselves, and all of that disappears for the frozen base.",
+        "star_framework_tip": "Give the parameter count for a concrete matrix size rather than saying 'a small fraction'.",
+        "common_pitfalls": [
+          "Saying it trains fewer parameters without naming the optimizer-state term that actually dominates",
+          "Getting the trainable count wrong as r*d instead of r*(d+k) - there are two matrices"
+        ],
+        "references": [
+          {
+            "title": "Hu et al. 2021 - LoRA: Low-Rank Adaptation of Large Language Models",
+            "url": "https://arxiv.org/abs/2106.09685"
+          }
+        ]
+      },
+      {
+        "id": "pf_j2",
+        "question": "How much memory does full fine-tuning a 7B model need, and where does it go?",
+        "complexity": "Easy",
+        "core_intent": "The arithmetic that makes every PEFT method follow logically.",
+        "preparation_guide": "Count bytes per parameter for weights, gradients, optimizer moments and master weights.",
+        "explanation": "In standard mixed-precision AdamW training the cost is about 16 bytes per parameter: 2 bytes for fp16 or bf16 weights, 2 for gradients, 4 each for the two Adam moments held in fp32, and 4 for the fp32 master copy of the weights. At 7 billion parameters that is roughly 112 GB before activations, which is why full fine-tuning does not fit on a single 80 GB accelerator. The reading that matters is that only 2 of those 16 bytes are the weights - the other 14 exist solely for parameters being trained - so freezing the base removes almost the entire cost regardless of how large the frozen model is.",
+        "star_framework_tip": "Say the 16-bytes-per-parameter figure and then immediately say that only 2 of them are weights.",
+        "common_pitfalls": [
+          "Quoting only the weight memory and forgetting optimizer state",
+          "Forgetting that activations are unaffected by freezing, which is why gradient checkpointing still appears alongside PEFT"
+        ],
+        "references": [
+          {
+            "title": "Rajbhandari et al. 2020 - ZeRO: Memory Optimizations Toward Training Trillion Parameter Models",
+            "url": "https://arxiv.org/abs/1910.02054"
+          },
+          {
+            "title": "Dettmers et al. 2023 - QLoRA: Efficient Finetuning of Quantized LLMs",
+            "url": "https://arxiv.org/abs/2305.14314"
+          }
+        ]
+      },
+      {
+        "id": "pf_j3",
+        "question": "What does the alpha parameter do in LoRA, and how do you choose the rank?",
+        "complexity": "Easy",
+        "core_intent": "Tests whether the hyperparameters are understood or copied from a config file.",
+        "preparation_guide": "alpha/r is a scaling constant that decouples rank from update magnitude.",
+        "explanation": "The update is scaled by alpha/r, so raising the rank does not automatically raise the magnitude of the change applied to the model. That decoupling is the point: you can sweep rank without re-tuning the learning rate, and in practice alpha/r behaves like a learning-rate multiplier on the adapter. For rank itself the honest answer is empirical - start at 8 to 16, sweep, and expect saturation quickly on narrow tasks, because the update needed to specialize a model on a task it already broadly understands has low intrinsic dimension. A more useful lever than rank is which modules the adapters are attached to: covering all attention projections and the MLP typically helps more than doubling the rank on a subset.",
+        "star_framework_tip": "Say that module coverage usually matters more than rank - it signals hands-on experience.",
+        "common_pitfalls": [
+          "Describing alpha as a learning rate rather than a scaling constant",
+          "Claiming a single 'best' rank instead of describing a sweep and its saturation"
+        ],
+        "references": [
+          {
+            "title": "Hu et al. 2021 - LoRA: Low-Rank Adaptation of Large Language Models",
+            "url": "https://arxiv.org/abs/2106.09685"
+          },
+          {
+            "title": "Aghajanyan et al. 2020 - Intrinsic Dimensionality Explains the Effectiveness of Language Model Fine-Tuning",
+            "url": "https://arxiv.org/abs/2012.13255"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "pf_m1",
+        "question": "Is QLoRA's memory saving the same as LoRA's? Be exact.",
+        "complexity": "Medium",
+        "core_intent": "The discriminating question in this area - the two methods remove different terms.",
+        "preparation_guide": "LoRA removes optimizer and gradient state; QLoRA additionally shrinks the frozen weights.",
+        "explanation": "No, and they compose. LoRA removes the gradient, optimizer-moment and master-weight terms for the base model, which is about 14 of the 16 bytes per parameter in mixed-precision AdamW. QLoRA keeps that saving and adds a second one: the frozen base is stored in 4-bit NF4, a quantization grid whose levels are the quantiles of a normal distribution and therefore matched to how weights are actually distributed, taking a 7B base from roughly 14 GB to 3.5 GB. It also uses double quantization for the quantization constants and paged optimizers to survive memory spikes. After both, activations dominate, which is why gradient checkpointing usually appears alongside. The cost of QLoRA is slower steps, since weights are dequantized on every forward pass.",
+        "star_framework_tip": "Name the two terms separately - candidates who blur them lose the follow-up immediately.",
+        "common_pitfalls": [
+          "Treating QLoRA as 'LoRA but smaller' rather than a second, independent saving",
+          "Not mentioning the step-time cost of dequantization"
+        ],
+        "references": [
+          {
+            "title": "Dettmers et al. 2023 - QLoRA: Efficient Finetuning of Quantized LLMs",
+            "url": "https://arxiv.org/abs/2305.14314"
+          },
+          {
+            "title": "Hu et al. 2021 - LoRA: Low-Rank Adaptation of Large Language Models",
+            "url": "https://arxiv.org/abs/2106.09685"
+          }
+        ]
+      },
+      {
+        "id": "pf_m2",
+        "question": "Walk me through the PEFT landscape and say what each method trades.",
+        "complexity": "Medium",
+        "core_intent": "Tests breadth, but scores only on the trade-off column.",
+        "preparation_guide": "Group by where the trainable structure lives, and note whether it can be merged back into the weights.",
+        "explanation": "Reparameterized methods - LoRA, QLoRA and DoRA - learn an update that folds back into the weight matrix, so after merging there is zero inference overhead; DoRA splits the weight into magnitude and direction and applies the low-rank update to direction only, closing much of the gap to full fine-tuning at low rank for extra step cost. Serial adapters, the Houlsby design, insert bottleneck MLPs inside each block: modular and strong, but they add real depth to every forward pass. Input-side methods - prefix tuning and prompt tuning - change no weights at all but consume context length and optimize unstably. IA3 learns three vectors that rescale keys, values and the feed-forward activations, roughly 0.01 percent of parameters, at reduced expressivity. BitFit trains only bias terms, a cheap baseline with a low ceiling. The organizing axis for production is mergeability: LoRA-family methods win on deployment because they leave inference untouched.",
+        "star_framework_tip": "State the mergeability axis explicitly - it turns a list into a decision rule.",
+        "common_pitfalls": [
+          "Listing method names with no trade attached",
+          "Forgetting that serial adapters add inference latency while LoRA does not"
+        ],
+        "references": [
+          {
+            "title": "Houlsby et al. 2019 - Parameter-Efficient Transfer Learning for NLP",
+            "url": "https://arxiv.org/abs/1902.00751"
+          },
+          {
+            "title": "Liu et al. 2024 - DoRA: Weight-Decomposed Low-Rank Adaptation",
+            "url": "https://arxiv.org/abs/2402.09353"
+          },
+          {
+            "title": "Liu et al. 2022 - Few-Shot Parameter-Efficient Fine-Tuning is Better and Cheaper than In-Context Learning (IA3)",
+            "url": "https://arxiv.org/abs/2205.05638"
+          }
+        ]
+      },
+      {
+        "id": "pf_m3",
+        "question": "Your LoRA fine-tune underperforms a full fine-tune on a new domain. How do you diagnose and respond?",
+        "complexity": "Medium",
+        "core_intent": "Checks whether the candidate can reason about capacity versus optimization.",
+        "preparation_guide": "Separate 'not enough capacity in the update' from 'not enough coverage or training'.",
+        "explanation": "Work in order of cheapness. First check coverage: adapters attached only to the query and value projections leave the MLP untouched, and on domain shifts the MLP often carries the needed change - extending to all linear layers is usually a larger gain than raising rank. Second check the learning rate: LoRA typically wants a rate an order of magnitude higher than full fine-tuning, and a rate copied from a full fine-tuning recipe underfits. Third raise rank and observe whether the gap narrows; if it does not, the ceiling is not rank. Fourth, accept the structural explanation: Biderman et al. found LoRA learns less and forgets less than full fine-tuning, with the gap largest on targets far from the pretraining distribution such as new languages or code. If the domain is genuinely far away, continued pretraining on domain text before adapting, or full fine-tuning, is the right answer rather than more rank.",
+        "star_framework_tip": "Order the checks from cheapest to most expensive and say what result would end the search.",
+        "common_pitfalls": [
+          "Immediately raising rank without checking module coverage or learning rate",
+          "Treating the LoRA-versus-full gap as a bug when it is a documented trade"
+        ],
+        "references": [
+          {
+            "title": "Biderman et al. 2024 - LoRA Learns Less and Forgets Less",
+            "url": "https://arxiv.org/abs/2405.09673"
+          },
+          {
+            "title": "Hu et al. 2021 - LoRA: Low-Rank Adaptation of Large Language Models",
+            "url": "https://arxiv.org/abs/2106.09685"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "pf_s1",
+        "question": "You must serve 50 customer-specific adapters on one base model. Design the serving path.",
+        "complexity": "Hard",
+        "core_intent": "Separates people who have deployed adapters from people who have trained one.",
+        "preparation_guide": "Merging is right for one adapter and wrong for fifty - explain why, then describe batched multi-adapter serving.",
+        "explanation": "Merging each adapter produces 50 full-size checkpoints and destroys the ability to batch requests from different customers together, so it is the wrong design at this count even though it has zero per-token overhead. Instead keep the adapters unmerged: one base model stays resident, each request carries its small A and B tensors, and the runtime computes the shared base projection once for the whole batch and adds each request's low-rank term with a batched adapter kernel. That is the S-LoRA and Punica design, and it is what makes per-customer models economically viable. The costs to state are one extra small matrix multiply per adapted layer, adapter residency competing with the KV cache for memory, and a paging path for idle adapters, which is cheap because adapters are megabytes. Merging remains correct for a single-tenant on-premise deployment, with the caveat that merging a QLoRA adapter into a 4-bit base requires dequantizing first.",
+        "star_framework_tip": "Say what merging costs in checkpoints and lost batching before offering the alternative.",
+        "common_pitfalls": [
+          "Proposing 50 merged models without noticing the memory and batching consequences",
+          "Ignoring that adapters and the KV cache compete for the same device memory"
+        ],
+        "references": [
+          {
+            "title": "Sheng et al. 2023 - S-LoRA: Serving Thousands of Concurrent LoRA Adapters",
+            "url": "https://arxiv.org/abs/2311.03285"
+          },
+          {
+            "title": "Chen et al. 2023 - Punica: Multi-Tenant LoRA Serving",
+            "url": "https://arxiv.org/abs/2310.18547"
+          }
+        ]
+      },
+      {
+        "id": "pf_s2",
+        "question": "When is PEFT the wrong choice?",
+        "complexity": "Hard",
+        "core_intent": "Most candidates cannot name a case against the method they used, which is exactly why this discriminates.",
+        "preparation_guide": "Three cases: large distribution shift, knowledge rather than behavior, and abundant data plus compute.",
+        "explanation": "First, large distribution shift. A new language, a new modality or a domain the base model barely saw needs capacity that a low-rank update cannot supply; Biderman et al. quantified the trade as LoRA learning less and forgetting less than full fine-tuning. Second, when the requirement is knowledge rather than behavior. Fine-tuning of any kind inserts facts unreliably, provides no attribution, and must be redone when the facts change, so retrieval is the right mechanism. Fine-tuning teaches format, task shape and register far more dependably than it teaches facts. Third, when data and compute are plentiful, full fine-tuning still has the higher ceiling and PEFT's constraint buys nothing. The honest fourth case is that if a short prompt with a few examples already meets the bar, the correct engineering answer is to fine-tune nothing at all.",
+        "star_framework_tip": "Name the test you would run to decide - train both on a subsample and compare target gain against a held-out general benchmark.",
+        "common_pitfalls": [
+          "Presenting PEFT as universally optimal rather than constraint-driven",
+          "Confusing 'forgets less' as a pure benefit rather than the same constraint seen from the other side"
+        ],
+        "references": [
+          {
+            "title": "Biderman et al. 2024 - LoRA Learns Less and Forgets Less",
+            "url": "https://arxiv.org/abs/2405.09673"
+          },
+          {
+            "title": "Ovadia et al. 2023 - Fine-Tuning or Retrieval? Comparing Knowledge Injection in LLMs",
+            "url": "https://arxiv.org/abs/2312.05934"
+          }
+        ]
+      },
+      {
+        "id": "pf_s3",
+        "question": "You have one 24 GB GPU, a 7B base model and 50k labeled examples for a domain classification task. What do you do, and what would change your mind?",
+        "complexity": "Hard",
+        "core_intent": "An end-to-end constraint question that forces arithmetic, a choice, and a falsification condition.",
+        "preparation_guide": "Do the memory arithmetic aloud, pick a configuration, then name the result that would make you switch.",
+        "explanation": "Full fine-tuning is out immediately: about 16 bytes per parameter is roughly 112 GB against a 24 GB budget. LoRA on an fp16 base needs about 14 GB of frozen weights plus adapters and activations, which fits only with a short sequence length and gradient checkpointing; QLoRA takes the base to about 3.5 GB in NF4 and leaves comfortable room, so it is the default choice here. I would attach adapters to all linear layers at rank 16, use a learning rate around 1e-4 to 2e-4 with a cosine schedule, and enable gradient checkpointing. The prior baseline matters more than the configuration though: for a classification task with 50k labels, a fully fine-tuned encoder of a few hundred million parameters is cheap, fast to serve and often competitive, so I would run it as the control. What would change my mind: if the encoder baseline matches the 7B adapter within noise on a paired test, I ship the encoder, because inference cost then decides. If the task needs generation or reasoning over the label space rather than a fixed set, that argument disappears and the adapted 7B wins.",
+        "star_framework_tip": "Naming the small-encoder control as the baseline is the strongest single move in this answer.",
+        "common_pitfalls": [
+          "Jumping to QLoRA without doing the arithmetic that rules out the alternatives",
+          "Never proposing a cheaper baseline, which is what an interviewer is listening for"
+        ],
+        "references": [
+          {
+            "title": "Dettmers et al. 2023 - QLoRA: Efficient Finetuning of Quantized LLMs",
+            "url": "https://arxiv.org/abs/2305.14314"
+          },
+          {
+            "title": "He et al. 2021 - DeBERTaV3: Improving DeBERTa using ELECTRA-Style Pre-Training",
+            "url": "https://arxiv.org/abs/2111.09543"
+          }
+        ]
+      }
+    ]
+  }
+}

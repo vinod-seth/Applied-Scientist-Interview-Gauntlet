@@ -20,8 +20,8 @@
   ],
   "estimated_hours": 54,
   "modules": 9,
-  "lessons": 37,
-  "version": "1.7",
+  "lessons": 44,
+  "version": "1.8",
   "delivery_note": "Sessions are generated one at a time. The curriculum lists ONLY delivered content so the portal never points at a file that does not exist yet. Each new session appends a module here. The full 9-session plan lives in README.md.",
   "curriculum": [
     {
@@ -344,14 +344,81 @@
     },
     {
       "module_id": "module_05",
-      "title": "🔒 Session 5: LLMs, Fine-Tuning & Retrieval",
+      "title": "Session 5: LLMs, Fine-Tuning & Retrieval",
       "lessons": [
         {
-          "id": "m5_locked",
-          "title": "Locked — clear the Session 4 assessment",
+          "id": "m5_l0",
+          "title": "Session 5 Overview & Scope Brief",
           "defaultMode": "mdx",
           "modes": {
-            "mdx": "tutorial/05_llms_finetuning_retrieval/00_locked.md"
+            "mdx": "tutorial/05_llms_finetuning_retrieval/README.md"
+          }
+        },
+        {
+          "id": "m5_l1",
+          "title": "The PEFT Landscape: Beyond LoRA",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/05_llms_finetuning_retrieval/01_peft_landscape.md",
+            "notebook": "tutorial/05_llms_finetuning_retrieval/llm_systems_lab.ipynb",
+            "interview": "tutorial/05_llms_finetuning_retrieval/01_peft_landscape_interview_questions.json"
+          }
+        },
+        {
+          "id": "m5_l2",
+          "title": "Decoding & Sampling Strategies",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/05_llms_finetuning_retrieval/02_decoding_and_sampling.md",
+            "notebook": "tutorial/05_llms_finetuning_retrieval/llm_systems_lab.ipynb",
+            "interview": "tutorial/05_llms_finetuning_retrieval/02_decoding_and_sampling_interview_questions.json"
+          }
+        },
+        {
+          "id": "m5_l3",
+          "title": "Scaling Behavior & the Post-Training Stack",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/05_llms_finetuning_retrieval/03_scaling_and_post_training.md",
+            "notebook": "tutorial/05_llms_finetuning_retrieval/llm_systems_lab.ipynb",
+            "interview": "tutorial/05_llms_finetuning_retrieval/03_scaling_and_post_training_interview_questions.json"
+          }
+        },
+        {
+          "id": "m5_l4",
+          "title": "The RAG Design Space",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/05_llms_finetuning_retrieval/04_rag_design_space.md",
+            "notebook": "tutorial/05_llms_finetuning_retrieval/llm_systems_lab.ipynb",
+            "interview": "tutorial/05_llms_finetuning_retrieval/04_rag_design_space_interview_questions.json"
+          }
+        },
+        {
+          "id": "m5_l5",
+          "title": "Evaluating LLM Systems",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/05_llms_finetuning_retrieval/05_evaluating_llm_systems.md",
+            "notebook": "tutorial/05_llms_finetuning_retrieval/llm_systems_lab.ipynb",
+            "interview": "tutorial/05_llms_finetuning_retrieval/05_evaluating_llm_systems_interview_questions.json"
+          }
+        },
+        {
+          "id": "m5_l6",
+          "title": "Mock Round: The LLM Round",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/05_llms_finetuning_retrieval/06_mock_round.md"
+          }
+        },
+        {
+          "id": "m5_l7",
+          "title": "Session 5 Chapter Quiz",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/05_llms_finetuning_retrieval/quiz.md",
+            "interview": "tutorial/05_llms_finetuning_retrieval/quiz_interview_questions.json"
           }
         }
       ]
@@ -362,7 +429,7 @@
       "lessons": [
         {
           "id": "m6_locked",
-          "title": "Locked — clear the Session 5 assessment",
+          "title": "Locked — work through Session 5 first",
           "defaultMode": "mdx",
           "modes": {
             "mdx": "tutorial/06_dsa_algorithms/00_locked.md"

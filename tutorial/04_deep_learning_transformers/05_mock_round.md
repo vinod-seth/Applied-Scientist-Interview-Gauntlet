@@ -114,4 +114,4 @@ So the arc is: fix the gradient path to make depth possible, then fight the memo
 - The two board questions (backprop for an MLP, KV-cache arithmetic) are the highest-probability whiteboard asks in a DL round — rehearse them until the shapes are automatic.
 - The synthesis arc — **gradient flow → depth → quadratic attention → inference memory** — connects all four lessons and is what a strong candidate offers unprompted.
 
-**Session complete.** Next: [Session 5 — LLMs, Fine-Tuning & Retrieval](../05_llms_finetuning_retrieval/00_locked.md) *(locked)*.
+**Session complete.** Next: [Session 5 — LLMs, Fine-Tuning & Retrieval](../05_llms_finetuning_retrieval/README.md).

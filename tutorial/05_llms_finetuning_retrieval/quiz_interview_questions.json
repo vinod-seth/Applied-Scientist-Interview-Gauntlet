@@ -1,0 +1,223 @@
+{
+  "lesson_title": "Session 5 Chapter Quiz - LLMs, Fine-Tuning & Retrieval",
+  "rehearsal": {
+    "prompt": "Consolidated Session 5 rehearsal across all five lessons. This round rewards judgment under a constraint - mechanism, then a number, then the trade-off, then the measurement that would settle it. An answer with no cost in it is incomplete.",
+    "minSeconds": 40,
+    "maxSeconds": 120,
+    "rubric": "mechanism",
+    "questions": [
+      "Where does the memory go when you fine-tune a 7B model, and what does freezing remove?",
+      "What are the two knobs in LoRA, and what does each control?",
+      "Which decoding configuration would you use for a tool call, and why?",
+      "Roughly how many tokens should a compute-optimal model be trained on, and why do real models exceed it?",
+      "Why does a retrieval stack have two stages instead of one?",
+      "Preference optimization sits after SFT. What does it add that demonstrations cannot?",
+      "You have one GPU, a base model, and a labeled dataset. Walk me from that to a shipped system.",
+      "Someone reports a two-point improvement. What do you ask before believing it?",
+      "Connect PEFT, decoding, scaling, retrieval and evaluation into one story about building an LLM product."
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "q5_j1",
+        "question": "Where does the memory go when you fine-tune a 7B model, and what does freezing the base remove?",
+        "complexity": "Easy",
+        "core_intent": "The arithmetic that makes the whole PEFT family follow logically.",
+        "preparation_guide": "Sixteen bytes per parameter, of which only two are the weights.",
+        "explanation": "Mixed-precision AdamW costs about sixteen bytes per parameter: two for the fp16 or bf16 weights, two for gradients, four each for the two Adam moments in fp32, and four for the fp32 master copy. At seven billion parameters that is roughly 112 GB before activations. Freezing the base removes fourteen of those sixteen bytes, because gradients, optimizer moments and master weights exist only for parameters being trained, and it does so regardless of how large the frozen model is. What freezing does not remove is activation memory, which is unaffected and becomes the dominant term afterwards - that is why gradient checkpointing usually appears alongside LoRA and QLoRA rather than instead of them.",
+        "star_framework_tip": "Say the sixteen-byte figure and then immediately point out that only two bytes are weights.",
+        "common_pitfalls": [
+          "Quoting only weight memory",
+          "Believing freezing the base also reduces activation memory"
+        ],
+        "references": [
+          {
+            "title": "Dettmers et al. 2023 - QLoRA: Efficient Finetuning of Quantized LLMs",
+            "url": "https://arxiv.org/abs/2305.14314"
+          }
+        ]
+      },
+      {
+        "id": "q5_j2",
+        "question": "What are the two knobs in LoRA, and what does each control?",
+        "complexity": "Easy",
+        "core_intent": "Checks precise understanding of rank and alpha rather than copied defaults.",
+        "preparation_guide": "Rank sets capacity, alpha over rank sets the update's effective magnitude.",
+        "explanation": "Rank r sets the capacity of the update: the adapter learns W0 plus alpha over r times B times A, with trainable parameter count r times the sum of the two dimensions, so rank controls how expressive the change can be. Alpha is a fixed scaling constant, and because the update is divided by r, changing rank does not change the update's effective magnitude - that decoupling lets you sweep rank without re-tuning the learning rate, and in practice alpha over r acts like a learning-rate multiplier on the adapter. The third choice, which is not a numeric knob but usually matters more than either, is which modules carry adapters: covering all attention projections and the MLP typically helps more than doubling the rank on a narrow subset.",
+        "star_framework_tip": "Add the module-coverage point - it signals you have tuned this rather than read about it.",
+        "common_pitfalls": [
+          "Calling alpha a learning rate rather than a scaling constant",
+          "Not knowing the parameter count is r times (d + k), covering two matrices"
+        ],
+        "references": [
+          {
+            "title": "Hu et al. 2021 - LoRA: Low-Rank Adaptation of Large Language Models",
+            "url": "https://arxiv.org/abs/2106.09685"
+          }
+        ]
+      },
+      {
+        "id": "q5_j3",
+        "question": "Which decoding configuration would you use for a tool call, and why?",
+        "complexity": "Easy",
+        "core_intent": "Tests whether decoding choice is derived from the task's output distribution.",
+        "preparation_guide": "Temperature zero plus constrained decoding; the output should be unique and parseable.",
+        "explanation": "Temperature zero, or very near it, together with constrained decoding against the tool's schema. The reasoning is that a tool call has essentially one correct output for a given intent, so the distribution is low-entropy, the mode is the right answer, and variability is pure risk - it also makes the behavior reproducible, which matters when something goes wrong in production. Constrained decoding then compiles the schema into a state machine and masks every token that cannot legally come next, so invalid output is unreachable rather than merely unlikely; prompting alone gives a parse-failure rate you must then handle. Two caveats worth stating: this guarantees syntax and not semantics, so arguments can still be wrong and must be validated, and it is usually better to let the model reason in free text first and constrain only the final structured span.",
+        "star_framework_tip": "Justify the setting from the task's entropy, not from a habit.",
+        "common_pitfalls": [
+          "Using the same sampling configuration for structured and open-ended output",
+          "Treating schema validity as evidence of correctness"
+        ],
+        "references": [
+          {
+            "title": "Willard & Louf 2023 - Efficient Guided Generation for Large Language Models",
+            "url": "https://arxiv.org/abs/2307.09702"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "q5_m1",
+        "question": "Roughly how many tokens should a compute-optimal model be trained on, and why do real models exceed it?",
+        "complexity": "Medium",
+        "core_intent": "Requires both the Chinchilla result and the reason it is routinely ignored.",
+        "preparation_guide": "About 20 tokens per parameter from C = 6ND; inference cost changes the objective.",
+        "explanation": "Training compute is about C = 6ND, and Hoffmann et al. minimized fitted loss under that constraint to find parameters and tokens should scale in roughly equal proportion - about twenty tokens per parameter. The demonstration is Chinchilla at 70 billion parameters and 1.4 trillion tokens beating Gopher at 280 billion parameters and 300 billion tokens on equal compute. Real models exceed the ratio because that result optimizes training compute only, and a served model's lifetime cost is dominated by inference, which scales with parameter count rather than with training tokens. So teams deliberately overtrain a smaller model - Llama-class 8B models on multi-trillion-token corpora are roughly an order of magnitude past compute-optimal - accepting worse loss per training FLOP for a permanently cheaper model to serve. The limits are decaying returns along the data term, diminishing value from repeated epochs, and greater sensitivity to post-training quantization.",
+        "star_framework_tip": "Frame the divergence as a change of objective, not as Chinchilla being wrong.",
+        "common_pitfalls": [
+          "Quoting the ratio without the compute constraint it derives from",
+          "Believing later practice refuted the result rather than optimizing something else"
+        ],
+        "references": [
+          {
+            "title": "Hoffmann et al. 2022 - Training Compute-Optimal Large Language Models",
+            "url": "https://arxiv.org/abs/2203.15556"
+          },
+          {
+            "title": "Sardana et al. 2023 - Beyond Chinchilla-Optimal: Accounting for Inference in Language Model Scaling Laws",
+            "url": "https://arxiv.org/abs/2401.00448"
+          }
+        ]
+      },
+      {
+        "id": "q5_m2",
+        "question": "Why does a retrieval stack have two stages instead of one?",
+        "complexity": "Medium",
+        "core_intent": "Tests whether the architecture is derived from a cost constraint or memorized.",
+        "preparation_guide": "Cheap recall over everything, expensive precision over a shortlist - because cross-encoders cannot be indexed.",
+        "explanation": "Because the most accurate scorer cannot be run over a corpus. A cross-encoder concatenates query and document and attends across both, which is what catches negation and precise qualifiers, but its score depends on the pair, so nothing can be precomputed and each pair costs a forward pass - impossible across millions of documents. So stage one uses methods that can be indexed, BM25 and a dense bi-encoder fused by reciprocal rank fusion, and is tuned for recall at around a hundred candidates: it must not lose the answer. Stage two applies the cross-encoder to those candidates and is tuned for precision, cutting to roughly five passages: it must put the answer first. The consequence for debugging is that the two stages fail differently - a missing answer is a stage-one recall failure, while an answer present but ignored is usually a stage-two ordering failure, and measuring recall at k separately from end-to-end accuracy is what tells them apart.",
+        "star_framework_tip": "Derive the architecture from the cross-encoder's cost - it shows the design is understood, not memorized.",
+        "common_pitfalls": [
+          "Describing the stages without the constraint that forces them",
+          "Measuring only end-to-end accuracy, which cannot attribute the failure"
+        ],
+        "references": [
+          {
+            "title": "Nogueira & Cho 2019 - Passage Re-ranking with BERT",
+            "url": "https://arxiv.org/abs/1901.04085"
+          },
+          {
+            "title": "Karpukhin et al. 2020 - Dense Passage Retrieval for Open-Domain Question Answering",
+            "url": "https://arxiv.org/abs/2004.04906"
+          }
+        ]
+      },
+      {
+        "id": "q5_m3",
+        "question": "Someone reports a two-point improvement on your evaluation set. What do you ask before believing it?",
+        "complexity": "Medium",
+        "core_intent": "Whether statistical hygiene is a reflex rather than a topic.",
+        "preparation_guide": "Sample size, pairing, selection, and instrument validity.",
+        "explanation": "Four questions. How many examples, and what is the interval? At a few hundred items the standard error on an accuracy near seventy percent is around three points, so a two-point gain can easily be noise. Was the comparison paired, and analyzed as paired? If both systems ran on the same items, only the discordant examples carry information and McNemar's test on fixed-versus-broken counts is both correct and far more powerful than comparing two accuracies. How many variants were tried before this one won? Selecting the maximum over many noisy estimates inflates it, so the winner needs re-measurement on a held-out set. And what produced the number - if an LLM judge, what is its measured agreement with human labels, and did the judge or rubric change between the two runs? Beyond the statistics, the most useful request is to see the examples that changed, because their pattern says more than the aggregate.",
+        "star_framework_tip": "Ask for the flipped examples at the end - it is the non-statistical move that finds real problems fastest.",
+        "common_pitfalls": [
+          "Asking only about sample size and stopping there",
+          "Not asking how many variants were tried before the winner"
+        ],
+        "references": [
+          {
+            "title": "Card et al. 2020 - With Little Power Comes Great Responsibility",
+            "url": "https://arxiv.org/abs/2010.02405"
+          },
+          {
+            "title": "Zheng et al. 2023 - Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena",
+            "url": "https://arxiv.org/abs/2306.05685"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "q5_s1",
+        "question": "You have one 24 GB GPU, a base model and a business problem. Walk me from that sentence to a shipped system.",
+        "complexity": "Hard",
+        "core_intent": "The synthesis question - it tests whether the five areas connect into one decision path.",
+        "preparation_guide": "Split knowledge from behavior, do the memory arithmetic, choose decoding for the task, then evaluate in layers.",
+        "explanation": "Split the problem into knowledge and behavior, because they take different solutions. Knowledge that changes, needs attribution, or exceeds what weights can hold goes to retrieval, since an index update is instant and auditable while fine-tuning facts is unreliable and unattributable. Behavior - format, register, refusal policy - goes to prompting first and fine-tuning only if prompting plateaus; if I fine-tune, the arithmetic decides the method, since full fine-tuning at sixteen bytes per parameter is roughly 112 GB against a 24 GB budget, so it is QLoRA with adapters on all linear layers. For retrieval I build two stages: hybrid BM25 plus dense fused by reciprocal rank fusion tuned for recall at a hundred, then a cross-encoder reranker down to about five passages, with the strongest passages at the start and end of the context. Decoding follows the task: near-zero temperature with required citations for a factual assistant, constrained decoding for any structured span. Then evaluation in layers - component recall at k, end-to-end correctness with groundedness measured separately, refusal scored as a correct outcome, a regression suite grown from production failures, and any judge audited against a hundred hand-labeled items. The failure modes I would name unprompted: a stale index, an embedder upgrade silently invalidating every vector, approximate search losing answers the embedder actually found, a synthetic evaluation set biased toward questions the corpus answers well, and shipping a three-point gain that a few hundred examples cannot distinguish from noise.",
+        "star_framework_tip": "Lead with the knowledge-versus-behavior split; every later decision follows from it cleanly.",
+        "common_pitfalls": [
+          "Listing techniques instead of giving one causal decision path",
+          "Ending at the architecture with no evaluation plan and no named failure modes"
+        ],
+        "references": [
+          {
+            "title": "Ovadia et al. 2023 - Fine-Tuning or Retrieval? Comparing Knowledge Injection in LLMs",
+            "url": "https://arxiv.org/abs/2312.05934"
+          },
+          {
+            "title": "Dettmers et al. 2023 - QLoRA: Efficient Finetuning of Quantized LLMs",
+            "url": "https://arxiv.org/abs/2305.14314"
+          }
+        ]
+      },
+      {
+        "id": "q5_s2",
+        "question": "Which of this session's techniques would you deliberately not use, and when?",
+        "complexity": "Hard",
+        "core_intent": "Tests whether the candidate holds techniques as choices with costs rather than as best practices.",
+        "preparation_guide": "Give three concrete cases where the popular option is wrong.",
+        "explanation": "Three cases. I would not use PEFT when the target is far from the pretraining distribution - a new language or modality - because a low-rank update cannot supply the capacity; Biderman et al. quantified the trade as LoRA learning less and forgetting less, and there continued pretraining or full fine-tuning is the right answer. I would not use RAG when the corpus is small, stable and self-contained per request, because the whole retrieval stack then adds infrastructure, latency and its own failure modes to solve a problem the context window already solves - and I would say the same about adding a reranker before checking whether simply retrieving more candidates closes the gap. And I would not use an LLM judge where a deterministic check exists: exact match, unit tests, schema validation, or retrieval recall against gold passages all give a free, unbiased, reproducible signal, and replacing them with a judge adds measurement error for nothing. The general principle behind all three is that every component has a cost - memory, latency, infrastructure, or measurement error - and the burden of proof sits with adding it, not with leaving it out.",
+        "star_framework_tip": "State the general principle at the end; it turns three examples into a stance.",
+        "common_pitfalls": [
+          "Treating popular techniques as defaults that need no justification",
+          "Being unable to name a case against a method the candidate used in their own project"
+        ],
+        "references": [
+          {
+            "title": "Biderman et al. 2024 - LoRA Learns Less and Forgets Less",
+            "url": "https://arxiv.org/abs/2405.09673"
+          },
+          {
+            "title": "Liu et al. 2023 - Lost in the Middle: How Language Models Use Long Contexts",
+            "url": "https://arxiv.org/abs/2307.03172"
+          }
+        ]
+      },
+      {
+        "id": "q5_s3",
+        "question": "Your assistant is accurate offline and disliked in production. Where do you look?",
+        "complexity": "Hard",
+        "core_intent": "The gap between an evaluation set and reality, which is where applied science actually lives.",
+        "preparation_guide": "Distribution mismatch, metric mismatch, hidden slices, and instrument drift - with a test for each.",
+        "explanation": "Four hypotheses, each with a cheap discriminating test. Distribution mismatch is the most common: sample recent production queries, re-run both versions on them, and compare - synthetic evaluation sets built from your own corpus are biased toward questions the corpus answers well, so they overstate performance systematically. Metric mismatch: if the metric is answer correctness while the complaints concern verbosity, latency, tone or over-refusal, the metric never measured the complaint, and the fix is to add those dimensions rather than distrust the number. Hidden slices: the mean improved while an important segment regressed, so slice by query type, language, document source and length, because a large regression on a small critical slice is invisible in an average. Instrument drift: if an LLM judge produced the offline number and the judge model or rubric changed between runs, the two measurements are not comparable and the improvement may be an artifact, so re-audit against human labels. The practice that closes the loop is adding every complaint to the regression suite, which makes the offline set converge toward reality instead of drifting away from it.",
+        "star_framework_tip": "Pair each hypothesis with its test - a list of causes with no discriminating experiment is not a diagnosis.",
+        "common_pitfalls": [
+          "Abandoning offline evaluation instead of repairing its distribution and metrics",
+          "Never slicing the aggregate, which is where most hidden regressions live"
+        ],
+        "references": [
+          {
+            "title": "Card et al. 2020 - With Little Power Comes Great Responsibility",
+            "url": "https://arxiv.org/abs/2010.02405"
+          },
+          {
+            "title": "Es et al. 2023 - RAGAS: Automated Evaluation of Retrieval Augmented Generation",
+            "url": "https://arxiv.org/abs/2309.15217"
+          }
+        ]
+      }
+    ]
+  }
+}

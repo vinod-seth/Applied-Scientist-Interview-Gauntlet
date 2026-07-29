@@ -1,0 +1,227 @@
+{
+  "lesson_title": "The RAG Design Space: Hybrid Retrieval, Reranking and the Alternatives",
+  "rehearsal": {
+    "prompt": "Retrieval design rehearsal. Lead with the two-stage split - cheap recall, expensive precision - and finish every design answer with the measurement that would attribute a failure to a stage. Never recommend a component without its cost.",
+    "minSeconds": 40,
+    "maxSeconds": 100,
+    "rubric": "mechanism",
+    "questions": [
+      "What is retrieval-augmented generation and what problem does it solve?",
+      "Why does a hybrid BM25-plus-dense retriever beat either alone?",
+      "What does a cross-encoder reranker do that a bi-encoder cannot, and what does it cost?",
+      "Design a retrieval system for a company support knowledge base.",
+      "RAG, fine-tuning, or long context - give me your decision rule.",
+      "Which vector index would you choose, and what does it cost you?",
+      "Long-context models keep improving. Does RAG go away?",
+      "Your RAG system answers correctly but cites the wrong passage. What is happening?",
+      "What breaks in a retrieval system after it ships?"
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "rg_j1",
+        "question": "What is retrieval-augmented generation and what problem does it solve?",
+        "complexity": "Easy",
+        "core_intent": "Foundational, but the score is in naming what fine-tuning cannot do.",
+        "preparation_guide": "Retrieve relevant passages at query time and condition generation on them.",
+        "explanation": "RAG retrieves passages relevant to the query from an external corpus and places them in the model's context, so the answer is conditioned on retrieved evidence rather than on parametric memory alone. It solves four problems that weight updates handle badly: knowledge that changes, since updating an index is instant while retraining is not; knowledge too large or too private to fit in weights; attribution, because the system can cite the passage it used; and access control, because retrieval can filter by permission before the model ever sees a document. The framing that scores is that RAG is a knowledge mechanism, not a behavior mechanism - it does not make a model follow instructions better or write in a required style, which is what fine-tuning is for.",
+        "star_framework_tip": "Say 'knowledge versus behavior' - it sets up the comparison question that always follows.",
+        "common_pitfalls": [
+          "Describing only the pipeline and never the problem it solves",
+          "Claiming RAG eliminates hallucination rather than making it detectable through citations"
+        ],
+        "references": [
+          {
+            "title": "Lewis et al. 2020 - Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+            "url": "https://arxiv.org/abs/2005.11401"
+          }
+        ]
+      },
+      {
+        "id": "rg_j2",
+        "question": "Why does a hybrid BM25-plus-dense retriever usually beat either alone?",
+        "complexity": "Easy",
+        "core_intent": "Tests whether the candidate knows lexical search still matters.",
+        "preparation_guide": "They fail on disjoint query types; fuse by rank, not by score.",
+        "explanation": "They fail on different queries, which is why fusing them helps. BM25 scores documents by query-term frequency, damped by document length and weighted by term rarity, so it is unbeatable when the literal string is the signal - product codes, error identifiers such as ERR_1042, personal names, rare API methods, or any term the embedding model never saw - and it needs no training, so it transfers to a new domain immediately. A dense bi-encoder maps query and document to vectors independently and matches meaning, handling paraphrase and synonymy, but it compresses an entire passage into one fixed vector, a lossy summary in which rare exact tokens can vanish. The standard fusion is reciprocal rank fusion, summing one over a constant plus the rank in each system, with the constant around 60. It uses ranks only, which matters because BM25 scores and cosine similarities are not on a comparable scale.",
+        "star_framework_tip": "Give a concrete lexical query - an error code or a SKU - to make the disjoint-failure point vivid.",
+        "common_pitfalls": [
+          "Assuming embeddings dominate lexical search on all query types",
+          "Proposing a weighted score blend without noticing the scales are not comparable"
+        ],
+        "references": [
+          {
+            "title": "Karpukhin et al. 2020 - Dense Passage Retrieval for Open-Domain Question Answering",
+            "url": "https://arxiv.org/abs/2004.04906"
+          },
+          {
+            "title": "Cormack et al. 2009 - Reciprocal Rank Fusion Outperforms Condorcet and Individual Rank Learning Methods (SIGIR 2009)",
+            "url": "https://dl.acm.org/doi/10.1145/1571941.1572114"
+          }
+        ]
+      },
+      {
+        "id": "rg_j3",
+        "question": "What does a cross-encoder reranker do that a bi-encoder cannot, and what does it cost?",
+        "complexity": "Easy",
+        "core_intent": "The mechanism that creates the two-stage architecture.",
+        "preparation_guide": "Joint encoding allows full attention between query and document; nothing can be precomputed.",
+        "explanation": "A bi-encoder embeds the query and the document separately, so the two texts never interact and the system compares two independent summaries. A cross-encoder concatenates them into a single input and runs full attention across both, letting every query token attend to every document token, which is what catches negation, qualifiers and precise conditions such as a clause that does not apply to one plan tier. The cost is structural: because the score depends on the pair, nothing can be precomputed or indexed, so you pay one forward pass per query-document pair at query time. At roughly ten milliseconds per pair, a hundred candidates cost about a second serialized, which is why they are batched into a single accelerator call or applied only to the top twenty-five. Reranking an entire corpus is impossible by construction, and that impossibility is exactly why retrieval stacks have a cheap recall stage followed by an expensive precision stage.",
+        "star_framework_tip": "End by deriving the two-stage architecture from the cost - it turns a fact into a design principle.",
+        "common_pitfalls": [
+          "Saying a cross-encoder is 'more accurate' without explaining why it cannot be indexed",
+          "Not knowing the typical candidate-set size a reranker operates on"
+        ],
+        "references": [
+          {
+            "title": "Nogueira & Cho 2019 - Passage Re-ranking with BERT",
+            "url": "https://arxiv.org/abs/1901.04085"
+          },
+          {
+            "title": "Khattab & Zaharia 2020 - ColBERT: Efficient and Effective Passage Search via Contextualized Late Interaction",
+            "url": "https://arxiv.org/abs/2004.12832"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "rg_m1",
+        "question": "Design a retrieval system for a company support knowledge base. Start from nothing.",
+        "complexity": "Medium",
+        "core_intent": "An open design question - the score is in the stage purposes and the measurement plan.",
+        "preparation_guide": "Two stages with opposite objectives, then the three numbers that attribute a failure.",
+        "explanation": "Stage one optimizes recall and must be cheap: query rewriting to turn conversational follow-ups into standalone queries and to decompose compound questions, then BM25 and a dense encoder in parallel, fused with reciprocal rank fusion, tuned at around a hundred candidates. Measure this stage with recall at k against known gold passages, because a document that never enters the candidate set cannot be recovered downstream. Stage two optimizes precision and can be expensive: a cross-encoder reranker cutting a hundred candidates to about five, then context assembly - deduplicate near-identical chunks, respect a token budget, and place the strongest passages at the start and end of the context because attention to the middle is measurably weaker. Generation requires citations to chunk identifiers so hallucination is detectable. The part that makes this an applied-science answer rather than an architecture diagram is the measurement plan: retrieval recall at k and reranker nDCG measured separately from end-to-end answer accuracy, plus an oracle-context run that reveals the generation ceiling. Without those numbers you cannot attribute a failure to a stage. I would build BM25 plus the generator plus an evaluation set first, because every later component must beat that baseline.",
+        "star_framework_tip": "Finish with the measurement plan; most candidates stop at the diagram.",
+        "common_pitfalls": [
+          "Describing components without saying what each one prevents",
+          "Giving no way to attribute an end-to-end failure to retrieval or generation"
+        ],
+        "references": [
+          {
+            "title": "Lewis et al. 2020 - Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+            "url": "https://arxiv.org/abs/2005.11401"
+          },
+          {
+            "title": "Liu et al. 2023 - Lost in the Middle: How Language Models Use Long Contexts",
+            "url": "https://arxiv.org/abs/2307.03172"
+          }
+        ]
+      },
+      {
+        "id": "rg_m2",
+        "question": "RAG, fine-tuning, or long context - give me your decision rule.",
+        "complexity": "Medium",
+        "core_intent": "The highest-frequency question in this area; requires a rule, not a preference.",
+        "preparation_guide": "Knowledge to RAG, behavior to fine-tuning, small self-contained input to long context.",
+        "explanation": "They solve different problems, so start by naming which one you have. Facts the model does not hold, a corpus that changes, or a requirement for attribution point to retrieval, because updating an index is instant and auditable. Format, style, task shape, domain register or a narrower output space point to fine-tuning, because behavior is what gradient updates install well. A small, stable, self-contained context per request points to long context, which needs no infrastructure at all. Two sharp claims support the rule. Fine-tuning is a poor knowledge-insertion mechanism - it needs many paraphrases per fact, recalls unreliably, provides no attribution, and must be redone when facts change; Ovadia et al. measured retrieval ahead of it for knowledge injection. And long context relocates the retrieval problem rather than deleting it: prefill is quadratic in prompt length and the KV cache grows linearly, so a very long prompt is expensive on every request forever, while the lost-in-the-middle effect means accuracy is highest when the relevant passage sits near the start or end. In practice they compose - retrieval for knowledge, fine-tuning or prompting for behavior, evaluated separately.",
+        "star_framework_tip": "Say 'they compose' at the end - the real production answer is usually both.",
+        "common_pitfalls": [
+          "Treating the three as competing solutions to one problem",
+          "Claiming long context makes retrieval obsolete without addressing cost and lost-in-the-middle"
+        ],
+        "references": [
+          {
+            "title": "Ovadia et al. 2023 - Fine-Tuning or Retrieval? Comparing Knowledge Injection in LLMs",
+            "url": "https://arxiv.org/abs/2312.05934"
+          },
+          {
+            "title": "Liu et al. 2023 - Lost in the Middle: How Language Models Use Long Contexts",
+            "url": "https://arxiv.org/abs/2307.03172"
+          }
+        ]
+      },
+      {
+        "id": "rg_m3",
+        "question": "Your RAG system answers correctly but cites the wrong passage. What is happening, and does it matter?",
+        "complexity": "Medium",
+        "core_intent": "Tests whether the candidate separates correctness from groundedness.",
+        "preparation_guide": "The answer may come from parametric memory rather than the retrieved context.",
+        "explanation": "The most likely explanation is that the answer came from the model's parametric knowledge and the citation was attached afterwards as a plausible-looking decoration - the retrieved passage did not actually support it. It matters a great deal, because the system's correctness is then not attributable to retrieval and will not hold for facts the model never memorized, which is precisely the case RAG exists to serve. Diagnose it with a closed-book control: run the same questions with no retrieved context. If accuracy barely drops, retrieval is contributing little and your evaluation set is testing memorized knowledge rather than grounding. Then measure groundedness separately from correctness - for each claim, ask whether a retrieved passage entails it - and measure citation precision, whether the cited chunk actually contains the support. The design fixes are requiring quoted spans rather than free citation, penalizing unsupported claims in the rubric, and instructing the model to answer only from context and refuse otherwise, then scoring refusal as a correct outcome when the corpus lacks the answer.",
+        "star_framework_tip": "Propose the closed-book control - it is the cheapest experiment that settles the question.",
+        "common_pitfalls": [
+          "Treating a correct answer as sufficient evidence that retrieval worked",
+          "Never separating groundedness from correctness in evaluation"
+        ],
+        "references": [
+          {
+            "title": "Es et al. 2023 - RAGAS: Automated Evaluation of Retrieval Augmented Generation",
+            "url": "https://arxiv.org/abs/2309.15217"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "rg_s1",
+        "question": "Which vector index would you choose, and what does it cost you?",
+        "complexity": "Hard",
+        "core_intent": "Systems depth - and whether the candidate knows ANN adds its own recall loss.",
+        "preparation_guide": "Flat, IVF, IVF-PQ, HNSW - then the point that approximate search has an error budget of its own.",
+        "explanation": "A flat index does exhaustive exact search: perfect recall, cost linear in corpus size, correct below roughly one hundred thousand to one million vectors and useful as the ground truth to measure against. IVF clusters vectors and probes a few cells, giving a large speedup with recall determined by how many cells you probe. IVF with product quantization compresses the residuals, cutting memory by often ten to thirty times at the cost of quantization error and therefore recall. HNSW builds a navigable small-world graph and descends greedily, giving excellent recall-latency trade-offs with higher memory and slow index construction. The point that matters more than the table is that approximate nearest neighbour search introduces a second, independent recall loss on top of the embedding model's: if the embedder ranks the gold passage in its true top five but the index returns only approximate neighbours, you lose answers to the index rather than to the model, and that failure is invisible unless you look for it. So build a flat index on a sample and measure ANN recall against exact search - if HNSW at your parameters returns ninety-two percent of the exact top ten, that eight percent is a hard ceiling on everything downstream and belongs in the error budget.",
+        "star_framework_tip": "The ANN-recall-against-exact-search measurement is the single strongest thing to say here.",
+        "common_pitfalls": [
+          "Comparing indexes only on speed and memory, never on the recall they silently cost",
+          "Not knowing that changing the embedding model invalidates every stored vector"
+        ],
+        "references": [
+          {
+            "title": "Malkov & Yashunin 2016 - Efficient and Robust Approximate Nearest Neighbor Search Using HNSW Graphs",
+            "url": "https://arxiv.org/abs/1603.09320"
+          },
+          {
+            "title": "Johnson et al. 2017 - Billion-Scale Similarity Search with GPUs (FAISS)",
+            "url": "https://arxiv.org/abs/1702.08734"
+          }
+        ]
+      },
+      {
+        "id": "rg_s2",
+        "question": "Long-context models keep improving. Does RAG go away?",
+        "complexity": "Hard",
+        "core_intent": "A forecasting question that rewards separating the cost argument from the quality argument.",
+        "preparation_guide": "The quality argument weakens over time; the cost and governance arguments do not.",
+        "explanation": "Partly, and it is worth separating the arguments because they age differently. The quality argument for retrieval - that models use long contexts unevenly, with the lost-in-the-middle effect - has weakened as long-context training improved, and will likely keep weakening. The cost argument does not: prefill is quadratic in prompt length and the KV cache grows linearly with it, so stuffing a large corpus into every request is expensive on every request, forever, whereas retrieval turns that into a bounded prompt. Prompt caching changes this materially when the long context is shared and static across requests, but not when each request needs different documents. And the governance arguments are structural: access control, because retrieval filters by permission before the model sees anything; freshness, because an index update is immediate; and attribution, because you know which passage was used. My working answer is that long context absorbs the small-corpus cases and RAG remains for large, changing, permissioned corpora - and that the two increasingly combine, with retrieval selecting a few thousand tokens rather than a few hundred.",
+        "star_framework_tip": "Explicitly say which argument weakens and which does not - that structure is the answer.",
+        "common_pitfalls": [
+          "Defending RAG only on quality grounds, which is the argument most likely to expire",
+          "Ignoring prompt caching, which genuinely changes the economics for shared static context"
+        ],
+        "references": [
+          {
+            "title": "Liu et al. 2023 - Lost in the Middle: How Language Models Use Long Contexts",
+            "url": "https://arxiv.org/abs/2307.03172"
+          },
+          {
+            "title": "Kwon et al. 2023 - Efficient Memory Management for LLM Serving with PagedAttention",
+            "url": "https://arxiv.org/abs/2309.06180"
+          }
+        ]
+      },
+      {
+        "id": "rg_s3",
+        "question": "What breaks in a retrieval system after it ships?",
+        "complexity": "Hard",
+        "core_intent": "Operational judgment - a question only someone who has run one answers well.",
+        "preparation_guide": "Index drift, embedder migration, filtered search, and query distribution shift.",
+        "explanation": "Four things, all measurable. Index drift: new documents move IVF centroids and heavy deletion degrades HNSW graph quality, so rebuilds should be scheduled rather than discovered. Embedder migration: vectors from two different models are not comparable, so upgrading the embedding model requires re-embedding the entire corpus, and that migration cost is the real price of switching - it also means you cannot A/B two embedders without maintaining two indexes. Filtered search: pre-filtering can disconnect an ANN graph and return poor results, while post-filtering can return too few, so use the index's native filtered search and consider routing highly selective filters through a lexical or database query first. Query distribution shift: the queries users actually send diverge from the evaluation set, so sample production queries periodically and re-measure recall at k on them. The monitoring signal worth volunteering is the fraction of queries where the top-ranked passage is never cited by the generator, which is cheap to compute and separates retrieval failures from generation failures.",
+        "star_framework_tip": "Give the monitoring metric at the end - it shows you would instrument the system, not just build it.",
+        "common_pitfalls": [
+          "Treating the index as static after launch",
+          "Underestimating the cost and coordination of an embedding-model upgrade"
+        ],
+        "references": [
+          {
+            "title": "Malkov & Yashunin 2016 - Efficient and Robust Approximate Nearest Neighbor Search Using HNSW Graphs",
+            "url": "https://arxiv.org/abs/1603.09320"
+          },
+          {
+            "title": "Es et al. 2023 - RAGAS: Automated Evaluation of Retrieval Augmented Generation",
+            "url": "https://arxiv.org/abs/2309.15217"
+          }
+        ]
+      }
+    ]
+  }
+}

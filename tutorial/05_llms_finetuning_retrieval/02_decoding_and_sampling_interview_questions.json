@@ -1,0 +1,223 @@
+{
+  "lesson_title": "Decoding and Sampling Strategies",
+  "rehearsal": {
+    "prompt": "Decoding rehearsal. These questions have exact answers - give the formula, the order of operations, or the named failure mode. Be precise that speculative decoding is exact and that constrained decoding guarantees syntax, not semantics.",
+    "minSeconds": 30,
+    "maxSeconds": 90,
+    "rubric": "mechanism",
+    "questions": [
+      "What does the temperature parameter do?",
+      "Explain top-k and top-p sampling, and say why top-p exists.",
+      "When should you use greedy decoding instead of sampling?",
+      "Why is likelihood-maximizing text bad for open-ended generation?",
+      "Do temperature and top-p interact? Explain the order of operations.",
+      "Your model repeats a phrase in a loop. Diagnose it in priority order.",
+      "What is speculative decoding, and why does it not change the output distribution?",
+      "How do you guarantee valid JSON from a language model?",
+      "Your fine-tuned model never stops generating. What do you check first?"
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "dc_j1",
+        "question": "What does the temperature parameter do?",
+        "complexity": "Easy",
+        "core_intent": "Foundational - checks whether the candidate knows the formula or only the metaphor.",
+        "preparation_guide": "Give the softmax with logits divided by T, then the two limits.",
+        "explanation": "Temperature rescales the logits before the softmax: p_i = exp(z_i / T) / sum_j exp(z_j / T). As T approaches zero the distribution concentrates on the argmax, which is greedy decoding; at T = 1 you sample from the model's own distribution; above 1 the distribution flattens and low-probability tokens become more likely. The property worth adding is that temperature is monotone, so it never changes the ranking of tokens - only the size of the gaps between them. That is why temperature alone cannot prevent a bad token from being sampled, and why truncation methods such as top-k and top-p exist alongside it.",
+        "star_framework_tip": "Say 'it does not change the ranking, only the gaps' - it is the detail that separates the formula from the metaphor.",
+        "common_pitfalls": [
+          "Describing temperature as 'creativity' without the formula",
+          "Believing high temperature can reorder token preferences"
+        ],
+        "references": [
+          {
+            "title": "Holtzman et al. 2020 - The Curious Case of Neural Text Degeneration",
+            "url": "https://arxiv.org/abs/1904.09751"
+          }
+        ]
+      },
+      {
+        "id": "dc_j2",
+        "question": "Explain top-k and top-p sampling, and say why top-p exists.",
+        "complexity": "Easy",
+        "core_intent": "The central decoding comparison; the score is in top-k's failure mode.",
+        "preparation_guide": "Fixed count versus adaptive mass - give one peaked and one flat example.",
+        "explanation": "Top-k keeps the k highest-probability tokens and renormalizes over them. Top-p, or nucleus sampling, keeps the smallest set of top-ranked tokens whose cumulative probability reaches p, then renormalizes. Top-p exists because a fixed k is applied to distributions of very different sharpness: after 'The capital of France is' the distribution is nearly one-hot, so k = 50 admits 49 tokens that are effectively wrong, while after 'She opened the door and' thousands of continuations are reasonable and k = 50 truncates good options. Top-p lets the entropy of the distribution set the cut instead of a hyperparameter. Min-p is the newer variant, keeping tokens whose probability is at least some fraction of the maximum, which behaves better at high temperature.",
+        "star_framework_tip": "Use the two contrasting prompts - a confident context and an open one - to make the failure mode concrete.",
+        "common_pitfalls": [
+          "Defining both methods correctly but never saying why top-p was introduced",
+          "Claiming top-p always keeps more tokens than top-k"
+        ],
+        "references": [
+          {
+            "title": "Holtzman et al. 2020 - The Curious Case of Neural Text Degeneration",
+            "url": "https://arxiv.org/abs/1904.09751"
+          },
+          {
+            "title": "Fan et al. 2018 - Hierarchical Neural Story Generation (top-k sampling)",
+            "url": "https://arxiv.org/abs/1805.04833"
+          }
+        ]
+      },
+      {
+        "id": "dc_j3",
+        "question": "When should you use greedy decoding instead of sampling?",
+        "complexity": "Easy",
+        "core_intent": "Checks judgment about task structure rather than a default preference.",
+        "preparation_guide": "Deterministic decoding when the answer is essentially unique; sampling when many outputs are legitimate.",
+        "explanation": "Use deterministic decoding when the output distribution is genuinely low-entropy - classification, extraction, translation, structured output such as JSON or a tool call, and any evaluation run you need to reproduce. In those tasks the mode of the distribution is a good answer and variability is pure risk. Use sampling for open-ended generation, where many continuations are legitimate and maximizing likelihood produces bland, repetitive text. Two supporting points: sampling is also required when you intend to draw several candidates and aggregate them, as in self-consistency voting, since at temperature zero every sample is identical; and reporting the decoding configuration alongside any benchmark number is necessary because the same model scores differently under different settings.",
+        "star_framework_tip": "Frame it as a property of the task's output distribution, not as a stylistic preference.",
+        "common_pitfalls": [
+          "Recommending one setting for all tasks",
+          "Forgetting that self-consistency and other sampling-based methods need temperature above zero"
+        ],
+        "references": [
+          {
+            "title": "Wang et al. 2023 - Self-Consistency Improves Chain of Thought Reasoning",
+            "url": "https://arxiv.org/abs/2203.11171"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "dc_m1",
+        "question": "Why is likelihood-maximizing text bad for open-ended generation?",
+        "complexity": "Medium",
+        "core_intent": "The conceptual foundation of the whole area.",
+        "preparation_guide": "Human text does not live in the high-probability region, and repetition is self-reinforcing.",
+        "explanation": "Holtzman et al. showed that human text does not occupy the high-probability region of the model's distribution: real writing constantly takes moderately probable turns, so its per-token probability fluctuates, while beam-search output tracks a flat high-probability ridge that reads as bland and then repetitive. There is also a positive-feedback mechanism: once a phrase appears, the context contains evidence for that phrase, so its probability rises and the loop reinforces itself. The correct framing is that the model is well calibrated at the token level but the argmax of a sequence is not the objective we want for open-ended text. Beam search remains right where the output distribution really is low-entropy, such as translation, and even there very large beam widths can find higher-likelihood but worse outputs.",
+        "star_framework_tip": "Name the self-reinforcing mechanism explicitly - it explains why loops start mid-generation.",
+        "common_pitfalls": [
+          "Saying beam search is simply bad, rather than bad for high-entropy tasks",
+          "Asserting the model is 'poorly trained' rather than that the decoding objective is mismatched"
+        ],
+        "references": [
+          {
+            "title": "Holtzman et al. 2020 - The Curious Case of Neural Text Degeneration",
+            "url": "https://arxiv.org/abs/1904.09751"
+          },
+          {
+            "title": "Welleck et al. 2020 - Neural Text Generation with Unlikelihood Training",
+            "url": "https://arxiv.org/abs/1908.04319"
+          }
+        ]
+      },
+      {
+        "id": "dc_m2",
+        "question": "Your model repeats a phrase in a loop. Diagnose it in priority order.",
+        "complexity": "Medium",
+        "core_intent": "A debugging question - the score is in the ordering, not the fixes.",
+        "preparation_guide": "Three causes: deterministic decoding, self-reinforcing context, or the model and its training data.",
+        "explanation": "Diagnose before penalizing. If the loop appears under greedy or beam decoding and disappears when sampling at around temperature 0.7 with top-p 0.9, the cause is deterministic decoding. If it begins mid-generation and locks in even while sampling, the context is reinforcing itself and a repetition or frequency penalty is appropriate, with no-repeat-n-gram as a blunt fallback. If it loops under healthy sampling, or appeared after fine-tuning, the model or its data is the cause: check for duplicated targets and check that the end-of-sequence token is present and unmasked in the training labels. State the cost of penalties unprompted - they are indiscriminate, punishing code indentation, repeated variable names and common words, and settings above roughly 1.2 visibly damage code and factual text. Measure repetition with distinct-n ratios rather than by eye so the fix is verifiable.",
+        "star_framework_tip": "Give the discriminating observation for each cause, not just the list of causes.",
+        "common_pitfalls": [
+          "Reaching for a repetition penalty before checking the decoding configuration",
+          "Not knowing that a missing or masked EOS token is the classic fine-tuning cause"
+        ],
+        "references": [
+          {
+            "title": "Holtzman et al. 2020 - The Curious Case of Neural Text Degeneration",
+            "url": "https://arxiv.org/abs/1904.09751"
+          },
+          {
+            "title": "Keskar et al. 2019 - CTRL: A Conditional Transformer Language Model (repetition penalty)",
+            "url": "https://arxiv.org/abs/1909.05858"
+          }
+        ]
+      },
+      {
+        "id": "dc_m3",
+        "question": "Do temperature and top-p interact? Explain the order of operations.",
+        "complexity": "Medium",
+        "core_intent": "Tests whether the candidate has actually configured a generation stack.",
+        "preparation_guide": "Reshape first, truncate second, sample third - so temperature changes which tokens survive the cut.",
+        "explanation": "They interact, and the reason is the order of operations. Standard implementations reshape the distribution first - temperature, then repetition or frequency penalties - and only then apply truncation such as top-k, top-p or min-p, sampling from what remains. Because temperature flattens the distribution before the nucleus is computed, the same value of p admits far more tokens at temperature 1.2 than at 0.7, so the two settings cannot be tuned independently. Practical consequences: a configuration copied from another project may behave very differently, and min-p is more stable than top-p at high temperature because its threshold is relative to the maximum probability rather than to cumulative mass. Sensible starting points are temperature 0.7 to 0.8 with top-p 0.9 to 0.95 for open generation, and temperature 0 with constrained decoding for anything parsed downstream.",
+        "star_framework_tip": "State the order explicitly, then give the concrete consequence for two temperature settings.",
+        "common_pitfalls": [
+          "Assuming the operations commute",
+          "Quoting default values as if they were universal rather than a starting configuration to evaluate"
+        ],
+        "references": [
+          {
+            "title": "Holtzman et al. 2020 - The Curious Case of Neural Text Degeneration",
+            "url": "https://arxiv.org/abs/1904.09751"
+          },
+          {
+            "title": "Meister et al. 2023 - Locally Typical Sampling",
+            "url": "https://arxiv.org/abs/2202.00666"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "dc_s1",
+        "question": "What is speculative decoding, and why does it not change the output distribution?",
+        "complexity": "Hard",
+        "core_intent": "Connects decoding to the memory-bandwidth argument from the transformer round.",
+        "preparation_guide": "Draft proposes k tokens, target verifies all k in one pass, rejection sampling preserves the distribution.",
+        "explanation": "A small draft model generates k tokens cheaply. The large target model then scores all k positions in a single forward pass, because scoring a known sequence is parallel while generating is serial. A rejection-sampling step accepts the longest prefix consistent with the target's distribution and resamples at the first disagreement, which makes the output distribution provably identical to sampling from the target alone - it is a latency optimization, not a quality trade. It wins because decoding is memory-bandwidth bound rather than compute bound: generating one token reads all the weights and the whole KV cache to do very little arithmetic, so verifying k tokens rides almost free on a trip you were already making. Reported speedups are typically two to three times, set by the product of acceptance rate and draft cost. The caveat to volunteer is that the gain is largely in single-stream latency; under heavy batching the accelerator is already saturated, so throughput improves much less.",
+        "star_framework_tip": "Say 'provably identical distribution' early, then explain the bandwidth argument.",
+        "common_pitfalls": [
+          "Describing it as an approximation that trades quality for speed",
+          "Not knowing the benefit shrinks under heavy batching"
+        ],
+        "references": [
+          {
+            "title": "Leviathan et al. 2023 - Fast Inference from Transformers via Speculative Decoding",
+            "url": "https://arxiv.org/abs/2211.17192"
+          },
+          {
+            "title": "Chen et al. 2023 - Accelerating Large Language Model Decoding with Speculative Sampling",
+            "url": "https://arxiv.org/abs/2302.01318"
+          }
+        ]
+      },
+      {
+        "id": "dc_s2",
+        "question": "How do you guarantee valid JSON from a language model?",
+        "complexity": "Hard",
+        "core_intent": "A production question - the difference between 'usually valid' and 'always valid'.",
+        "preparation_guide": "Constrained decoding masks illegal tokens; it guarantees syntax, not semantics.",
+        "explanation": "Prompting produces usually-valid JSON, which in production is a parse-failure rate you must handle. The guarantee comes from constrained decoding: compile the schema or grammar into a state machine and, at each step, mask the logits of every token that cannot legally come next before sampling, so invalid output is unreachable rather than merely unlikely. Efficient implementations precompute an index from the grammar to the tokenizer's vocabulary so the per-step cost is close to a lookup. Three caveats belong in the answer. It guarantees syntax, not semantics - a schema-valid object can still be factually wrong or fill a required field with a placeholder. The mask is tokenizer-dependent, which is where the engineering is. And over-constraining degrades quality by pushing the model off distribution, so the usual pattern is to let the model reason in free text and constrain only the final structured span, then still validate ranges, enums and referential integrity downstream.",
+        "star_framework_tip": "Contrast it with a retry loop: retries pay full generation cost per attempt and are unbounded.",
+        "common_pitfalls": [
+          "Offering prompt engineering or retries as a guarantee",
+          "Claiming schema validity implies correctness"
+        ],
+        "references": [
+          {
+            "title": "Willard & Louf 2023 - Efficient Guided Generation for Large Language Models",
+            "url": "https://arxiv.org/abs/2307.09702"
+          }
+        ]
+      },
+      {
+        "id": "dc_s3",
+        "question": "You are serving a chat assistant and latency is too high. Walk through your options at the decoding layer.",
+        "complexity": "Hard",
+        "core_intent": "Systems judgment: separating what helps latency from what helps throughput.",
+        "preparation_guide": "Distinguish time-to-first-token from inter-token latency, then map each fix to one of them.",
+        "explanation": "Split the metric first. Time-to-first-token is dominated by prefill, which is compute-bound and quadratic in prompt length, so the fixes are shortening the prompt, prompt or prefix caching for shared system text, and chunked prefill so long prompts do not block other requests. Inter-token latency is dominated by memory bandwidth, since every generated token reads the weights and the whole KV cache, so the fixes are speculative decoding or Medusa-style heads for single-stream latency, a smaller or quantized model, and KV-cache reductions such as grouped-query attention and cache quantization. Throughput is a different objective: continuous batching and PagedAttention raise tokens per second across users while often slightly worsening any individual request. Finally, generate fewer tokens - capping length, streaming so perceived latency falls, and avoiding verbose formats - is frequently the largest single win and the one candidates forget.",
+        "star_framework_tip": "Naming the metric split before listing fixes is what makes this a systems answer.",
+        "common_pitfalls": [
+          "Treating latency and throughput as the same objective",
+          "Listing techniques without saying which part of the request they affect"
+        ],
+        "references": [
+          {
+            "title": "Kwon et al. 2023 - Efficient Memory Management for LLM Serving with PagedAttention",
+            "url": "https://arxiv.org/abs/2309.06180"
+          },
+          {
+            "title": "Cai et al. 2024 - Medusa: Simple LLM Inference Acceleration with Multiple Decoding Heads",
+            "url": "https://arxiv.org/abs/2401.10774"
+          }
+        ]
+      }
+    ]
+  }
+}
