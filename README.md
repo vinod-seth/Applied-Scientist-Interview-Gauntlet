@@ -5,7 +5,7 @@
 | **Target role** | Applied Scientist (entry-level, NLP/LLM focus) |
 | **Candidate profile** | M.Tech Robotics & AI (IIT Guwahati), B.Tech CS (AI/ML), no industry experience — four flagship projects carry the resume |
 | **Format** | 9 sessions, delivered one at a time; each ends with a mock round and an honest self-assessment |
-| **Version** | 1.8 |
+| **Version** | 1.9 |
 | **Last verified** | 2026-07-29 (model names, paper links, and Leadership Principles list checked on this date) |
 
 ---

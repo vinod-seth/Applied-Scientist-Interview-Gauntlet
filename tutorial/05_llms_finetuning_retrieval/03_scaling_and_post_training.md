@@ -9,6 +9,16 @@
 
 > 📍 **How this lesson works:** two blocks that interviewers treat as one round. First, what more compute buys and how to spend it — an arithmetic question with a published answer. Second, what happens *after* pretraining, which is where "I've read about RLHF" and "I can state the objective" separate. An Applied Scientist candidate is expected to be exact about both.
 
+## 🟢 Learning Objectives
+
+After this lesson you can:
+
+- **Allocate a fixed compute budget** between parameters and tokens, showing the arithmetic.
+- **Explain why production models are overtrained**, in terms of which objective changed.
+- **Take a defensible position on emergence**, naming the metric mechanism behind the debate.
+- **Name each post-training stage** and the specific capability it installs.
+- **State the RLHF and DPO objectives** and the on-policy/off-policy trade between them.
+
 ## 🟢 The One Picture
 
 ```mermaid
@@ -103,8 +113,8 @@ Saying only "emergence is a mirage" is as weak as saying only "emergence is real
 | Stage | Data | Objective | What it buys |
 |---|---|---|---|
 | **Pretraining** | Trillions of unlabeled tokens | Next-token cross-entropy | Capability and knowledge. The base model *completes* text; it does not answer |
-| **SFT / instruction tuning** | 10³–10⁵ curated (prompt, response) pairs | Same cross-entropy, on demonstrations | The **format** of an answer: follow an instruction, stop, adopt the assistant register |
-| **Preference optimization** | Ranked pairs: response A vs B | RLHF (reward model + PPO) or <abbr title="Direct Preference Optimization: trains a policy on preference pairs directly, using a closed-form relation between the optimal policy and the reward, so no separate reward model or RL loop is needed">DPO</abbr> | **Ranking** — helpfulness, honesty, refusal behavior, tone. What demonstrations cannot teach |
+| **<abbr title="Supervised fine-tuning: continues ordinary next-token training on curated prompt-and-answer pairs written the way you want the model to respond">SFT</abbr> / instruction tuning** | 10³–10⁵ curated (prompt, response) pairs | Same cross-entropy, on demonstrations | The **format** of an answer: follow an instruction, stop, adopt the assistant register |
+| **Preference optimization** | Ranked pairs: response A vs B | <abbr title="Reinforcement Learning from Human Feedback: learns a scoring model from human comparisons, then tunes the model to score well under it">RLHF</abbr> (reward model + <abbr title="Proximal Policy Optimization: the reinforcement-learning algorithm used here, which limits how far each update may move the model">PPO</abbr>) or <abbr title="Direct Preference Optimization: learns from comparison pairs with a single classification-style loss, needing no scoring model and no reinforcement-learning loop">DPO</abbr> | **Ranking** — helpfulness, honesty, refusal behavior, tone. What demonstrations cannot teach |
 
 The load-bearing point is why the third stage exists at all: an SFT demonstration says "this is a good answer" but never says "this is *better than* that plausible alternative." Preference data supplies exactly that comparison, and comparison is also far cheaper and more reliable for humans to produce than writing gold answers — annotators agree far more on *which of two is better* than on what the ideal response should be.
 
@@ -113,7 +123,7 @@ Cost profile worth adding: pretraining is millions of dollars, SFT is thousands,
 
 <details><summary>🔁 The follow-up chain</summary>
 
-"Can you skip SFT and do preference optimization on the base model?" (in principle, but it is unstable and inefficient — SFT gets the policy into a region where sampled responses are worth comparing at all) → "What is the alignment tax?" (measured regressions on some capability benchmarks after alignment; mitigated by mixing pretraining or SFT data back into the later stages) → "Where do reasoning models fit?" (a further stage of reinforcement learning against **verifiable** rewards — mathematics and code, where correctness is checkable — using group-relative methods such as GRPO instead of a learned reward model; this is the newest layer on the stack).
+"Can you skip SFT and do preference optimization on the base model?" (in principle, but it is unstable and inefficient — SFT gets the policy into a region where sampled responses are worth comparing at all) → "What is the alignment tax?" (measured regressions on some capability benchmarks after alignment; mitigated by mixing pretraining or SFT data back into the later stages) → "Where do reasoning models fit?" (a further stage of reinforcement learning against **verifiable** rewards — mathematics and code, where correctness is checkable — using group-relative methods such as <abbr title="Group Relative Policy Optimization: scores a batch of sampled answers against each other, removing the need for a separately trained value network">GRPO</abbr> instead of a learned reward model; this is the newest layer on the stack).
 </details>
 
 ---
@@ -135,11 +145,11 @@ flowchart TD
 
 <details><summary>✅ Model answer</summary>
 
-**RLHF** (Ouyang et al. 2022) has three stages. Fit a reward model $r_\phi$ on preference pairs with the Bradley–Terry likelihood, $P(y_w \succ y_l) = \sigma(r(y_w) - r(y_l))$. Then optimize the policy with PPO against
+**RLHF** (Ouyang et al. 2022) has three stages. Fit a reward model $r_\phi$ on preference pairs with the <abbr title="A model of paired comparisons in which the chance of preferring one item over another depends only on the gap between their two learned scores">Bradley–Terry</abbr> likelihood, $P(y_w \succ y_l) = \sigma(r(y_w) - r(y_l))$. Then optimize the policy with PPO against
 
 $$\max_{\pi} \; \mathbb{E}_{y \sim \pi}[r_\phi(y)] - \beta \, \mathrm{KL}(\pi \,\|\, \pi_{\text{ref}})$$
 
-The <abbr title="Kullback–Leibler divergence: a measure of how far one probability distribution has moved from another, used here to keep the tuned policy close to the model it started from">KL</abbr> term is not decoration — without it the policy drifts to whatever exploits the reward model, producing fluent, high-scoring, useless text. That is **reward hacking**, and the KL penalty is the leash.
+The <abbr title="Kullback–Leibler divergence: measures how far the tuned model's output distribution has drifted from the model it started out as">KL</abbr> term is not decoration — without it the policy drifts to whatever exploits the reward model, producing fluent, high-scoring, useless text. That is <abbr title="Scoring highly on the learned proxy while genuine quality falls, because the model found outputs the scorer overrates">**reward hacking**</abbr>, and the KL penalty is the leash.
 
 **DPO** (Rafailov et al. 2023) removes the reward model entirely. The insight: for the KL-regularized objective above, the optimal policy has a closed form, which can be inverted to express the *reward* in terms of the policy. Substituting into the Bradley–Terry likelihood turns preference learning into a **direct classification loss on the policy** — the implicit reward is $\beta \log \frac{\pi_\theta(y)}{\pi_{\text{ref}}(y)}$. No reward model, no sampling loop, no PPO.
 
@@ -148,7 +158,7 @@ The <abbr title="Kullback–Leibler divergence: a measure of how far one probabi
 
 <details><summary>🔁 The follow-up chain</summary>
 
-"What is $\beta$ in DPO?" (the same KL strength — how far the policy may move from the reference; too high freezes it, too low lets it degenerate) → "Does DPO have its own failure mode?" (yes — it can push down the likelihood of *both* responses in a pair while widening their gap, degrading the model even as the loss improves; it also overfits preference-data quirks) → "What is RLAIF?" (preference labels produced by a model instead of humans, following a written specification — Constitutional AI is the reference version; it trades some label quality for enormous scale) → "How would you tell if a reward model is being hacked?" (watch reward against a held-out human or stronger-model evaluation: reward climbing while independent quality falls is the fingerprint).
+"What is $\beta$ in DPO?" (the same KL strength — how far the policy may move from the reference; too high freezes it, too low lets it degenerate) → "Does DPO have its own failure mode?" (yes — it can push down the likelihood of *both* responses in a pair while widening their gap, degrading the model even as the loss improves; it also overfits preference-data quirks) → "What is <abbr title="Reinforcement learning from AI feedback: the comparison labels come from a model following a written specification instead of from human annotators">RLAIF</abbr>?" (preference labels produced by a model instead of humans, following a written specification — Constitutional AI is the reference version; it trades some label quality for enormous scale) → "How would you tell if a reward model is being hacked?" (watch reward against a held-out human or stronger-model evaluation: reward climbing while independent quality falls is the fingerprint).
 </details>
 
 ---
@@ -217,6 +227,19 @@ A: Watch **proxy reward against an independent evaluation** — held-out human j
 - **The stack is capability → format → ranking:** pretraining, SFT, then preference optimization, which exists because demonstrations cannot express *better than*.
 - **RLHF maximizes a learned reward under a KL leash; DPO folds that objective into a direct classification loss.** DPO's simplicity costs on-policy signal.
 
-**References:** Kaplan et al. 2020 (scaling laws, arXiv:2001.08361) · Hoffmann et al. 2022 (Chinchilla, arXiv:2203.15556) · Besiroglu et al. 2024 (Chinchilla replication attempt, arXiv:2404.10102) · Sardana et al. 2023 (beyond Chinchilla-optimal / inference-aware scaling, arXiv:2401.00448) · Wei et al. 2022 (emergent abilities, arXiv:2206.07682) · Schaeffer et al. 2023 (are emergent abilities a mirage?, arXiv:2304.15004) · Ouyang et al. 2022 (InstructGPT / RLHF, arXiv:2203.02155) · Rafailov et al. 2023 (DPO, arXiv:2305.18290) · Bai et al. 2022 (Constitutional AI / RLAIF, arXiv:2212.08073) · Shao et al. 2024 (GRPO, arXiv:2402.03300) · Gao et al. 2022 (reward-model overoptimization, arXiv:2210.10760).
+**References**
+
+- Kaplan et al. (2020) — *Scaling Laws for Neural Language Models* — https://arxiv.org/abs/2001.08361
+- Hoffmann et al. (2022) — *Training Compute-Optimal Large Language Models* (Chinchilla) — https://arxiv.org/abs/2203.15556
+- Besiroglu et al. (2024) — *Chinchilla Scaling: A Replication Attempt* — https://arxiv.org/abs/2404.10102
+- Sardana et al. (2023) — *Beyond Chinchilla-Optimal: Accounting for Inference in Language Model Scaling Laws* — https://arxiv.org/abs/2401.00448
+- Wei et al. (2022) — *Emergent Abilities of Large Language Models* — https://arxiv.org/abs/2206.07682
+- Schaeffer et al. (2023) — *Are Emergent Abilities of Large Language Models a Mirage?* — https://arxiv.org/abs/2304.15004
+- Ouyang et al. (2022) — *Training Language Models to Follow Instructions with Human Feedback* (InstructGPT) — https://arxiv.org/abs/2203.02155
+- Rafailov et al. (2023) — *Direct Preference Optimization: Your Language Model is Secretly a Reward Model* — https://arxiv.org/abs/2305.18290
+- Bai et al. (2022) — *Constitutional AI: Harmlessness from AI Feedback* — https://arxiv.org/abs/2212.08073
+- Shao et al. (2024) — *DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models* (GRPO) — https://arxiv.org/abs/2402.03300
+- Gao et al. (2022) — *Scaling Laws for Reward Model Overoptimization* — https://arxiv.org/abs/2210.10760
+- Zhou et al. (2023) — *LIMA: Less Is More for Alignment* — https://arxiv.org/abs/2305.11206
 
 **Next:** [Lesson 4 — The RAG Design Space](04_rag_design_space.md)

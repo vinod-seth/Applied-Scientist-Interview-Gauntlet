@@ -10,6 +10,15 @@
 
 ---
 
+## 🟢 Learning Objectives
+
+After this round you can:
+
+- **Answer any Session 5 question in the four-part shape**: mechanism → number → trade-off → the measurement that settles it.
+- **Deliver the three set-piece answers** — retrieval design, evaluation design, and one-GPU allocation — under time.
+- **Locate your own depth limit** on all 15 core topics, and log it as a study target.
+- **Give the synthesis narrative** connecting knowledge/behavior, adaptation, decoding and evaluation.
+
 ## 🟢 Before You Start
 
 1. Have your Session 1 numbers to hand — your QLoRA rank, target modules, and observed peak memory. Two questions here invite you to instantiate general arithmetic on your own run.

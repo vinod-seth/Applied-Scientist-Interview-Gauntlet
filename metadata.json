@@ -21,7 +21,7 @@
   "estimated_hours": 54,
   "modules": 9,
   "lessons": 44,
-  "version": "1.8",
+  "version": "1.9",
   "delivery_note": "Sessions are generated one at a time. The curriculum lists ONLY delivered content so the portal never points at a file that does not exist yet. Each new session appends a module here. The full 9-session plan lives in README.md.",
   "curriculum": [
     {

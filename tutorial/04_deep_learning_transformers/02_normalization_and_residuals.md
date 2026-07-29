@@ -68,14 +68,14 @@ It breaks for transformers on three counts:
 
 <details><summary>🔁 The follow-up chain</summary>
 
-"What actually happens at BatchNorm with batch size 1?" (variance over one example is zero, so the output degenerates — you must fall back to running statistics; this is why BatchNorm and tiny batches are a known failure) → "Is GroupNorm a middle ground?" (yes — statistics over feature groups within one example: batch-independent like LayerNorm, retaining some of BatchNorm's channel structure; common in detection/segmentation with small batches) → "Does BatchNorm regularize?" (yes, incidentally — batch-dependent noise acts as a regularizer, which is part of why removing it can hurt accuracy even when training is stable).
+"What actually happens at BatchNorm with batch size 1?" (variance over one example is zero, so the output degenerates — you must fall back to <abbr title="Averages of the batch mean and variance accumulated during training, used at inference when no batch is available">running statistics</abbr>; this is why BatchNorm and tiny batches are a known failure) → "Is <abbr title="Normalizes over blocks of channels inside a single example, so it needs no batch yet keeps some channel structure">GroupNorm</abbr> a middle ground?" (yes — statistics over feature groups within one example: batch-independent like LayerNorm, retaining some of BatchNorm's channel structure; common in detection/segmentation with small batches) → "Does BatchNorm regularize?" (yes, incidentally — batch-dependent noise acts as a regularizer, which is part of why removing it can hurt accuracy even when training is stable).
 </details>
 
 <details><summary>📚 Deep-dive: the internal-covariate-shift story is wrong</summary>
 
-The original BatchNorm paper (Ioffe & Szegedy 2015) explained the benefit as reducing **internal covariate shift** — the drift in each layer's input distribution as the layers below it update. That explanation became folklore.
+The original BatchNorm paper (Ioffe & Szegedy 2015) explained the benefit as reducing <abbr title="The idea that each layer's input distribution keeps drifting as the layers below it update, forcing the layer to chase a moving target">**internal covariate shift**</abbr> — the drift in each layer's input distribution as the layers below it update. That explanation became folklore.
 
-Santurkar et al. (2018, arXiv:1805.11604) tested it directly: they *injected* noise after BatchNorm to deliberately re-introduce distributional shift, and training still improved. Their alternative account is that BatchNorm **smooths the optimization landscape** — reducing the Lipschitz constant of the loss and its gradients, so larger learning rates become stable.
+Santurkar et al. (2018, arXiv:1805.11604) tested it directly: they *injected* noise after BatchNorm to deliberately re-introduce distributional shift, and training still improved. Their alternative account is that BatchNorm <abbr title="Makes the loss surface less jagged, so a gradient measured at one point stays accurate over a longer step and larger learning rates remain stable">**smooths the optimization landscape**</abbr> — reducing the Lipschitz constant of the loss and its gradients, so larger learning rates become stable.
 
 Knowing that the canonical explanation was overturned — and being able to name what replaced it — is a strong senior signal, because most candidates repeat the 2015 story as settled fact.
 </details>
@@ -88,7 +88,7 @@ Knowing that the canonical explanation was overturned — and being able to name
 
 <details><summary>✅ Model answer</summary>
 
-RMSNorm removes the **mean subtraction** (and usually the $\beta$ shift), keeping only a root-mean-square rescale:
+<abbr title="Root Mean Square normalization: divides by the size of the feature vector without first centring it, dropping one statistic and one parameter set">RMSNorm</abbr> removes the **mean subtraction** (and usually the $\beta$ shift), keeping only a root-mean-square rescale:
 
 $$y_i = \gamma_i \cdot \frac{x_i}{\sqrt{\frac{1}{D}\sum_j x_j^2 + \epsilon}}$$
 

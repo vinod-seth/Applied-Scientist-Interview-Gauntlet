@@ -8,6 +8,16 @@
 
 > 📍 **How this lesson works:** Session 1 defended *your* QLoRA run — NF4, your rank, your memory budget. This lesson places that one choice inside the landscape it came from, so that when the interviewer says "why not prefix tuning?" or "what would you do with 8× the GPU?", you answer with a trade-off rather than a preference. Nearly every answer here is memory arithmetic. Do it out loud.
 
+## 🟢 Learning Objectives
+
+After this lesson you can:
+
+- **Derive the memory cost** of full fine-tuning from bytes per parameter, and name which term freezing the base removes.
+- **State LoRA exactly** — parameterization, initialization, parameter count — and explain what $\alpha$ decouples.
+- **Place any adaptation method** on the mergeability axis and give the cost it trades.
+- **Design a multi-adapter serving path** and justify merging or not merging.
+- **Name three situations** where you would reject parameter-efficient tuning outright.
+
 ## 🟢 The One Picture
 
 <abbr title="Parameter-efficient fine-tuning: adapting a model by training a small set of added or selected parameters while the pretrained weights stay frozen">PEFT</abbr> methods all answer one question — *which parameters am I allowed to change?* — and they differ on a second one that decides deployment: *can the change be folded back into the weights?*
@@ -92,12 +102,12 @@ The justification is that fine-tuning updates have low <abbr title="The smallest
 |---|---|---|
 | **Full FT** | Everything | Best ceiling on large distribution shifts; ~16 bytes/param, one checkpoint per task |
 | **LoRA** | Low-rank $BA$ per matrix | Mergeable, no inference cost; needs a choice of rank and target modules |
-| **QLoRA** | LoRA on a 4-bit <abbr title="4-bit NormalFloat: a quantization grid whose levels are the quantiles of a normal distribution, matched to how neural network weights are actually distributed">NF4</abbr> frozen base | Smallest footprint; slower steps from dequantization, and merging back into a 4-bit base is lossy |
-| **DoRA** | Splits $W$ into magnitude and direction, LoRA on direction | Closes much of the LoRA-vs-full-FT gap at low rank; extra compute per step |
-| **IA³** | Three learned vectors rescaling $K$, $V$, FFN activations | Tiniest footprint (~0.01%); less expressive, and few-shot oriented |
-| **Adapters (Houlsby)** | Inserted bottleneck MLPs | Strong and modular, but **serial** — real added inference latency |
-| **Prefix / prompt tuning** | Continuous vectors prepended to keys/values or embeddings | No weight change at all; consumes context budget and is notoriously sensitive to optimization |
-| **BitFit** | Bias terms only | Nearly free, a useful baseline, but a low ceiling |
+| **<abbr title="Quantized LoRA: keeps the base model frozen in 4-bit precision and trains only the low-rank adapters on top of it">QLoRA</abbr>** | LoRA on a 4-bit <abbr title="4-bit NormalFloat: a quantization grid whose levels are the quantiles of a normal distribution, matched to how neural network weights are actually distributed">NF4</abbr> frozen base | Smallest footprint; slower steps from dequantization, and merging back into a 4-bit base is lossy |
+| **<abbr title="Weight-Decomposed Low-Rank Adaptation: separates each weight into a length and a direction, then applies the low-rank update to the direction only">DoRA</abbr>** | Splits $W$ into magnitude and direction, LoRA on direction | Closes much of the LoRA-vs-full-FT gap at low rank; extra compute per step |
+| **<abbr title="Infused Adapter by Inhibiting and Amplifying Inner Activations: learns three vectors that multiply existing activations up or down, adding no new matrices">IA³</abbr>** | Three learned vectors rescaling $K$, $V$, FFN activations | Tiniest footprint (~0.01%); less expressive, and few-shot oriented |
+| **<abbr title="Small trainable modules inserted between a frozen model's existing layers, each squeezing the hidden state to a narrow width and back">Adapters</abbr> (Houlsby)** | Inserted bottleneck MLPs | Strong and modular, but **serial** — real added inference latency |
+| **<abbr title="Trainable vectors prepended to the input or to every layer's keys and values; the model's own weights are never touched">Prefix / prompt tuning</abbr>** | Continuous vectors prepended to keys/values or embeddings | No weight change at all; consumes context budget and is notoriously sensitive to optimization |
+| **<abbr title="Trains only the additive offset terms already present in each layer, leaving every multiplicative weight frozen">BitFit</abbr>** | Bias terms only | Nearly free, a useful baseline, but a low ceiling |
 
 The one-line map: **LoRA-family wins on deployment because it merges; adapters win on modularity; soft prompts win when you cannot touch weights at all.**
 </details>
@@ -227,6 +237,19 @@ A: Three cases. **(1) Large distribution shift** — new language, new modality,
 - **Serving many adapters means not merging** — one base, per-request low-rank terms, batched.
 - **PEFT is a constrained choice, not a free one.** Large shifts, knowledge insertion, and abundant compute all argue for something else.
 
-**References:** Hu et al. 2021 (LoRA, arXiv:2106.09685) · Dettmers et al. 2023 (QLoRA, arXiv:2305.14314) · Aghajanyan et al. 2020 (intrinsic dimensionality, arXiv:2012.13255) · Houlsby et al. 2019 (adapters, arXiv:1902.00751) · Li & Liang 2021 (prefix tuning, arXiv:2101.00190) · Lester et al. 2021 (prompt tuning, arXiv:2104.08691) · Liu et al. 2022 (IA³, arXiv:2205.05638) · Liu et al. 2024 (DoRA, arXiv:2402.09353) · Ben Zaken et al. 2021 (BitFit, arXiv:2106.10199) · Biderman et al. 2024 (LoRA learns less and forgets less, arXiv:2405.09673) · Sheng et al. 2023 (S-LoRA, arXiv:2311.03285).
+**References**
+
+- Hu et al. (2021) — *LoRA: Low-Rank Adaptation of Large Language Models* — https://arxiv.org/abs/2106.09685
+- Dettmers et al. (2023) — *QLoRA: Efficient Finetuning of Quantized LLMs* — https://arxiv.org/abs/2305.14314
+- Aghajanyan et al. (2020) — *Intrinsic Dimensionality Explains the Effectiveness of Language Model Fine-Tuning* — https://arxiv.org/abs/2012.13255
+- Houlsby et al. (2019) — *Parameter-Efficient Transfer Learning for NLP* — https://arxiv.org/abs/1902.00751
+- Li & Liang (2021) — *Prefix-Tuning: Optimizing Continuous Prompts for Generation* — https://arxiv.org/abs/2101.00190
+- Lester et al. (2021) — *The Power of Scale for Parameter-Efficient Prompt Tuning* — https://arxiv.org/abs/2104.08691
+- Liu et al. (2022) — *Few-Shot Parameter-Efficient Fine-Tuning is Better and Cheaper than In-Context Learning* (IA³) — https://arxiv.org/abs/2205.05638
+- Liu et al. (2024) — *DoRA: Weight-Decomposed Low-Rank Adaptation* — https://arxiv.org/abs/2402.09353
+- Ben-Zaken et al. (2021) — *BitFit: Simple Parameter-efficient Fine-tuning for Transformer-based Masked Language-models* — https://arxiv.org/abs/2106.10199
+- Biderman et al. (2024) — *LoRA Learns Less and Forgets Less* — https://arxiv.org/abs/2405.09673
+- Sheng et al. (2023) — *S-LoRA: Serving Thousands of Concurrent LoRA Adapters* — https://arxiv.org/abs/2311.03285
+- Chen et al. (2023) — *Punica: Multi-Tenant LoRA Serving* — https://arxiv.org/abs/2310.18547
 
 **Next:** [Lesson 2 — Decoding & Sampling Strategies](02_decoding_and_sampling.md)

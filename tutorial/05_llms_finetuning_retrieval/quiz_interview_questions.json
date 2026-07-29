@@ -139,7 +139,7 @@
         "references": [
           {
             "title": "Card et al. 2020 - With Little Power Comes Great Responsibility",
-            "url": "https://arxiv.org/abs/2010.02405"
+            "url": "https://arxiv.org/abs/2010.06595"
           },
           {
             "title": "Zheng et al. 2023 - Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena",
@@ -210,7 +210,7 @@
         "references": [
           {
             "title": "Card et al. 2020 - With Little Power Comes Great Responsibility",
-            "url": "https://arxiv.org/abs/2010.02405"
+            "url": "https://arxiv.org/abs/2010.06595"
           },
           {
             "title": "Es et al. 2023 - RAGAS: Automated Evaluation of Retrieval Augmented Generation",

@@ -22,7 +22,7 @@ flowchart LR
     L1 -.->|"∂L/∂W = ∂L/∂z · xᵀ"| W["update W"]
 ```
 
-Two consequences drive everything else in this session: the backward pass **needs the forward activations** (so you must store them, which is where memory goes), and the gradient reaching layer *k* is a **product** of every Jacobian above it (which is where training dies).
+Two consequences drive everything else in this session: the backward pass **needs the forward <abbr title="The intermediate outputs each layer produced on the way forward, which the backward pass needs and must therefore keep in memory">activations</abbr>** (so you must store them, which is where memory goes), and the gradient reaching layer *k* is a **product** of every Jacobian above it (which is where training dies).
 
 ---
 
@@ -45,7 +45,7 @@ For a batch, sum over examples: $\partial L/\partial W = \sum_i \delta_z^{(i)} (
 
 <details><summary>🔁 The follow-up chain</summary>
 
-"Why do you need $x$ during the backward pass?" (because $\partial L/\partial W$ contains it — so the forward activations must be *stored*, and that storage is the activation memory in your Session 1 memory budget) → "What does gradient checkpointing trade?" (stores only a subset of activations and recomputes the rest during backward: ~√n memory for one extra forward pass) → "What's the cost of the backward pass relative to forward?" (roughly 2× the forward FLOPs — one matmul for the input gradient, one for the weight gradient).
+"Why do you need $x$ during the backward pass?" (because $\partial L/\partial W$ contains it — so the forward activations must be *stored*, and that storage is the activation memory in your Session 1 memory budget) → "What does <abbr title="Keeps only a few intermediate results and recomputes the rest during the backward pass, buying memory with extra compute">gradient checkpointing</abbr> trade?" (stores only a subset of activations and recomputes the rest during backward: ~√n memory for one extra forward pass) → "What's the cost of the backward pass relative to forward?" (roughly 2× the forward FLOPs — one matmul for the input gradient, one for the weight gradient).
 </details>
 
 ---
@@ -62,12 +62,12 @@ $$\frac{\partial L}{\partial h_k} = \frac{\partial L}{\partial h_n} \prod_{i=k+1
 
 A product of $n-k$ terms is an exponential in depth. If those Jacobians have typical singular values below 1, the product decays geometrically — gradients **vanish**, and early layers stop learning. Above 1, it grows geometrically — gradients **explode**, and you get NaNs or wild parameter jumps.
 
-Two classic contributors: **saturating activations** (sigmoid's derivative peaks at 0.25, so ten layers of it multiplies by ≤ 4×10⁻⁷ at best), and **poorly scaled initialization**, which sets the typical Jacobian magnitude at step zero.
+Two classic contributors: <abbr title="Activation functions that flatten out at their extremes, so their slope approaches zero and almost no gradient passes through">**saturating activations**</abbr> (sigmoid's derivative peaks at 0.25, so ten layers of it multiplies by ≤ 4×10⁻⁷ at best), and **poorly scaled <abbr title="The random starting values of the weights, whose spread decides whether signal and gradient grow or shrink as they cross each layer">initialization</abbr>**, which sets the typical Jacobian magnitude at step zero.
 </details>
 
 <details><summary>🔁 The follow-up chain</summary>
 
-"So how do modern networks train at 100+ layers?" (residual connections make the Jacobian $I + \partial F/\partial h$ — an identity path means the product doesn't decay; plus normalization keeps per-layer scale controlled, and non-saturating activations like ReLU/GELU) → "Which of the two is easier to fix?" (exploding — gradient clipping is a one-line, reliable fix; vanishing is architectural) → "Does clipping fix vanishing?" (no — clipping only bounds magnitude from above).
+"So how do modern networks train at 100+ layers?" (residual connections make the Jacobian $I + \partial F/\partial h$ — an identity path means the product doesn't decay; plus normalization keeps per-layer scale controlled, and non-saturating activations like ReLU/GELU) → "Which of the two is easier to fix?" (exploding — <abbr title="Rescales the whole gradient whenever its norm exceeds a set threshold, capping the size of any single update">gradient clipping</abbr> is a one-line, reliable fix; vanishing is architectural) → "Does clipping fix vanishing?" (no — clipping only bounds magnitude from above).
 </details>
 
 <details><summary>📚 Deep-dive: initialization as variance control</summary>

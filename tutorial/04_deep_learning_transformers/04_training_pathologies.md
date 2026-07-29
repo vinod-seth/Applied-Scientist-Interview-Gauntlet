@@ -35,11 +35,11 @@ flowchart TD
 
 Then the ordered hypotheses:
 
-1. **Mixed-precision overflow.** fp16 has max ≈ 65504; an activation or gradient exceeding it becomes `inf`, then `NaN`. Check whether the loss scaler is repeatedly skipping steps — that is the fingerprint. (bf16 has fp32's range and largely removes this failure.)
+1. **<abbr title="Training that stores most tensors in 16-bit for speed and memory while keeping a 32-bit copy of the weights for the update">Mixed-precision</abbr> overflow.** fp16 has max ≈ 65504; an activation or gradient exceeding it becomes `inf`, then `NaN`. Check whether the <abbr title="Multiplies the loss by a large constant so small 16-bit gradients do not underflow to zero, then removes the factor before the update">loss scaler</abbr> is repeatedly skipping steps — that is the fingerprint. (bf16 has fp32's range and largely removes this failure.)
 2. **Exploding gradients** — gradual growth in gradient norm before the blow-up. Fix with clipping; check normalization placement.
 3. **A bad batch** — a corrupted label, an all-padding sequence, a degenerate example. Fingerprint: the failure **reproduces deterministically** on that batch.
 4. **Numerical edge cases in the loss** — `log(0)`, division by a near-zero denominator, softmax over all `-inf` (a fully-masked row).
-5. **Learning rate too high**, or warmup that ended too early.
+5. **Learning rate too high**, or <abbr title="A short opening phase that ramps the learning rate up from near zero, avoiding large destabilising updates while gradients are still poorly estimated">warmup</abbr> that ended too early.
 
 The discriminating test to volunteer: **re-run the same batch with the same seed.** Deterministic reproduction points at data or a numerical edge case; non-reproduction points at accumulated instability.
 </details>
@@ -59,7 +59,7 @@ The discriminating test to volunteer: **re-run the same batch with the same seed
 
 Flat-from-the-start usually means **no useful signal is reaching the parameters**, and there are four common causes:
 
-1. **The data path is broken** — labels shuffled relative to inputs, wrong tensor being fed, or a mask zeroing everything. *Test:* try to **overfit a single batch**. A healthy model drives loss to ~0 on 8 examples in a few hundred steps; if it cannot, the bug is in the model or data, not the hyperparameters.
+1. **The data path is broken** — labels shuffled relative to inputs, wrong tensor being fed, or a mask zeroing everything. *Test:* try to <abbr title="Drive the loss to near zero on a handful of examples; any healthy model can memorize them, so failure means a bug, not bad tuning">**overfit a single batch**</abbr>. A healthy model drives loss to ~0 on 8 examples in a few hundred steps; if it cannot, the bug is in the model or data, not the hyperparameters.
 2. **Learning rate wrong in either direction** — too low and updates are invisible; too high and it bounces without descending.
 3. **Bad initialization / vanishing gradients** — check whether early-layer gradient norms are orders of magnitude below late layers.
 4. **Dead units** — with ReLU, a large negative bias can push a unit permanently to zero output and zero gradient. *Test:* what fraction of activations are exactly zero?
@@ -69,7 +69,7 @@ The single-batch overfit test is the one to say first. It cleanly separates "bug
 
 <details><summary>🔁 The follow-up chain</summary>
 
-"What's the dying-ReLU fix?" (LeakyReLU/GELU give nonzero gradient for negative inputs; also lower the learning rate and check initialization — dead units are often caused by an early oversized update) → "How would you check the learning rate is even applied?" (log the *effective* LR from the scheduler each step — a misconfigured warmup or a scheduler stepping per-epoch instead of per-batch is a common silent bug) → "Loss decreases but accuracy stays at chance?" (suspect a label/prediction misalignment, or a metric computed on the wrong axis).
+"What's the <abbr title="Units stuck outputting zero for every input, so their gradient is permanently zero and they never recover">dying-ReLU</abbr> fix?" (LeakyReLU/GELU give nonzero gradient for negative inputs; also lower the learning rate and check initialization — dead units are often caused by an early oversized update) → "How would you check the learning rate is even applied?" (log the *effective* LR from the scheduler each step — a misconfigured warmup or a scheduler stepping per-epoch instead of per-batch is a common silent bug) → "Loss decreases but accuracy stays at chance?" (suspect a label/prediction misalignment, or a metric computed on the wrong axis).
 </details>
 
 ---

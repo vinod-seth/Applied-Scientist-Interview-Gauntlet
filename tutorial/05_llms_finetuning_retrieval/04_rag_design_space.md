@@ -8,6 +8,16 @@
 
 > 📍 **How this lesson works:** Session 2 defended your failure-mode analysis — the definitions, the sweep, the oracle-context test. That was one point in a design space. This lesson is the space: the standard production stack, what each stage is *for*, and the comparison against the two alternatives (fine-tuning and long context) that an interviewer will always raise. Chunking mechanics and failure taxonomy are Session 2's; they are not repeated here.
 
+## 🟢 Learning Objectives
+
+After this lesson you can:
+
+- **Design a two-stage retrieval stack** and say what each stage prevents.
+- **Justify hybrid retrieval** by naming the query types each component fails on.
+- **Explain why a cross-encoder cannot be the first stage**, from its cost structure.
+- **Apply a decision rule** across retrieval, fine-tuning and long context — and say when they combine.
+- **Choose a vector index** and state the recall it silently costs you.
+
 ## 🟢 The One Picture
 
 Every serious retrieval stack is two stages with opposite objectives, and naming that split is the fastest way to sound like you have built one.
@@ -40,11 +50,11 @@ I'd build the two-stage pipeline above and justify each stage by what it prevent
 
 1. **Query processing.** Raw user queries are often conversational or under-specified. Rewriting a follow-up into a standalone query fixes the most common multi-turn failure; decomposing a compound question fixes the multi-hop one.
 2. **Hybrid first-stage retrieval.** BM25 and a dense encoder, run in parallel, fused. This is the recall stage — I would tune it at $k \approx 100$ and measure **recall@k against known gold passages**, not end-to-end accuracy, because a document that never enters the candidate set cannot be recovered downstream.
-3. **Cross-encoder reranker.** Reorder those ~100 down to the 5 that go in the prompt. This is where precision comes from.
+3. **<abbr title="Reads the query and one document together in a single pass, letting every word of each attend to the other, and returns one relevance score">Cross-encoder</abbr> reranker.** Reorder those ~100 down to the 5 that go in the prompt. This is where precision comes from.
 4. **Context assembly.** Deduplicate near-identical chunks, respect a token budget, and place the highest-scoring passages at the **start and end** of the context, because attention to the middle is measurably weaker.
 5. **Generation with citations.** Require the model to cite chunk IDs, which makes hallucination detectable rather than merely suspected.
 
-Then the measurement plan, which is the part that makes this an Applied Scientist answer rather than an architecture diagram: **retrieval recall@k and reranker nDCG measured separately from end-to-end answer accuracy**, plus the oracle-context run that tells me the generation ceiling. Without those three numbers I cannot attribute a failure to a stage.
+Then the measurement plan, which is the part that makes this an Applied Scientist answer rather than an architecture diagram: **retrieval recall@k and reranker <abbr title="Normalized discounted cumulative gain: rewards putting relevant results near the top, discounting each hit by how far down the list it sits">nDCG</abbr> measured separately from end-to-end answer accuracy**, plus the <abbr title="A diagnostic run that feeds the known-correct passages straight to the generator, revealing how well it would do if retrieval were perfect">oracle-context run</abbr> that tells me the generation ceiling. Without those three numbers I cannot attribute a failure to a stage.
 </details>
 
 <details><summary>🔁 The follow-up chain</summary>
@@ -64,9 +74,9 @@ No. They fail on **disjoint** query types, which is exactly why fusing them beat
 
 <abbr title="A lexical ranking function scoring documents by query-term frequency, damped by document length and weighted by how rare each term is across the corpus">BM25</abbr> matches terms and weights them by rarity. It is unbeatable on the queries where the *literal string* is the signal: a product SKU, an error code `ERR_1042`, a person's name, a rare API method, a term the embedder never saw in training. Because it needs no training, it also transfers to any new domain immediately.
 
-A dense <abbr title="An encoder that maps a query and a document to vectors independently, so document vectors can be precomputed and searched at scale — at the cost of never letting the two texts interact">bi-encoder</abbr> matches meaning, so it handles paraphrase, synonymy, and questions phrased nothing like the document. Its structural weakness: it compresses an entire passage into one fixed vector — a lossy summary — so exact rare tokens can vanish.
+A dense <abbr title="Encodes the query and the document separately into vectors, so documents can be indexed in advance — but the two texts never see each other">bi-encoder</abbr> matches meaning, so it handles paraphrase, synonymy, and questions phrased nothing like the document. Its structural weakness: it compresses an entire passage into one fixed vector — a lossy summary — so exact rare tokens can vanish.
 
-Fusion is usually **reciprocal rank fusion**, which needs no score calibration between the two systems because it uses only ranks:
+Fusion is usually <abbr title="Reciprocal rank fusion: combines result lists by adding up one divided by each document's position, so only ordering matters and raw scores are ignored">**reciprocal rank fusion**</abbr>, which needs no score calibration between the two systems because it uses only ranks:
 
 $$\text{RRF}(d) = \sum_{s \in \text{systems}} \frac{1}{\kappa + \text{rank}_s(d)}, \qquad \kappa \approx 60$$
 
@@ -77,7 +87,7 @@ That score-free property is why RRF is the default: BM25 scores and cosine simil
 
 <details><summary>🔁 The follow-up chain</summary>
 
-"When is dense alone acceptable?" (a narrow domain the embedder was trained or fine-tuned on, where queries are natural-language and identifiers are rare) → "What is ColBERT and where does it sit?" (late interaction — per-token embeddings scored with a max-similarity operator, keeping much of a cross-encoder's power while remaining indexable; it sits between bi-encoder and cross-encoder in both quality and cost) → "What is HyDE?" (generate a hypothetical answer with the model, embed *that*, and retrieve with it — it works because a fake answer is distributionally closer to real passages than a question is; costs an extra LLM call per query).
+"When is dense alone acceptable?" (a narrow domain the embedder was trained or fine-tuned on, where queries are natural-language and identifiers are rare) → "What is ColBERT and where does it sit?" (late interaction — per-token embeddings scored with a max-similarity operator, keeping much of a cross-encoder's power while remaining indexable; it sits between bi-encoder and cross-encoder in both quality and cost) → "What is <abbr title="Hypothetical Document Embeddings: drafts an answer first and searches with that, since a draft resembles a passage more than a question does">HyDE</abbr>?" (generate a hypothetical answer with the model, embed *that*, and retrieve with it — it works because a fake answer is distributionally closer to real passages than a question is; costs an extra LLM call per query).
 </details>
 
 ---
@@ -144,9 +154,9 @@ And they compose. The strong production answer is usually **RAG for knowledge + 
 | **Flat** | Exhaustive exact search | Perfect recall, linear in corpus size. Correct below ~10⁵–10⁶ vectors, and the ground truth you measure against |
 | **IVF** | Cluster into cells, probe a few | Big speedup; recall depends on how many cells you probe |
 | **IVF-PQ** | IVF plus product quantization of the residuals | Large memory reduction (often 10–30×), with quantization error costing recall |
-| **HNSW** | Navigable small-world graph, greedy descent | Excellent recall/latency, higher memory, and slower to build |
+| **<abbr title="Hierarchical Navigable Small World: a layered graph of neighbour links that is walked greedily from a coarse top layer down to fine ones">HNSW</abbr>** | Navigable small-world graph, greedy descent | Excellent recall/latency, higher memory, and slower to build |
 
-The point that matters more than the table: **approximate nearest neighbour search introduces a second, independent recall loss** on top of your embedding model's. If your embedder retrieves the gold passage in its true top-5 but the index only returns approximate neighbours, you lose answers to the *index*, not the model — and this failure is invisible unless you look for it.
+The point that matters more than the table: **<abbr title="Approximate nearest neighbour: trades an exact guarantee of finding the closest vectors for a large speedup, so some true matches are missed">approximate nearest neighbour</abbr> search introduces a second, independent recall loss** on top of your embedding model's. If your embedder retrieves the gold passage in its true top-5 but the index only returns approximate neighbours, you lose answers to the *index*, not the model — and this failure is invisible unless you look for it.
 
 So the rule I would state: **build a flat index on a sample and measure ANN recall against exact search.** If HNSW at your parameters returns 92% of the exact top-10, that 8% is a hard ceiling on everything downstream, and it should appear in your error budget alongside the embedder's.
 </details>
@@ -222,6 +232,18 @@ A: Four things, all measurable. **(1) Index drift** — new documents change IVF
 - **RAG for knowledge, fine-tuning for behavior, long context for small self-contained inputs.** Fine-tuning inserts facts poorly; long context relocates ranking into the prompt, where lost-in-the-middle applies.
 - **ANN search adds its own recall loss.** Measure it against exact search and put the number in your error budget.
 
-**References:** Lewis et al. 2020 (RAG, arXiv:2005.11401) · Karpukhin et al. 2020 (DPR, arXiv:2004.04906) · Robertson & Zaragoza 2009 (BM25, *Foundations and Trends in IR* 3(4)) · Cormack et al. 2009 (reciprocal rank fusion, SIGIR '09) · Nogueira & Cho 2019 (BERT rerankers, arXiv:1901.04085) · Khattab & Zaharia 2020 (ColBERT, arXiv:2004.12832) · Gao et al. 2022 (HyDE, arXiv:2212.10496) · Malkov & Yashunin 2016 (HNSW, arXiv:1603.09320) · Liu et al. 2023 (lost in the middle, arXiv:2307.03172) · Ovadia et al. 2023 (fine-tuning vs retrieval for knowledge injection, arXiv:2312.05934).
+**References**
+
+- Lewis et al. (2020) — *Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks* — https://arxiv.org/abs/2005.11401
+- Karpukhin et al. (2020) — *Dense Passage Retrieval for Open-Domain Question Answering* — https://arxiv.org/abs/2004.04906
+- Robertson & Zaragoza (2009) — *The Probabilistic Relevance Framework: BM25 and Beyond* — *Foundations and Trends in Information Retrieval* 3(4) — https://doi.org/10.1561/1500000019
+- Cormack et al. (2009) — *Reciprocal Rank Fusion Outperforms Condorcet and Individual Rank Learning Methods* — https://dl.acm.org/doi/10.1145/1571941.1572114
+- Nogueira & Cho (2019) — *Passage Re-ranking with BERT* — https://arxiv.org/abs/1901.04085
+- Khattab & Zaharia (2020) — *ColBERT: Efficient and Effective Passage Search via Contextualized Late Interaction over BERT* — https://arxiv.org/abs/2004.12832
+- Gao et al. (2022) — *Precise Zero-Shot Dense Retrieval without Relevance Labels* (HyDE) — https://arxiv.org/abs/2212.10496
+- Malkov & Yashunin (2016) — *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs* — https://arxiv.org/abs/1603.09320
+- Johnson et al. (2017) — *Billion-Scale Similarity Search with GPUs* (FAISS) — https://arxiv.org/abs/1702.08734
+- Liu et al. (2023) — *Lost in the Middle: How Language Models Use Long Contexts* — https://arxiv.org/abs/2307.03172
+- Ovadia et al. (2023) — *Fine-Tuning or Retrieval? Comparing Knowledge Injection in LLMs* — https://arxiv.org/abs/2312.05934
 
 **Next:** [Lesson 5 — Evaluating LLM Systems](05_evaluating_llm_systems.md)

@@ -2,6 +2,26 @@
 
 All notable changes to this course are documented here. Versioning follows `MAJOR.MINOR`.
 
+## [1.9] — 2026-07-29
+
+Guideline-compliance pass over Session 5, run against all three reference packs after delivery. `interview_prep/01` §8 states that round-prep chapters apply the standard technical-course guidelines in full, and §5's glossary-density exception is scoped to the Chapter 3 tech-stack list only — so generic guidelines 01, 02 and 04 bind here and were not fully met on first delivery.
+
+### Fixed
+- **Citation error.** Card et al., *With Little Power Comes Great Responsibility* was cited as arXiv:2010.02405, which is an unrelated few-shot NER paper. Corrected to **arXiv:2010.06595** in the lesson and in both interview suites. Found by verifying all **55 arXiv IDs** in the session against the arXiv API — every other identifier resolved to the paper claimed.
+- Two papers were cited by method name rather than title; now carry their real titles (*Precise Zero-Shot Dense Retrieval without Relevance Labels* for HyDE, *DeepSeekMath* for GRPO). Self-consistency dated 2022 per guideline 01's canonical list; `Ben Zaken` corrected to `Ben-Zaken`.
+
+### Changed
+- **Learning Objectives** (guideline 02 §2.4) added to all six Session 5 lessons — 4–5 measurable outcomes each, placed after the metadata table. Visible word counts rise to ~870–900, still well inside the 20-minute rule.
+- **Hover definitions** (guideline 04) brought to 6–11 per lesson, up from 2–5. Newly annotated load-bearing terms include SFT, RLHF, PPO, DPO, RLAIF, GRPO, Bradley–Terry, reward hacking, RRF, nDCG, HNSW, approximate nearest neighbour, HyDE, cross-encoder, oracle-context run, Cohen's κ, groundedness, discordant, canary strings, constrained decoding, rejection sampling and beam search. Every definition is ≤25 words, none repeats the term as a prefix except to expand an acronym, none sits in a heading, and prerequisite-level terms (gradient, cross-entropy, softmax) are deliberately left unannotated.
+- **Lesson-level references** reformatted to the guideline 01 §3 citation checklist — authors, year, *italicised exact paper title*, and a working link — replacing the compressed `Author Year (arXiv:ID)` form. 55 references across five lessons.
+- **Session 4 annotated.** Its five lessons carried **zero** `<abbr>` definitions, the largest single deviation from guideline 04 in the course; each now carries 5–8, covering gradient checkpointing, saturating activations, initialization, gradient clipping, running statistics, GroupNorm, RMSNorm, internal covariate shift, landscape smoothing, KV cache, MQA, GQA, HBM, online softmax, PagedAttention, arithmetic intensity, mixed precision, loss scaling, warmup, the single-batch overfit test and dying ReLU.
+
+### Known deviations (deliberate, recorded for reviewers)
+- **No `companies` tags** on interview questions. Generic guideline 05 §6 asks for them; `interview_prep` §9 explicitly overrides this for Resume-to-Offer courses, since the target company is fixed in Chapter 0.
+- **No mixed-audience Lesson Roadmap table** (guideline 02 §2.3, which scopes it to mixed courses). This is a single-reader course and the roadmap was rejected during the Session 1 format review.
+- **Uniform lesson skeleton.** The drill-card structure repeats deliberately across lessons; `pedagogical_technical_critique` asks for varied concept-check formatting, and a reviewer may read the consistency as templating.
+- **Course-level items still outstanding:** guideline 05 §5's cumulative final assessment and capstone self-assessment rubric are Session 9's deliverables and remain unbuilt.
+
 ## [1.8] — 2026-07-29
 
 ### Added

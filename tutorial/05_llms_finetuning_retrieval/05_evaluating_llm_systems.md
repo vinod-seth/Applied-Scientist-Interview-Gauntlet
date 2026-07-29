@@ -8,6 +8,16 @@
 
 > 📍 **How this lesson works:** Session 2 defended *your* judge on *your* RAG study — its bias direction, your audit sample. This lesson is the general methodology: whether a measured difference is real, what an LLM judge can and cannot be trusted with, why public benchmark numbers are unreliable, and how to assemble a suite. For an Applied Scientist this is the highest-signal material in the session, because experimental judgment is the job.
 
+## 🟢 Learning Objectives
+
+After this lesson you can:
+
+- **Decide whether a measured difference is real**, using the standard error and a paired test.
+- **Name the multiple-comparisons trap** and the one process change that fixes it.
+- **Make an LLM judge defensible** — its biases, their fixes, and the human audit that validates it.
+- **Challenge a benchmark claim** with a specific contamination mechanism and a test you can run.
+- **Design an evaluation suite in layers**, and say what each layer catches.
+
 ## 🟢 The One Picture
 
 ```mermaid
@@ -39,9 +49,9 @@ $$\mathrm{SE} = \sqrt{\frac{p(1-p)}{n}} = \sqrt{\frac{0.72 \times 0.28}{200}} \a
 
 Each estimate carries ±3.2 percentage points of standard error, so a 3-point gap between two independent estimates is comfortably inside noise.
 
-But both systems ran on **the same 200 examples**, so the comparison is **paired**, and pairing is far more powerful. Only the **discordant** examples carry information: those the new prompt fixed ($b$) and those it broke ($c$). Examples both got right or both got wrong tell you nothing about the difference. With $n = 200$ and a 3-point net gain, you might see $b = 12$, $c = 6$ — and <abbr title="A paired test for binary outcomes that uses only the cases where two systems disagree, ignoring cases where both are right or both are wrong">McNemar's test</abbr> on 12 versus 6 gives roughly $p \approx 0.24$: still not significant.
+But both systems ran on **the same 200 examples**, so the comparison is **paired**, and pairing is far more powerful. Only the <abbr title="The examples where the two systems disagree; items both get right, or both get wrong, say nothing about the difference">**discordant**</abbr> examples carry information: those the new prompt fixed ($b$) and those it broke ($c$). Examples both got right or both got wrong tell you nothing about the difference. With $n = 200$ and a 3-point net gain, you might see $b = 12$, $c = 6$ — and <abbr title="A paired test for binary outcomes that uses only the cases where two systems disagree, ignoring cases where both are right or both are wrong">McNemar's test</abbr> on 12 versus 6 gives roughly $p \approx 0.24$: still not significant.
 
-**So my answer is: I can't conclude an improvement.** What I'd do: run McNemar's on the paired outcomes, report a bootstrap confidence interval on the difference, and — most usefully — **read the 18 discordant examples**, because their pattern tells me more than the aggregate does. If the effect is real and I need to prove it, roughly 4× the examples buys half the interval.
+**So my answer is: I can't conclude an improvement.** What I'd do: run McNemar's on the paired outcomes, report a <abbr title="An interval built by resampling your own evaluation set with replacement thousands of times, needing no assumption about the shape of the distribution">bootstrap confidence interval</abbr> on the difference, and — most usefully — **read the 18 discordant examples**, because their pattern tells me more than the aggregate does. If the effect is real and I need to prove it, roughly 4× the examples buys half the interval.
 
 > **Say it:** "Three points on 200 examples is inside noise — the standard error alone is about 3.2 points. But it's a paired comparison, so I'd run McNemar's on just the examples that changed. Twelve fixed against six broken isn't significant either. I'd get more examples, and I'd read the ones that flipped."
 </details>
@@ -72,7 +82,7 @@ The documented biases, and the fix for each:
 
 Two design choices do most of the work: **pairwise beats absolute** (models are much better at "which is better" than at "score this 7 or 8"), and **a reference answer plus an explicit rubric** anchors the judgment.
 
-Then the step that makes it defensible: **audit against human labels.** Sample 100–200 items, label them myself, and report **agreement and Cohen's $\kappa$** — the chance-corrected number, since raw agreement on a skewed set can look high while carrying no information. I would state the judge's agreement rate alongside every result it produced, exactly as I would report an annotator's.
+Then the step that makes it defensible: **audit against human labels.** Sample 100–200 items, label them myself, and report **agreement and <abbr title="Cohen's kappa: rescales raw agreement so that matching by luck alone scores zero, which matters when one label dominates the set">Cohen's $\kappa$</abbr>** — the chance-corrected number, since raw agreement on a skewed set can look high while carrying no information. I would state the judge's agreement rate alongside every result it produced, exactly as I would report an annotator's.
 
 Zheng et al. (2023) is the reference point: on MT-Bench, a strong judge reached roughly human-to-human levels of agreement — which is the honest bar, since human annotators disagree with each other too.
 </details>
@@ -98,7 +108,7 @@ How I would check:
 
 1. **N-gram overlap** between test items and any accessible training corpus (13-gram matching is the common convention).
 2. **Ordering and perturbation tests** — rename entities, change numbers, shuffle multiple-choice options. Memorized items degrade sharply; genuine ability does not.
-3. **Canary strings** if the benchmark ships them.
+3. <abbr title="Unique marker strings a benchmark plants in its own files, so finding one inside a model proves the file was in its training data">**Canary strings**</abbr> if the benchmark ships them.
 4. **A private eval set** built from your own data, which is the only durable answer.
 
 The practical version I would give an interviewer: **public benchmarks are for coarse screening; a private, task-specific set decides.** That is also the honest reason nobody ships on MMLU.
@@ -122,7 +132,7 @@ Four layers, because a single end-to-end number cannot attribute a failure to a 
 | Layer | Measures | Catches |
 |---|---|---|
 | **Component** | recall@k for retrieval, nDCG@10 for the reranker | Retrieval regressions invisible in end-to-end accuracy |
-| **End-to-end** | Answer correctness, **groundedness** (is every claim supported by a retrieved passage?), citation precision, correct refusal | Hallucination and over-refusal, which pull in opposite directions |
+| **End-to-end** | Answer correctness, <abbr title="Whether each statement in the answer is actually supported by a retrieved passage, judged independently of whether the statement is true">**groundedness**</abbr>, citation precision, correct refusal | Hallucination and over-refusal, which pull in opposite directions |
 | **Regression** | A fixed suite of every previously-fixed failure | Silent reintroduction of an old bug by an unrelated change |
 | **Online** | Thumbs, escalation rate, task completion | The gap between the eval set and reality |
 
@@ -148,7 +158,7 @@ Frameworks such as RAGAS package several of these; the reason to know the layers
 
 <details><summary>✅ Model answer</summary>
 
-Pairwise human preference — the Chatbot Arena design — solves real problems: it needs no reference answers, resists contamination because prompts are fresh and user-supplied, and aggregates cleanly into a Bradley–Terry or Elo rating.
+Pairwise human preference — the Chatbot Arena design — solves real problems: it needs no reference answers, resists contamination because prompts are fresh and user-supplied, and aggregates cleanly into a <abbr title="A rating fitted from head-to-head wins and losses, where the difference between two ratings predicts how often one beats the other">Bradley–Terry or Elo</abbr> rating.
 
 What it hides:
 
@@ -232,6 +242,17 @@ A: It solves real problems — no reference answers needed, fresh user-supplied 
 - **Evaluate in layers** — component, end-to-end, regression, online — and keep groundedness separate from correctness.
 - **Arena ratings rank preference on someone else's prompt mix.** Shortlist with them; decide with your own data.
 
-**References:** Zheng et al. 2023 (MT-Bench / LLM-as-a-judge, arXiv:2306.05685) · Wang et al. 2023 (position bias in LLM evaluators, arXiv:2305.17926) · Chiang et al. 2024 (Chatbot Arena, arXiv:2403.04132) · Zhang et al. 2024 (GSM1k contamination study, arXiv:2405.00332) · Sainz et al. 2023 (data contamination in NLP evaluation, arXiv:2310.18018) · Es et al. 2023 (RAGAS, arXiv:2309.15217) · Liu et al. 2023 (G-Eval, arXiv:2303.16634) · Card et al. 2020 (statistical power of NLP experiments, arXiv:2010.02405) · Dror et al. 2018 (significance testing in NLP, ACL 2018).
+**References**
+
+- Zheng et al. (2023) — *Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena* — https://arxiv.org/abs/2306.05685
+- Wang et al. (2023) — *Large Language Models are not Fair Evaluators* — https://arxiv.org/abs/2305.17926
+- Chiang et al. (2024) — *Chatbot Arena: An Open Platform for Evaluating LLMs by Human Preference* — https://arxiv.org/abs/2403.04132
+- Zhang et al. (2024) — *A Careful Examination of Large Language Model Performance on Grade School Arithmetic* (GSM1k) — https://arxiv.org/abs/2405.00332
+- Sainz et al. (2023) — *NLP Evaluation in Trouble: On the Need to Measure LLM Data Contamination for each Benchmark* — https://arxiv.org/abs/2310.18018
+- Es et al. (2023) — *RAGAS: Automated Evaluation of Retrieval Augmented Generation* — https://arxiv.org/abs/2309.15217
+- Liu et al. (2023) — *G-Eval: NLG Evaluation using GPT-4 with Better Human Alignment* — https://arxiv.org/abs/2303.16634
+- Card et al. (2020) — *With Little Power Comes Great Responsibility* — https://arxiv.org/abs/2010.06595
+- Dodge et al. (2019) — *Show Your Work: Improved Reporting of Experimental Results* — https://arxiv.org/abs/1909.03004
+- Dror et al. (2018) — *The Hitchhiker's Guide to Testing Statistical Significance in Natural Language Processing* — https://aclanthology.org/P18-1128/
 
 **Next:** [Mock Round — The LLM Round](06_mock_round.md)

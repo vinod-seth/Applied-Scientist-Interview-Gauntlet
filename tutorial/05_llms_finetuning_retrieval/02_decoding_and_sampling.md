@@ -8,6 +8,16 @@
 
 > 📍 **How this lesson works:** decoding is the cheapest place in the stack to change a model's behavior and the place candidates are least precise about. Every drill here has an exact answer — a formula, an ordering, or a named failure. The highest-value single fact in the lesson is *why maximizing likelihood produces bad open-ended text*, because it explains why sampling exists at all.
 
+## 🟢 Learning Objectives
+
+After this lesson you can:
+
+- **Explain why sampling exists** — what goes wrong when you maximize sequence likelihood on open-ended text.
+- **Define temperature, top-k, top-p and min-p precisely**, and state the failure mode each one answers.
+- **Order the operations** in a decoding stack and predict how temperature changes a top-p cut.
+- **Diagnose a repetition loop** to one of three causes before reaching for a penalty.
+- **Explain speculative decoding** as an exact optimization, and constrained decoding as a syntax-only guarantee.
+
 ## 🟢 The One Picture
 
 A language model gives you a distribution over the vocabulary at every step. Decoding is the policy that turns that distribution into one token — and every method is either **truncation** (delete tokens from consideration) or **reshaping** (change their relative probabilities).
@@ -31,7 +41,7 @@ flowchart TD
 
 <details><summary>✅ Model answer</summary>
 
-No — and the reason is empirical and well documented. Maximizing sequence likelihood on open-ended generation produces **degenerate text**: bland, and then repetitive, often collapsing into a loop. Holtzman et al. (2020) showed the mechanism directly: human text does *not* sit in the high-probability region. Real writing constantly takes moderately-probable turns, so its per-token probability fluctuates, while beam-search output tracks a flat, high-probability ridge that no human would produce.
+No — and the reason is empirical and well documented. Maximizing sequence likelihood on open-ended generation produces <abbr title="Output that stays grammatical while collapsing into blandness and self-repetition, rather than becoming incorrect">**degenerate text**</abbr>: bland, and then repetitive, often collapsing into a loop. Holtzman et al. (2020) showed the mechanism directly: human text does *not* sit in the high-probability region. Real writing constantly takes moderately-probable turns, so its per-token probability fluctuates, while beam-search output tracks a flat, high-probability ridge that no human would produce.
 
 There is also a positive-feedback effect. Once a phrase repeats, the context now contains evidence for that phrase, so its probability rises further — repetition is self-reinforcing under greedy decoding.
 
@@ -42,7 +52,7 @@ The correct framing: **the model's distribution is well calibrated at the token 
 
 <details><summary>🔁 The follow-up chain</summary>
 
-"Then why does beam search work for translation?" (**because the task's output distribution is low-entropy** — for a given source sentence there are few correct translations, so the mode is a good answer; open-ended continuation has enormous legitimate variety, and its mode is not) → "So what's the general rule?" (deterministic decoding when the answer is essentially unique — translation, extraction, classification, structured output; sampling when many outputs are legitimate) → "Does more beam width help?" (beyond a small width it often *hurts* open-ended quality — the 'beam search curse': you find higher-likelihood, worse text).
+"Then why does <abbr title="Keeps several candidate continuations alive at once and extends them in parallel, returning the whole sequence with the highest total probability">beam search</abbr> work for translation?" (**because the task's output distribution is low-entropy** — for a given source sentence there are few correct translations, so the mode is a good answer; open-ended continuation has enormous legitimate variety, and its mode is not) → "So what's the general rule?" (deterministic decoding when the answer is essentially unique — translation, extraction, classification, structured output; sampling when many outputs are legitimate) → "Does more beam width help?" (beyond a small width it often *hurts* open-ended quality — the 'beam search curse': you find higher-likelihood, worse text).
 </details>
 
 ---
@@ -59,7 +69,7 @@ $$p_i = \frac{\exp(z_i / T)}{\sum_j \exp(z_j / T)}$$
 
 $T \to 0$ approaches greedy (the argmax takes all mass); $T = 1$ is the model's own distribution; $T > 1$ flattens it. Temperature never changes the *ranking* — it is monotone — only the gaps.
 
-**Top-k** keeps the $k$ highest-probability tokens and renormalizes. **Top-p** (<abbr title="Sampling from the smallest set of top-ranked tokens whose probabilities sum to at least p, so the candidate set grows and shrinks with the model's uncertainty">nucleus sampling</abbr>) keeps the smallest set whose cumulative probability reaches $p$, then renormalizes.
+**Top-k** keeps the $k$ highest-probability tokens and renormalizes. **Top-p** (<abbr title="Draws from the shortest list of leading candidates whose probabilities reach p, so the list widens exactly when the model is unsure">nucleus sampling</abbr>) keeps the smallest set whose cumulative probability reaches $p$, then renormalizes.
 
 **Why top-p exists** is the whole answer: $k$ is a *fixed count* applied to distributions of wildly different sharpness. After "The capital of France is", the distribution is nearly one-hot — $k = 50$ admits 49 tokens that are effectively wrong. After "She opened the door and", thousands of continuations are reasonable — $k = 50$ truncates good options. Top-p adapts: the nucleus is 1–2 tokens when the model is confident and hundreds when it is not, because the *entropy of the distribution*, not a hyperparameter, sets the cut.
 
@@ -85,9 +95,9 @@ $T \to 0$ approaches greedy (the argmax takes all mass); $T = 1$ is the model's 
 |---|---|---|
 | **Decoding is deterministic** | Loop appears at $T = 0$ / beam, vanishes when sampling | Sample: $T \approx 0.7$, top-p 0.9 |
 | **Self-reinforcing context** | Loop starts mid-generation and locks in | Repetition or frequency penalty; no-repeat-n-gram as a blunt guard |
-| **The model itself** | Loops even under healthy sampling, or a fine-tune induced it | Check training data for duplicated targets; check that <abbr title="The end-of-sequence token the model emits to stop generation; if it is missing or masked from the training targets the model never learns to stop">EOS</abbr> is present and unmasked in training targets |
+| **The model itself** | Loops even under healthy sampling, or a fine-tune induced it | Check training data for duplicated targets; check that <abbr title="End-of-sequence: the token a model emits to stop; mask it out of the training targets and the model never learns to stop">EOS</abbr> is present and unmasked in training targets |
 
-Then apply the smallest fix. A **repetition penalty** divides the logits of already-generated tokens by $\theta > 1$; frequency/presence penalties subtract a term scaled by prior counts.
+Then apply the smallest fix. A <abbr title="Divides the scores of tokens already generated, making them less likely to be chosen again — applied indiscriminately, including to words that should repeat">repetition penalty</abbr> divides the logits of already-generated tokens by $\theta > 1$; frequency/presence penalties subtract a term scaled by prior counts.
 
 State the cost unprompted: **these penalties are indiscriminate.** They punish legitimate repetition — code indentation, a repeated variable name, a person's name in a biography, the word "the". A penalty above ~1.2 visibly damages code and factual text. Preferring "sample properly" over "penalize harder" is the senior instinct.
 </details>
@@ -113,7 +123,7 @@ flowchart LR
 
 <details><summary>✅ Model answer</summary>
 
-A small **draft** model generates $k$ tokens cheaply. The large **target** model then scores all $k$ positions **in a single forward pass** — because scoring a known sequence is parallel, while generating is serial. A rejection-sampling step accepts the longest prefix consistent with the target's distribution and resamples at the first disagreement.
+A small **draft** model generates $k$ tokens cheaply. The large **target** model then scores all $k$ positions **in a single forward pass** — because scoring a known sequence is parallel, while generating is serial. A <abbr title="Accepts each proposed token with a probability that corrects for the proposer's bias, so the accepted stream matches the target distribution exactly">rejection-sampling</abbr> step accepts the longest prefix consistent with the target's distribution and resamples at the first disagreement.
 
 The property that matters: **the output distribution is provably identical to sampling from the target model alone.** It is not an approximation and not a quality trade — it is a latency optimization.
 
@@ -133,7 +143,7 @@ Why it wins is Session 4's argument: decoding is **memory-bandwidth bound**, not
 
 <details><summary>✅ Model answer</summary>
 
-Prompting for JSON gets you *usually* valid JSON, which in production means a parse-failure rate you now have to handle. The guarantee comes from **constrained decoding**: compile the schema or grammar into a state machine, and at each step **mask the logits of every token that cannot legally come next** before sampling. Invalid output becomes unreachable rather than unlikely.
+Prompting for JSON gets you *usually* valid JSON, which in production means a parse-failure rate you now have to handle. The guarantee comes from <abbr title="Blocks any token that would break the required format before sampling, so malformed output cannot be produced rather than merely being unlikely">**constrained decoding**</abbr>: compile the schema or grammar into a state machine, and at each step **mask the logits of every token that cannot legally come next** before sampling. Invalid output becomes unreachable rather than unlikely.
 
 Costs and caveats worth volunteering:
 
@@ -214,6 +224,17 @@ A: Not by prompting — that gives you a parse-failure *rate*. Use **constrained
 - **Speculative decoding is exact**, trading spare compute for fewer weight-reading passes — the same bandwidth argument that produced FlashAttention.
 - **Constrained decoding guarantees syntax, not semantics.**
 
-**References:** Holtzman et al. 2020 (nucleus sampling / neural text degeneration, arXiv:1904.09751) · Fan et al. 2018 (top-k, arXiv:1805.04833) · Welleck et al. 2020 (unlikelihood training, arXiv:1908.04319) · Meister et al. 2023 (locally typical sampling, arXiv:2202.00666) · Leviathan et al. 2023 (speculative decoding, arXiv:2211.17192) · Chen et al. 2023 (accelerating LLM decoding with speculative sampling, arXiv:2302.01318) · Cai et al. 2024 (Medusa, arXiv:2401.10774) · Willard & Louf 2023 (efficient guided generation, arXiv:2307.09702) · Wang et al. 2023 (self-consistency, arXiv:2203.11171).
+**References**
+
+- Holtzman et al. (2020) — *The Curious Case of Neural Text Degeneration* — https://arxiv.org/abs/1904.09751
+- Fan et al. (2018) — *Hierarchical Neural Story Generation* (top-k sampling) — https://arxiv.org/abs/1805.04833
+- Welleck et al. (2020) — *Neural Text Generation with Unlikelihood Training* — https://arxiv.org/abs/1908.04319
+- Meister et al. (2023) — *Locally Typical Sampling* — https://arxiv.org/abs/2202.00666
+- Keskar et al. (2019) — *CTRL: A Conditional Transformer Language Model for Controllable Generation* (repetition penalty) — https://arxiv.org/abs/1909.05858
+- Leviathan et al. (2023) — *Fast Inference from Transformers via Speculative Decoding* — https://arxiv.org/abs/2211.17192
+- Chen et al. (2023) — *Accelerating Large Language Model Decoding with Speculative Sampling* — https://arxiv.org/abs/2302.01318
+- Cai et al. (2024) — *Medusa: Simple LLM Inference Acceleration Framework with Multiple Decoding Heads* — https://arxiv.org/abs/2401.10774
+- Willard & Louf (2023) — *Efficient Guided Generation for Large Language Models* — https://arxiv.org/abs/2307.09702
+- Wang et al. (2022) — *Self-Consistency Improves Chain of Thought Reasoning in Language Models* — https://arxiv.org/abs/2203.11171
 
 **Next:** [Lesson 3 — Scaling Behavior & the Post-Training Stack](03_scaling_and_post_training.md)

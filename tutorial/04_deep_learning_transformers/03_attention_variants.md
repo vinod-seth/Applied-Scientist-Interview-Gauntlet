@@ -40,7 +40,7 @@ Per layer, per head, the score matrix at $n = 8192$ holds ~67M entries — in fp
 
 <details><summary>🔁 The follow-up chain</summary>
 
-"Is the FFN also quadratic?" (no — the FFN is $O(n d^2)$, linear in sequence length; at short contexts the FFN dominates FLOPs, and attention only takes over as $n$ grows past $d$) → "So which dominates at 128k context?" (attention, decisively) → "Name a sub-quadratic alternative" (linear/kernelized attention, sliding-window or sparse attention, and state-space models like Mamba — each trading exactness or expressivity for scaling).
+"Is the FFN also quadratic?" (no — the FFN is $O(n d^2)$, linear in sequence length; at short contexts the FFN dominates FLOPs, and attention only takes over as $n$ grows past $d$) → "So which dominates at 128k context?" (attention, decisively) → "Name a sub-quadratic alternative" (linear/kernelized attention, <abbr title="Restricts each token to attend over a limited neighbourhood or a fixed pattern of positions instead of all of them, trading reach for cost">sliding-window or sparse attention</abbr>, and state-space models like Mamba — each trading exactness or expressivity for scaling).
 </details>
 
 ---
@@ -51,7 +51,7 @@ Per layer, per head, the score matrix at $n = 8192$ holds ~67M entries — in fp
 
 <details><summary>✅ Model answer</summary>
 
-In autoregressive decoding you generate one token at a time. Without caching, producing token $t$ would recompute keys and values for all $t-1$ previous tokens — repeating work every step. The **KV cache** stores the K and V tensors for all past tokens, so each new token computes only its *own* K/V and attends over the cache. That turns per-token work from $O(t)$ recomputation into $O(1)$ new computation plus an $O(t)$ read.
+In autoregressive decoding you generate one token at a time. Without caching, producing token $t$ would recompute keys and values for all $t-1$ previous tokens — repeating work every step. The <abbr title="Stored keys and values for every token generated so far, so each new token reuses them instead of recomputing the whole prefix">**KV cache**</abbr> stores the K and V tensors for all past tokens, so each new token computes only its *own* K/V and attends over the cache. That turns per-token work from $O(t)$ recomputation into $O(1)$ new computation plus an $O(t)$ read.
 
 The cost is memory, and it grows every token:
 
@@ -65,7 +65,7 @@ $2 \times 32 \times 32 \times 128 \times 8192 \times 2 \approx 4.3$ GB — **per
 
 <details><summary>🔁 The follow-up chain</summary>
 
-"So what's the bottleneck in decoding — compute or memory?" (memory *bandwidth*: each generated token reads the whole cache, so decoding is bandwidth-bound, not FLOP-bound — which is why batching helps throughput so much) → "How do you shrink it?" (fewer K/V heads via MQA/GQA; quantize the cache to int8; evict or window old tokens; PagedAttention to stop fragmentation waste) → "What is PagedAttention?" (vLLM's idea: manage the cache in fixed-size pages like virtual memory, so you stop over-allocating for the worst-case length and can share prefixes across requests).
+"So what's the bottleneck in decoding — compute or memory?" (memory *bandwidth*: each generated token reads the whole cache, so decoding is bandwidth-bound, not FLOP-bound — which is why batching helps throughput so much) → "How do you shrink it?" (fewer K/V heads via MQA/GQA; quantize the cache to int8; evict or window old tokens; PagedAttention to stop fragmentation waste) → "What is <abbr title="Stores the cache in fixed-size blocks the way an operating system pages memory, ending worst-case over-allocation and letting requests share identical prefixes">PagedAttention</abbr>?" (vLLM's idea: manage the cache in fixed-size pages like virtual memory, so you stop over-allocating for the worst-case length and can share prefixes across requests).
 </details>
 
 ---
@@ -95,8 +95,8 @@ flowchart LR
 All three keep $h$ **query** heads; they differ in how many **key/value** heads exist:
 
 - **MHA** — $h$ K/V heads, one per query head. Maximum expressivity, largest cache.
-- **MQA** — a **single** K/V head shared by all query heads. Cache shrinks by $h\times$ (e.g. 32×), but quality degrades measurably and training can destabilize.
-- **GQA** — $g$ groups, each with its own K/V head shared by $h/g$ query heads. Cache shrinks by $h/g\times$. At $g = 8$ it typically matches MHA quality closely while cutting the cache ~4–8×.
+- <abbr title="Multi-Query Attention: every query head reads from one shared set of keys and values, shrinking the cache by the head count">**MQA**</abbr> — a **single** K/V head shared by all query heads. Cache shrinks by $h\times$ (e.g. 32×), but quality degrades measurably and training can destabilize.
+- <abbr title="Grouped-Query Attention: query heads are split into groups, and each group shares one set of keys and values">**GQA**</abbr> — $g$ groups, each with its own K/V head shared by $h/g$ query heads. Cache shrinks by $h/g\times$. At $g = 8$ it typically matches MHA quality closely while cutting the cache ~4–8×.
 
 GQA is the modern default (Llama 2 70B onward) precisely because it sits at the useful point on that curve. Note what is *not* reduced: query projections and the output projection are unchanged, so **training-time** compute barely moves — this is an inference-memory optimization.
 </details>
@@ -116,16 +116,16 @@ GQA is the modern default (Llama 2 70B onward) precisely because it sits at the 
 
 **It is exact — mathematically identical output, not an approximation.** It is an *I/O-aware* implementation.
 
-The insight: on modern GPUs attention is **memory-bandwidth bound, not compute bound**. The naive implementation writes the full $n \times n$ score matrix to high-bandwidth memory (HBM), reads it back for the softmax, writes again, reads again for the $\times V$ product. Those round-trips dominate the runtime.
+The insight: on modern GPUs attention is **memory-bandwidth bound, not compute bound**. The naive implementation writes the full $n \times n$ score matrix to <abbr title="High-bandwidth memory: the large but comparatively slow memory on a GPU board, separate from the small fast memory inside the chip">high-bandwidth memory (HBM)</abbr>, reads it back for the softmax, writes again, reads again for the $\times V$ product. Those round-trips dominate the runtime.
 
-FlashAttention **tiles** the computation: it loads blocks of Q, K, V into fast on-chip SRAM and computes the attention output for that tile using an **online (streaming) softmax** that maintains running max and sum statistics — so a correct softmax is produced without ever materializing the full matrix. Result: memory drops from $O(n^2)$ to $O(n)$, and wall-clock improves 2–4× despite performing *more* FLOPs (the backward pass recomputes tiles rather than storing them).
+FlashAttention **tiles** the computation: it loads blocks of Q, K, V into fast on-chip SRAM and computes the attention output for that tile using an <abbr title="Softmaxes data arriving in blocks by carrying a running maximum and total, so the full row never exists at once">**online (streaming) softmax**</abbr> that maintains running max and sum statistics — so a correct softmax is produced without ever materializing the full matrix. Result: memory drops from $O(n^2)$ to $O(n)$, and wall-clock improves 2–4× despite performing *more* FLOPs (the backward pass recomputes tiles rather than storing them).
 
 The headline to say: **it trades extra compute for far fewer memory round-trips, because bandwidth — not arithmetic — was the binding constraint.**
 </details>
 
 <details><summary>🔁 The follow-up chain</summary>
 
-"If it's exact, why isn't every implementation like this?" (it requires hand-written CUDA kernels tuned to the memory hierarchy; the naive version is what you get from composing standard framework ops) → "How is this different from sparse attention?" (sparse/linear attention changes the *math* — approximating or skipping pairs — and can lose quality; FlashAttention changes only the *schedule*) → "What is arithmetic intensity?" (FLOPs per byte moved; attention has low intensity, so it sits on the bandwidth-bound side of the roofline — which is exactly the observation FlashAttention exploits).
+"If it's exact, why isn't every implementation like this?" (it requires hand-written CUDA kernels tuned to the memory hierarchy; the naive version is what you get from composing standard framework ops) → "How is this different from sparse attention?" (sparse/linear attention changes the *math* — approximating or skipping pairs — and can lose quality; FlashAttention changes only the *schedule*) → "What is <abbr title="How much arithmetic a computation performs per byte it moves; a low value means the hardware waits on memory rather than on maths">arithmetic intensity</abbr>?" (FLOPs per byte moved; attention has low intensity, so it sits on the bandwidth-bound side of the roofline — which is exactly the observation FlashAttention exploits).
 </details>
 
 ---
