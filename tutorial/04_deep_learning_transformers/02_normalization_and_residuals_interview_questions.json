@@ -1,0 +1,223 @@
+{
+  "lesson_title": "The Normalization Family & Residual Connections",
+  "rehearsal": {
+    "prompt": "Normalization rehearsal. Every answer here starts with the axis - which statistics, over what. Name it first, then the consequence, then the trade-off.",
+    "minSeconds": 25,
+    "maxSeconds": 80,
+    "rubric": "mechanism",
+    "questions": [
+      "What does LayerNorm compute?",
+      "Why do transformers use LayerNorm rather than BatchNorm?",
+      "What do the learned scale and shift parameters in a normalization layer do?",
+      "Is the internal covariate shift explanation for BatchNorm correct?",
+      "What is RMSNorm and why do modern LLMs use it?",
+      "When would you use GroupNorm instead of BatchNorm or LayerNorm?",
+      "Pre-LayerNorm versus Post-LayerNorm - what changes, and what does each cost?",
+      "Can a deep network train without any normalization layers?",
+      "Where do you place normalization in a transformer block, and why has that answer changed?"
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "nm_j1",
+        "question": "What does LayerNorm compute?",
+        "complexity": "Easy",
+        "core_intent": "Foundational; the bar is naming the axis.",
+        "preparation_guide": "Mean and variance across the features of a single token, then standardize and apply learned scale and shift.",
+        "explanation": "For one token's feature vector, LayerNorm computes the mean and variance across that token's D features - not across the batch and not across the sequence - then standardizes with x_hat = (x - mu)/sqrt(var + eps) and applies learned per-feature scale gamma and shift beta. The consequence that matters is independence from batch composition: the same token produces the same output alone or inside a batch of any size, in training or at inference.",
+        "star_framework_tip": "State the axis first. Nearly every follow-up in this area is answered by the axis.",
+        "common_pitfalls": [
+          "Saying it normalizes 'the activations' without specifying the axis",
+          "Forgetting the learned gamma and beta, which are what preserve representational capacity"
+        ],
+        "references": [
+          {
+            "title": "Ba et al. 2016 - Layer Normalization",
+            "url": "https://arxiv.org/abs/1607.06450"
+          }
+        ]
+      },
+      {
+        "id": "nm_j2",
+        "question": "Why do transformers use LayerNorm rather than BatchNorm?",
+        "complexity": "Easy",
+        "core_intent": "The standard comparison; a complete answer gives more than one reason.",
+        "preparation_guide": "Variable-length sequences, small effective batches, and the train/inference mismatch that breaks single-token decoding.",
+        "explanation": "Three reasons. Sequences vary in length, so batch statistics would be computed over ragged, padding-contaminated populations. Long sequences force small batches, and BatchNorm's estimates degrade exactly when the batch shrinks. And BatchNorm keeps running averages for inference, a different computation from training - which is fatal for autoregressive decoding, where tokens are generated one at a time and there is no meaningful batch at all. LayerNorm sidesteps all three by normalizing within a single token's features.",
+        "star_framework_tip": "Give all three reasons; the decoding argument is the strongest and most candidates omit it.",
+        "common_pitfalls": [
+          "Giving only one reason",
+          "Saying BatchNorm 'only works on images' - it is the sequence and decoding setting that breaks it, not the modality"
+        ],
+        "references": [
+          {
+            "title": "Ba et al. 2016 - Layer Normalization",
+            "url": "https://arxiv.org/abs/1607.06450"
+          },
+          {
+            "title": "Ioffe & Szegedy 2015 - Batch Normalization",
+            "url": "https://arxiv.org/abs/1502.03167"
+          }
+        ]
+      },
+      {
+        "id": "nm_j3",
+        "question": "What do the learned scale and shift parameters in a normalization layer do?",
+        "complexity": "Easy",
+        "core_intent": "Checks understanding of why normalization does not destroy representational capacity.",
+        "preparation_guide": "They let the network rescale or undo the normalization, so the layer is not forced to zero mean and unit variance.",
+        "explanation": "After standardizing, the layer applies y = gamma * x_hat + beta with learned per-feature gamma and beta. Without them every normalized layer would be forced to produce zero-mean, unit-variance outputs, which restricts what it can represent - including the ability to recover the original distribution if that was optimal. With them, normalization becomes a reparameterization that improves optimization without removing expressivity, since the network can learn to undo it.",
+        "star_framework_tip": "Frame it as 'normalization must not cost expressivity' - that is the reason the parameters exist.",
+        "common_pitfalls": [
+          "Thinking they are hyperparameters rather than learned",
+          "Not being able to say why they are needed at all"
+        ],
+        "references": [
+          {
+            "title": "Ba et al. 2016 - Layer Normalization",
+            "url": "https://arxiv.org/abs/1607.06450"
+          },
+          {
+            "title": "Ioffe & Szegedy 2015 - Batch Normalization",
+            "url": "https://arxiv.org/abs/1502.03167"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "nm_m1",
+        "question": "Is the internal covariate shift explanation for BatchNorm correct?",
+        "complexity": "Medium",
+        "core_intent": "High-signal: tests whether the candidate knows the canonical story was overturned.",
+        "preparation_guide": "Largely no - Santurkar et al. 2018 tested it directly; landscape smoothing is the better account.",
+        "explanation": "The original 2015 paper explained BatchNorm as reducing internal covariate shift, the drift in each layer's input distribution as layers below update, and that became folklore. Santurkar et al. 2018 tested it directly by injecting noise after the BatchNorm layer to deliberately reintroduce distributional shift; training still improved, so reduced covariate shift cannot be the operative mechanism. Their account is that BatchNorm smooths the optimization landscape - lowering the Lipschitz constant of the loss and its gradients - so larger learning rates remain stable.",
+        "star_framework_tip": "Describe the experiment that overturned it. Naming the paper alone is weaker than describing the noise-injection test.",
+        "common_pitfalls": [
+          "Repeating the 2015 explanation as settled fact",
+          "Claiming the original paper never made the claim - it did, which is why the correction matters"
+        ],
+        "references": [
+          {
+            "title": "Ioffe & Szegedy 2015 - Batch Normalization",
+            "url": "https://arxiv.org/abs/1502.03167"
+          },
+          {
+            "title": "Santurkar et al. 2018 - How Does Batch Normalization Help Optimization?",
+            "url": "https://arxiv.org/abs/1805.11604"
+          }
+        ]
+      },
+      {
+        "id": "nm_m2",
+        "question": "What is RMSNorm and why do modern LLMs use it?",
+        "complexity": "Medium",
+        "core_intent": "Tests currency with modern architectures.",
+        "preparation_guide": "Drops mean subtraction, keeping only the RMS rescale, on the finding that re-scaling carries the benefit.",
+        "explanation": "RMSNorm removes the mean subtraction and usually the beta shift, keeping y = gamma * x / sqrt(mean(x^2) + eps). Zhang and Sennrich's finding is that LayerNorm's benefit comes almost entirely from re-scaling rather than re-centering, so dropping the mean loses little. Practically it removes one pass over the features and one parameter set, worth a few percent at scale with no measured quality loss, which is why Llama-family and most recent models adopt it. The honest caveat is that this is a strong empirical result for large transformers, not a proof that centering never matters.",
+        "star_framework_tip": "Include the caveat that it is empirical. Stating it as a theorem is the overreach an interviewer will probe.",
+        "common_pitfalls": [
+          "Not knowing which component is dropped",
+          "Presenting the empirical finding as a mathematical result"
+        ],
+        "references": [
+          {
+            "title": "Zhang & Sennrich 2019 - Root Mean Square Layer Normalization",
+            "url": "https://arxiv.org/abs/1910.07467"
+          }
+        ]
+      },
+      {
+        "id": "nm_m3",
+        "question": "When would you use GroupNorm instead of BatchNorm or LayerNorm?",
+        "complexity": "Medium",
+        "core_intent": "Tests breadth across the normalization family and the batch-size constraint.",
+        "preparation_guide": "Small-batch vision: batch-independent like LayerNorm, retains channel structure like BatchNorm.",
+        "explanation": "GroupNorm computes statistics over groups of channels within a single example, so it is batch-independent like LayerNorm while retaining some of the channel structure BatchNorm exploits. It is the standard choice for vision tasks where memory forces small batches - detection and segmentation at high resolution being the classic cases - because BatchNorm's estimates become noisy or degenerate there while GroupNorm is unaffected. It sits on a spectrum: one group per channel is InstanceNorm, one group total is close to LayerNorm.",
+        "star_framework_tip": "Position it on the spectrum between InstanceNorm and LayerNorm; that shows a structural rather than memorized understanding.",
+        "common_pitfalls": [
+          "Not knowing what axis it normalizes over",
+          "Suggesting it for transformers, where LayerNorm's per-token computation is already the right answer"
+        ],
+        "references": [
+          {
+            "title": "Wu & He 2018 - Group Normalization",
+            "url": "https://arxiv.org/abs/1803.08494"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "nm_s1",
+        "question": "Pre-LayerNorm versus Post-LayerNorm - what changes, and what does each cost?",
+        "complexity": "Hard",
+        "core_intent": "Architecture judgment tied directly to gradient flow.",
+        "preparation_guide": "Pre-LN keeps the residual stream a clean sum (no warmup needed); Post-LN puts a norm on the gradient path at every layer.",
+        "explanation": "Post-LayerNorm, the original formulation, normalizes after the residual addition, so every layer's gradient passes through a normalization on its way down; at depth that compounds, which is why Post-LN needs a careful warmup schedule and can fail to train beyond roughly a dozen layers. Pre-LayerNorm moves the normalization inside the sublayer branch, leaving the residual stream a clean sum through which gradients flow unobstructed, and Xiong et al. show this yields well-behaved gradients at initialization and removes the need for warmup in most cases. The cost of Pre-LN is that the residual stream grows in magnitude with depth since each block adds without renormalizing, which the final normalization must absorb, and a carefully tuned Post-LN can slightly exceed it in final quality.",
+        "star_framework_tip": "Name the cost of the option you prefer. Presenting Pre-LN as strictly better is the weaker answer.",
+        "common_pitfalls": [
+          "Not knowing Pre-LN removes the warmup requirement",
+          "Claiming Pre-LN is universally superior with no trade-off"
+        ],
+        "references": [
+          {
+            "title": "Xiong et al. 2020 - On Layer Normalization in the Transformer Architecture",
+            "url": "https://arxiv.org/abs/2002.04745"
+          },
+          {
+            "title": "Ba et al. 2016 - Layer Normalization",
+            "url": "https://arxiv.org/abs/1607.06450"
+          }
+        ]
+      },
+      {
+        "id": "nm_s2",
+        "question": "Can a deep network train without any normalization layers?",
+        "complexity": "Hard",
+        "core_intent": "Frontier awareness plus understanding of what normalization actually provides.",
+        "preparation_guide": "Yes, with carefully scaled initialization and residual scaling - but it is far more delicate to tune.",
+        "explanation": "Yes. Work such as Fixup, T-Fixup, NFNets and DeepNorm shows that carefully scaled initialization plus residual-branch scaling - and, in the NFNet case, adaptive gradient clipping - can train very deep networks without normalization layers, sometimes matching or exceeding normalized baselines. What this reveals is that normalization's practical contribution is largely variance control and optimization-landscape smoothing, both of which can be arranged by other means. The reason normalization remains the default is robustness: normalized networks tolerate a much wider range of learning rates and initializations, whereas norm-free recipes are delicate and architecture-specific.",
+        "star_framework_tip": "Answer yes, then say why it is not the default anyway - robustness rather than necessity.",
+        "common_pitfalls": [
+          "Answering a flat no",
+          "Not being able to name why normalization persists despite the alternatives"
+        ],
+        "references": [
+          {
+            "title": "Santurkar et al. 2018 - How Does Batch Normalization Help Optimization?",
+            "url": "https://arxiv.org/abs/1805.11604"
+          },
+          {
+            "title": "Xiong et al. 2020 - On Layer Normalization in the Transformer Architecture",
+            "url": "https://arxiv.org/abs/2002.04745"
+          }
+        ]
+      },
+      {
+        "id": "nm_s3",
+        "question": "Where do you place normalization in a transformer block, and why has that answer changed?",
+        "complexity": "Hard",
+        "core_intent": "Synthesis across architecture history and modern LLM practice.",
+        "preparation_guide": "Original Post-LN, modern Pre-LN plus RMSNorm, with newer QK-norm for large-scale stability.",
+        "explanation": "The original transformer used Post-LayerNorm, which requires warmup and becomes fragile with depth. Modern large models use Pre-LayerNorm - normalization inside each sublayer branch - because it keeps the residual stream a clean additive path and trains stably without warmup, and most now use RMSNorm rather than LayerNorm for the small efficiency gain. The newer development is QK-normalization, applying normalization to queries and keys before the attention dot product to bound logit magnitude, which has become common for stabilizing very large-scale training where attention logits can otherwise grow enough to saturate the softmax. The through-line is that each change targets a specific instability that appeared at the next scale.",
+        "star_framework_tip": "Present it as a history driven by scale-specific failures rather than a list of techniques.",
+        "common_pitfalls": [
+          "Not knowing QK-norm exists",
+          "Treating placement as arbitrary convention rather than a gradient-flow consequence"
+        ],
+        "references": [
+          {
+            "title": "Xiong et al. 2020 - On Layer Normalization in the Transformer Architecture",
+            "url": "https://arxiv.org/abs/2002.04745"
+          },
+          {
+            "title": "Zhang & Sennrich 2019 - Root Mean Square Layer Normalization",
+            "url": "https://arxiv.org/abs/1910.07467"
+          }
+        ]
+      }
+    ]
+  }
+}

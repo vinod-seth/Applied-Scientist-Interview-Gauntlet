@@ -18,10 +18,10 @@
     "Hands-on experience with the four resume projects this course defends",
     "Comfort with PyTorch and C++ DSA"
   ],
-  "estimated_hours": 49,
+  "estimated_hours": 54,
   "modules": 9,
-  "lessons": 31,
-  "version": "1.6",
+  "lessons": 37,
+  "version": "1.7",
   "delivery_note": "Sessions are generated one at a time. The curriculum lists ONLY delivered content so the portal never points at a file that does not exist yet. Each new session appends a module here. The full 9-session plan lives in README.md.",
   "curriculum": [
     {
@@ -273,14 +273,71 @@
     },
     {
       "module_id": "module_04",
-      "title": "🔒 Session 4: ML Fundamentals — Deep Learning & Transformers",
+      "title": "Session 4: ML Fundamentals — Deep Learning & Transformers",
       "lessons": [
         {
-          "id": "m4_locked",
-          "title": "Locked — clear the Session 3 assessment",
+          "id": "m4_l0",
+          "title": "Session 4 Overview & Scope Brief",
           "defaultMode": "mdx",
           "modes": {
-            "mdx": "tutorial/04_deep_learning_transformers/00_locked.md"
+            "mdx": "tutorial/04_deep_learning_transformers/README.md"
+          }
+        },
+        {
+          "id": "m4_l1",
+          "title": "Backpropagation & Gradient Flow",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/04_deep_learning_transformers/01_backpropagation_and_gradient_flow.md",
+            "notebook": "tutorial/04_deep_learning_transformers/deep_learning_lab.ipynb",
+            "interview": "tutorial/04_deep_learning_transformers/01_backpropagation_and_gradient_flow_interview_questions.json"
+          }
+        },
+        {
+          "id": "m4_l2",
+          "title": "The Normalization Family & Residual Connections",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/04_deep_learning_transformers/02_normalization_and_residuals.md",
+            "notebook": "tutorial/04_deep_learning_transformers/deep_learning_lab.ipynb",
+            "interview": "tutorial/04_deep_learning_transformers/02_normalization_and_residuals_interview_questions.json"
+          }
+        },
+        {
+          "id": "m4_l3",
+          "title": "Attention Variants: MHA → MQA/GQA, KV Cache, FlashAttention",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/04_deep_learning_transformers/03_attention_variants.md",
+            "notebook": "tutorial/04_deep_learning_transformers/deep_learning_lab.ipynb",
+            "interview": "tutorial/04_deep_learning_transformers/03_attention_variants_interview_questions.json"
+          }
+        },
+        {
+          "id": "m4_l4",
+          "title": "Training Pathologies & the Debugging Playbook",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/04_deep_learning_transformers/04_training_pathologies.md",
+            "notebook": "tutorial/04_deep_learning_transformers/deep_learning_lab.ipynb",
+            "interview": "tutorial/04_deep_learning_transformers/04_training_pathologies_interview_questions.json"
+          }
+        },
+        {
+          "id": "m4_l5",
+          "title": "Mock Round: Deep Learning Breadth",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/04_deep_learning_transformers/05_mock_round.md"
+          }
+        },
+        {
+          "id": "m4_l6",
+          "title": "Session 4 Chapter Quiz",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/04_deep_learning_transformers/quiz.md",
+            "interview": "tutorial/04_deep_learning_transformers/quiz_interview_questions.json"
           }
         }
       ]

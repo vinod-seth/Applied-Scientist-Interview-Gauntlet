@@ -1,0 +1,216 @@
+{
+  "lesson_title": "Backpropagation & Gradient Flow",
+  "rehearsal": {
+    "prompt": "Derivation rehearsal. These are board questions - narrate the algebra and the shapes as if writing on a whiteboard, then give the mechanism and stop. 'Chain rule' is the start of an answer, not an answer.",
+    "minSeconds": 30,
+    "maxSeconds": 90,
+    "rubric": "mechanism",
+    "questions": [
+      "What is backpropagation, and what does it compute?",
+      "Why does the backward pass need the values computed during the forward pass?",
+      "What is the vanishing gradient problem?",
+      "Derive the gradients for a linear layer followed by an activation, including shapes.",
+      "How do residual connections solve vanishing gradients? Show the derivative.",
+      "What does gradient checkpointing trade, and when would you use it?",
+      "Why is initialization scheme important, and how do Xavier and He differ?",
+      "Compare gradient clipping and gradient normalization. When does clipping fail to help?",
+      "Your deep network trains fine at 12 layers but not at 48. Walk through your diagnosis."
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "bp_j1",
+        "question": "What is backpropagation, and what does it compute?",
+        "complexity": "Easy",
+        "core_intent": "Checks whether the candidate can describe the algorithm rather than name it.",
+        "preparation_guide": "Reverse-mode automatic differentiation over the computational graph: each node receives the gradient w.r.t. its output and passes on the gradient w.r.t. its input.",
+        "explanation": "Backpropagation computes the gradient of the loss with respect to every parameter by applying the chain rule backwards through the computational graph. Each node receives the gradient of the loss with respect to its output, uses it to compute the gradient with respect to its own parameters, and passes on the gradient with respect to its inputs. It is reverse-mode automatic differentiation, which is efficient here because there is one scalar loss and many parameters - a single backward sweep produces every parameter gradient.",
+        "star_framework_tip": "Say 'reverse-mode autodiff' and why it suits one-loss-many-parameters; that distinguishes understanding from recitation.",
+        "common_pitfalls": [
+          "Describing it only as 'the chain rule' with no mention of the graph or the direction",
+          "Confusing it with gradient descent - backprop computes gradients, the optimizer applies them"
+        ],
+        "references": [
+          {
+            "title": "He et al. 2015 - Deep Residual Learning",
+            "url": "https://arxiv.org/abs/1512.03385"
+          }
+        ]
+      },
+      {
+        "id": "bp_j2",
+        "question": "Why does the backward pass need the values computed during the forward pass?",
+        "complexity": "Easy",
+        "core_intent": "Tests whether the candidate connects the algebra to memory consumption.",
+        "preparation_guide": "The weight gradient contains the layer input, so activations must be stored - that is the activation-memory term.",
+        "explanation": "The gradient of the loss with respect to a weight matrix is the outer product of the incoming gradient with the layer's input: dL/dW = delta_z x^T. That expression contains x, so the forward activation must still be available when the backward pass reaches that layer. This is why activation memory scales with depth, batch size, and sequence length, and it is what gradient checkpointing trades away by recomputing activations instead of storing them.",
+        "star_framework_tip": "Connect it to a concrete consequence - activation memory in a training budget - rather than leaving it abstract.",
+        "common_pitfalls": [
+          "Saying only 'because of the chain rule'",
+          "Not linking it to memory consumption at all"
+        ],
+        "references": [
+          {
+            "title": "Chen et al. 2016 - Training Deep Nets with Sublinear Memory Cost",
+            "url": "https://arxiv.org/abs/1604.06174"
+          }
+        ]
+      },
+      {
+        "id": "bp_j3",
+        "question": "What is the vanishing gradient problem?",
+        "complexity": "Easy",
+        "core_intent": "Baseline check; the bar is naming the product-of-Jacobians mechanism, not just the symptom.",
+        "preparation_guide": "Gradients shrink geometrically with depth because they are a product of per-layer Jacobians.",
+        "explanation": "The gradient reaching an early layer is the product of the Jacobians of every layer above it, so it is exponential in depth. When those Jacobians have typical magnitudes below one - which saturating activations like sigmoid guarantee, since its derivative peaks at 0.25 - the product decays geometrically and early layers receive almost no learning signal. The symptom is that early layers barely change while later layers train normally.",
+        "star_framework_tip": "Give the mechanism (product of Jacobians) before the symptom; most candidates give only the symptom.",
+        "common_pitfalls": [
+          "Describing the symptom without the multiplicative mechanism",
+          "Confusing it with overfitting or with a too-small learning rate"
+        ],
+        "references": [
+          {
+            "title": "He et al. 2015 - Deep Residual Learning",
+            "url": "https://arxiv.org/abs/1512.03385"
+          },
+          {
+            "title": "He et al. 2015 - Delving Deep into Rectifiers (Kaiming init)",
+            "url": "https://arxiv.org/abs/1502.01852"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "bp_m1",
+        "question": "Derive the gradients for a linear layer followed by an activation, including shapes.",
+        "complexity": "Medium",
+        "core_intent": "The canonical board question; separates candidates who can derive from those who can describe.",
+        "preparation_guide": "delta_z = delta_a elementwise-times sigma'(z); dL/dW = delta_z x^T; dL/db = delta_z; dL/dx = W^T delta_z.",
+        "explanation": "Forward: z = Wx + b, a = sigma(z). Given the incoming gradient delta_a from above, first push through the activation: delta_z = delta_a elementwise-multiplied by sigma'(z), elementwise because the activation is applied per unit so its Jacobian is diagonal. Then dL/dW = delta_z x^T, an outer product which is why it has exactly W's shape; dL/db = delta_z; and dL/dx = W^T delta_z, which propagates to the layer below. Batched, the weight gradient sums over examples, making it a matmul rather than a loop. Note that dL/dW contains x, which is why forward activations must be stored.",
+        "star_framework_tip": "State the shapes as you go and flag the outer product explicitly - it is the detail interviewers listen for.",
+        "common_pitfalls": [
+          "Confusing dL/dW (outer product) with dL/dx (transposed matmul)",
+          "Using a matrix product where the activation requires an elementwise one",
+          "Omitting shapes entirely"
+        ],
+        "references": [
+          {
+            "title": "He et al. 2015 - Deep Residual Learning",
+            "url": "https://arxiv.org/abs/1512.03385"
+          }
+        ]
+      },
+      {
+        "id": "bp_m2",
+        "question": "How do residual connections solve vanishing gradients? Show the derivative.",
+        "complexity": "Medium",
+        "core_intent": "The most important architectural mechanism in modern deep learning.",
+        "preparation_guide": "d(h + F(h))/dh = I + dF/dh; the identity term guarantees an undiminished gradient path.",
+        "explanation": "For a residual block h_out = h + F(h), the Jacobian is I + dF/dh. The identity term is the mechanism: the gradient reaching earlier layers is a product of terms of that form, which expands into an identity path plus corrections, so there is always a route by which gradient arrives undiminished regardless of depth. Vanishing would require every path to decay and the skip provides one that cannot. Equivalently, the block only has to learn a correction to the identity, so a layer with nothing useful to add can output approximately zero and pass the signal through unharmed.",
+        "star_framework_tip": "Write the derivative. 'It helps gradients flow' without I + dF/dh is the weak version of this answer.",
+        "common_pitfalls": [
+          "Asserting the benefit without the derivative",
+          "Claiming residuals normalize or clip gradients - those are different mechanisms"
+        ],
+        "references": [
+          {
+            "title": "He et al. 2015 - Deep Residual Learning",
+            "url": "https://arxiv.org/abs/1512.03385"
+          },
+          {
+            "title": "Xiong et al. 2020 - On Layer Normalization in the Transformer Architecture",
+            "url": "https://arxiv.org/abs/2002.04745"
+          }
+        ]
+      },
+      {
+        "id": "bp_m3",
+        "question": "What does gradient checkpointing trade, and when would you use it?",
+        "complexity": "Medium",
+        "core_intent": "Practical memory engineering; connects backprop to real training constraints.",
+        "preparation_guide": "Roughly sqrt(n) activation memory instead of n, paid for with about one extra forward pass.",
+        "explanation": "Instead of storing every forward activation for the backward pass, checkpointing keeps activations only at selected layers and recomputes the intermediate ones during backward. Memory drops from O(n) to roughly O(sqrt(n)) in the number of layers, at the cost of approximately one additional forward pass - about thirty percent more compute. You reach for it when activation memory rather than parameter memory is what pins your batch size, which is the common case for long sequences or large batches, and it composes with mixed precision and with parameter-efficient methods like LoRA.",
+        "star_framework_tip": "Quantify both sides of the trade; 'it saves memory' without the compute cost is half an answer.",
+        "common_pitfalls": [
+          "Not knowing the compute cost",
+          "Confusing it with gradient accumulation, which addresses batch size rather than activation memory"
+        ],
+        "references": [
+          {
+            "title": "Chen et al. 2016 - Training Deep Nets with Sublinear Memory Cost",
+            "url": "https://arxiv.org/abs/1604.06174"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "bp_s1",
+        "question": "Why is initialization scheme important, and how do Xavier and He differ?",
+        "complexity": "Hard",
+        "core_intent": "Tests whether the candidate understands training stability at step zero.",
+        "preparation_guide": "Initialization sets activation and gradient variance across depth; He adds a factor of 2 for ReLU.",
+        "explanation": "Initialization determines the variance of activations and gradients before any update, so a bad scheme starts training in the vanishing or exploding regime and no amount of optimizer tuning recovers it cleanly. Xavier/Glorot sets Var(W) = 2/(n_in + n_out), derived to preserve variance in both directions for symmetric activations like tanh. He/Kaiming sets Var(W) = 2/n_in, where the extra factor of two compensates for ReLU zeroing half of its inputs and thereby halving the variance. Use He with ReLU-family activations and Xavier with tanh or sigmoid. Transformers additionally scale residual-branch initialization with depth for the same variance-control reason.",
+        "star_framework_tip": "Mention that 'my deep net will not train' is often an initialization bug rather than an optimizer one.",
+        "common_pitfalls": [
+          "Knowing the names but not the factor-of-two reasoning",
+          "Not connecting initialization to the vanishing/exploding regime"
+        ],
+        "references": [
+          {
+            "title": "He et al. 2015 - Delving Deep into Rectifiers (Kaiming init)",
+            "url": "https://arxiv.org/abs/1502.01852"
+          },
+          {
+            "title": "Glorot & Bengio 2010 - Understanding the difficulty of training deep feedforward neural networks",
+            "url": "https://proceedings.mlr.press/v9/glorot10a.html"
+          }
+        ]
+      },
+      {
+        "id": "bp_s2",
+        "question": "Compare gradient clipping and gradient normalization. When does clipping fail to help?",
+        "complexity": "Hard",
+        "core_intent": "Probes precision about what a common fix does and does not do.",
+        "preparation_guide": "Clipping bounds magnitude from above only; it cannot fix vanishing or forward-pass numerical failures.",
+        "explanation": "Clipping by global norm rescales the whole gradient when its norm exceeds a threshold, preserving direction and only shortening the step; clipping by value truncates each component independently and therefore distorts direction, which is why global-norm clipping is preferred. Both bound the gradient from above, so neither addresses vanishing gradients, which need architectural fixes. Clipping also cannot save you from forward-pass problems: if activations overflow in fp16, or a fully masked softmax row produces NaN, the gradient is already NaN before clipping sees it. Set the threshold from logged gradient norms rather than guessing - around the high end of the observed healthy range.",
+        "star_framework_tip": "Naming what clipping cannot do is the differentiator; most candidates only describe what it does.",
+        "common_pitfalls": [
+          "Claiming clipping addresses vanishing gradients",
+          "Not distinguishing clip-by-norm from clip-by-value"
+        ],
+        "references": [
+          {
+            "title": "Pascanu et al. 2013 - On the difficulty of training RNNs",
+            "url": "https://arxiv.org/abs/1211.5063"
+          }
+        ]
+      },
+      {
+        "id": "bp_s3",
+        "question": "Your deep network trains fine at 12 layers but not at 48. Walk through your diagnosis.",
+        "complexity": "Hard",
+        "core_intent": "Realistic scenario testing systematic reasoning about depth-related failure.",
+        "preparation_guide": "Depth-scaled failures: gradient flow, normalization placement, initialization scaling, and learning-rate/warmup interaction.",
+        "explanation": "First measure rather than guess: log per-layer gradient norms and activation statistics, since a monotone decay toward the input identifies vanishing directly. Then check the architecture in order of likelihood. Normalization placement is the usual culprit: Post-LayerNorm puts a normalization on the gradient path at every layer, which compounds with depth and needs warmup, while Pre-LayerNorm keeps the residual stream a clean sum and trains deep stacks without it. Next, residual-branch initialization - deep transformers typically scale it by depth so the residual stream does not grow uncontrolled. Then the learning rate and warmup schedule, since the stable range narrows as depth increases. If gradient norms look healthy and loss is still flat, run the single-batch overfit test to separate a genuine bug from a tuning problem.",
+        "star_framework_tip": "Lead with the measurement you would take, then the ordered hypotheses. Ordering by likelihood is the senior signal.",
+        "common_pitfalls": [
+          "Immediately lowering the learning rate without measuring gradient norms",
+          "Not considering normalization placement, which is the most common depth-specific cause"
+        ],
+        "references": [
+          {
+            "title": "Xiong et al. 2020 - On Layer Normalization in the Transformer Architecture",
+            "url": "https://arxiv.org/abs/2002.04745"
+          },
+          {
+            "title": "He et al. 2015 - Deep Residual Learning",
+            "url": "https://arxiv.org/abs/1512.03385"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -4,9 +4,9 @@
 |---|---|
 | **Target role** | Applied Scientist (entry-level, NLP/LLM focus) |
 | **Candidate profile** | M.Tech Robotics & AI (IIT Guwahati), B.Tech CS (AI/ML), no industry experience — four flagship projects carry the resume |
-| **Format** | 9 sessions, delivered one at a time; each ends with an assessment that gates the next |
-| **Version** | 1.4 |
-| **Last verified** | 2026-07-13 (model names, paper links, and Leadership Principles list checked on this date) |
+| **Format** | 9 sessions, delivered one at a time; each ends with a mock round and an honest self-assessment |
+| **Version** | 1.7 |
+| **Last verified** | 2026-07-29 (model names, paper links, and Leadership Principles list checked on this date) |
 
 ---
 
@@ -96,7 +96,7 @@ Built to the **Resume-to-Offer** archetype: the syllabus below is *derived* from
 | 1 | Project Deep-Dives: Fine-Tuning & Architecture | QLoRA/NF4, LoRA math, GPU memory accounting, RoPE derivation, Pre-LN, contrastive loss | ✅ Delivered |
 | 2 | Project Deep-Dives: Systems & Evaluation | Failure-mode definitions, sweep design & oracle test, chunking mechanics, judge validity, ECE pathologies, temperature scaling limits, shift mechanism, abstention | ✅ Delivered |
 | 3 | ML Fundamentals: Core Theory | Bias–variance, regularization-as-priors, MLE/MAP, SGD→AdamW, metrics & validation design | ✅ Delivered |
-| 4 | ML Fundamentals: Deep Learning & Transformers | Backprop mechanics, normalization, attention variants, training pathologies | 🔒 Locked |
+| 4 | ML Fundamentals: Deep Learning & Transformers | Backprop & gradient flow, normalization family, attention variants (MQA/GQA/Flash, KV cache), training pathologies | ✅ Delivered |
 | 5 | LLMs, Fine-Tuning & Retrieval | PEFT landscape, decoding, scaling behavior, RAG design, evaluating LLM systems | 🔒 Locked |
 | 6 | Coding: DSA & Algorithms | Interview patterns under pressure; clarify → approach → narrate → test → optimize | 🔒 Locked |
 | 7 | Coding: ML From Scratch | Attention, losses, k-means, logistic regression, beam search from a blank editor | 🔒 Locked |

@@ -107,4 +107,4 @@ Finally none of it means anything without honest **measurement**: a metric match
 - The twelve fundamentals in this session are one chain: **capacity → prior → penalized likelihood → optimizer → honest measurement**.
 - Failing a question in rehearsal costs nothing; failing it in the loop costs the offer. Re-run the mock round until the delivery is automatic.
 
-**Session complete.** Next: [Session 4 — Deep Learning & Transformers](../04_deep_learning_transformers/00_locked.md) *(locked)*.
+**Session complete.** Next: [Session 4 — Deep Learning & Transformers](../04_deep_learning_transformers/README.md).

@@ -1,0 +1,202 @@
+{
+  "lesson_title": "Session 4 Chapter Quiz - Deep Learning & Transformers",
+  "rehearsal": {
+    "prompt": "Consolidated Session 4 rehearsal across all four lessons. This round rewards derivation over compression - give the algebra and the arithmetic, then the trade-off, then stop.",
+    "minSeconds": 40,
+    "maxSeconds": 120,
+    "rubric": "mechanism",
+    "questions": [
+      "What are the three gradients you compute for a linear layer during backprop?",
+      "Which normalization does a transformer use, and over what axis?",
+      "What does the KV cache store, and why does memory grow during generation?",
+      "Why does a residual connection help, and what is the derivative that shows it?",
+      "GQA with 8 groups on a 32-head model: what changes and what does not?",
+      "A dynamic loss scaler keeps halving its scale and skipping steps. What is happening?",
+      "Connect vanishing gradients, residuals, normalization, attention cost and the KV cache into one story.",
+      "Which would you profile first for a slow training step, and why?",
+      "When would you deliberately choose a less efficient attention implementation?"
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "dq_j1",
+        "question": "What are the three gradients you compute for a linear layer during backprop?",
+        "complexity": "Easy",
+        "core_intent": "Fast recall of the core derivation.",
+        "preparation_guide": "dL/dW, dL/db, dL/dx - and the shapes tell you which is which.",
+        "explanation": "For z = Wx + b: dL/dW = delta_z x^T, an outer product with W's shape; dL/db = delta_z; and dL/dx = W^T delta_z, which propagates to the layer below. The first updates the parameters, the last continues the backward pass.",
+        "star_framework_tip": "Give all three with shapes in one breath; this is a warm-up and over-explaining wastes round time.",
+        "common_pitfalls": [
+          "Confusing the weight gradient with the input gradient"
+        ],
+        "references": []
+      },
+      {
+        "id": "dq_j2",
+        "question": "Which normalization does a transformer use, and over what axis?",
+        "complexity": "Easy",
+        "core_intent": "Quick axis check.",
+        "preparation_guide": "LayerNorm, over the features of each token independently.",
+        "explanation": "LayerNorm, computing mean and variance across the feature dimension of each token independently. That makes it batch-size independent, which is what variable-length sequences and single-token autoregressive decoding require.",
+        "star_framework_tip": "Lead with the axis; it is the compressed form of the whole answer.",
+        "common_pitfalls": [
+          "Saying BatchNorm",
+          "Naming LayerNorm without the axis"
+        ],
+        "references": [
+          {
+            "title": "Ba et al. 2016 - Layer Normalization",
+            "url": "https://arxiv.org/abs/1607.06450"
+          }
+        ]
+      },
+      {
+        "id": "dq_j3",
+        "question": "What does the KV cache store, and why does memory grow during generation?",
+        "complexity": "Easy",
+        "core_intent": "Basic inference-memory check.",
+        "preparation_guide": "Keys and values for all past tokens; every new token appends its own.",
+        "explanation": "It stores the key and value tensors for every token processed so far, so that generating a new token requires computing only its own K and V rather than recomputing the whole prefix. Memory grows linearly with generated tokens because each one appends to the cache, which is why long generations and large batches run out of memory.",
+        "star_framework_tip": "Say both halves - what it saves and what it costs.",
+        "common_pitfalls": [
+          "Thinking queries are cached too"
+        ],
+        "references": [
+          {
+            "title": "Shazeer 2019 - Fast Transformer Decoding: One Write-Head is All You Need",
+            "url": "https://arxiv.org/abs/1911.02150"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "dq_m1",
+        "question": "Why does a residual connection help, and what is the derivative that shows it?",
+        "complexity": "Medium",
+        "core_intent": "The central mechanism of modern deep learning.",
+        "preparation_guide": "d(h + F(h))/dh = I + dF/dh; the identity guarantees an undiminished gradient path.",
+        "explanation": "The Jacobian of a residual block is I + dF/dh. The identity term means the product of Jacobians down the network always contains a path that does not decay, so gradient reaches early layers regardless of depth - vanishing would require every path to decay. Equivalently, the block learns a correction to identity, so a layer with nothing to add can output approximately zero harmlessly.",
+        "star_framework_tip": "Write the derivative rather than describing the benefit.",
+        "common_pitfalls": [
+          "Asserting the benefit without I + dF/dh"
+        ],
+        "references": [
+          {
+            "title": "He et al. 2015 - Deep Residual Learning",
+            "url": "https://arxiv.org/abs/1512.03385"
+          }
+        ]
+      },
+      {
+        "id": "dq_m2",
+        "question": "GQA with 8 groups on a 32-head model: what changes and what does not?",
+        "complexity": "Medium",
+        "core_intent": "Tests precision about what the optimization actually touches.",
+        "preparation_guide": "KV cache shrinks about 4x; query and output projections, and therefore training compute, are unchanged.",
+        "explanation": "The 32 query heads are retained; the key/value heads drop from 32 to 8, with each K/V head shared across four query heads, so the KV cache shrinks roughly fourfold and quality typically stays close to MHA. What does not change: the query and output projections, so parameter count barely moves and training compute is essentially unaffected. This is an inference-memory optimization, not a training-speed one.",
+        "star_framework_tip": "State the 'what does not change' half explicitly; that is where most answers are incomplete.",
+        "common_pitfalls": [
+          "Believing query heads are reduced",
+          "Presenting it as a training optimization"
+        ],
+        "references": [
+          {
+            "title": "Ainslie et al. 2023 - GQA: Training Generalized Multi-Query Transformer Models",
+            "url": "https://arxiv.org/abs/2305.13245"
+          }
+        ]
+      },
+      {
+        "id": "dq_m3",
+        "question": "A dynamic loss scaler keeps halving its scale and skipping steps. What is happening?",
+        "complexity": "Medium",
+        "core_intent": "Applied mixed-precision diagnosis from a log signature.",
+        "preparation_guide": "fp16 overflow: scaled gradients exceed the fp16 range, so the scaler detects inf/NaN and skips.",
+        "explanation": "The scaler multiplies the loss so small gradients survive fp16, then checks for infinity or NaN before the optimizer step. Repeated halving and skipping means the scaled gradients are overflowing fp16's maximum of about 65504, so the scaler keeps backing off. Early in training this can be normal as it calibrates, but persistent skipping indicates genuine instability - large gradients or activations - and the fixes are gradient clipping, checking normalization placement, or switching to bf16, whose wider exponent range removes the problem.",
+        "star_framework_tip": "Distinguish normal early calibration from persistent skipping; that nuance shows real experience.",
+        "common_pitfalls": [
+          "Reading it as a bug in the scaler rather than a signal about the gradients"
+        ],
+        "references": [
+          {
+            "title": "Micikevicius et al. 2018 - Mixed Precision Training",
+            "url": "https://arxiv.org/abs/1710.03740"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "dq_s1",
+        "question": "Connect vanishing gradients, residuals, normalization, attention cost and the KV cache into one story.",
+        "complexity": "Hard",
+        "core_intent": "The synthesis question; tests whether the session is one framework or four topics.",
+        "preparation_guide": "Gradient flow made depth possible; depth and context then created compute and memory costs, which Flash and GQA address.",
+        "explanation": "The original obstacle was gradient flow: the gradient at a layer is a product of Jacobians and therefore exponential in depth, so with saturating activations and poor initialization it vanished or exploded and depth did not train. Better initialization, non-saturating activations and above all residual connections fixed it - the residual Jacobian I + dF/dh guarantees an undiminished path - while normalization kept per-layer scale controlled so large learning rates stayed stable, though its original covariate-shift justification was later overturned in favour of landscape smoothing. With depth solved, transformers scaled and the binding constraint moved from trainability to cost. Attention is quadratic in sequence length, so long context became expensive; FlashAttention addressed that without changing the math, tiling and using an online softmax because memory bandwidth rather than FLOPs was binding. At inference the constraint changes again to the KV cache, which grows with every token and is read in full per token, making decoding bandwidth-bound - which is what GQA targets by sharing K/V heads across query groups.",
+        "star_framework_tip": "Deliver it as one causal narrative with explicit transitions, ending on inference cost.",
+        "common_pitfalls": [
+          "Listing the techniques without the causal links",
+          "Omitting the shift from training constraints to inference constraints"
+        ],
+        "references": [
+          {
+            "title": "He et al. 2015 - Deep Residual Learning",
+            "url": "https://arxiv.org/abs/1512.03385"
+          },
+          {
+            "title": "Dao et al. 2022 - FlashAttention",
+            "url": "https://arxiv.org/abs/2205.14135"
+          },
+          {
+            "title": "Ainslie et al. 2023 - GQA: Training Generalized Multi-Query Transformer Models",
+            "url": "https://arxiv.org/abs/2305.13245"
+          }
+        ]
+      },
+      {
+        "id": "dq_s2",
+        "question": "Which would you profile first for a slow training step, and why?",
+        "complexity": "Hard",
+        "core_intent": "Tests systems reasoning about where time actually goes.",
+        "preparation_guide": "Measure before guessing; attention versus FFN share depends on sequence length relative to d_ff.",
+        "explanation": "Profile rather than guess, because the answer depends on configuration. Attention costs roughly 4 n^2 d_model and the feed-forward blocks roughly 4 n d_model d_ff, so attention's share reaches half only when n approaches d_ff - typically four times d_model. Below that the FFN dominates and optimizing attention buys little; above it the reverse. Also separate compute from memory movement: attention has low arithmetic intensity and is often bandwidth-bound rather than FLOP-bound, which is why FlashAttention wins by reducing memory traffic while doing more arithmetic. So the first step is a profiler trace showing kernel time and achieved bandwidth, then optimize whichever dominates.",
+        "star_framework_tip": "Give the crossover arithmetic and the compute-versus-bandwidth distinction; both signal systems literacy.",
+        "common_pitfalls": [
+          "Assuming attention always dominates",
+          "Optimizing FLOPs when the kernel is bandwidth-bound"
+        ],
+        "references": [
+          {
+            "title": "Dao et al. 2022 - FlashAttention",
+            "url": "https://arxiv.org/abs/2205.14135"
+          },
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          }
+        ]
+      },
+      {
+        "id": "dq_s3",
+        "question": "When would you deliberately choose a less efficient attention implementation?",
+        "complexity": "Hard",
+        "core_intent": "Tests engineering judgment beyond benchmark-chasing.",
+        "preparation_guide": "Debuggability, hardware or framework support, exactness requirements, and short sequences where it does not matter.",
+        "explanation": "Several situations justify it. At short sequence lengths attention is a small share of total compute, so an optimized kernel buys little and a simple implementation is easier to reason about. Debugging and research often favour the naive version because intermediate tensors - the full attention matrix - are inspectable, which fused kernels hide. Hardware and framework support matters: optimized kernels are tuned to specific architectures and may be unavailable or slower on the target device, and a custom attention variant may have no fused implementation at all. And correctness requirements can decide it: if you need bitwise reproducibility across runs or hardware, a deterministic reference implementation may be preferable to a kernel whose reduction order varies. The judgment is that a benchmark win only matters if the kernel is on the critical path for your actual configuration.",
+        "star_framework_tip": "End on the general principle - optimize what is on the critical path for your configuration.",
+        "common_pitfalls": [
+          "Treating the fastest kernel as always correct regardless of context",
+          "Not considering debuggability or reproducibility as legitimate criteria"
+        ],
+        "references": [
+          {
+            "title": "Dao et al. 2022 - FlashAttention",
+            "url": "https://arxiv.org/abs/2205.14135"
+          }
+        ]
+      }
+    ]
+  }
+}

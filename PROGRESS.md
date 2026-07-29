@@ -21,24 +21,24 @@ SESSION 1 — FINE-TUNING & ARCHITECTURE          SESSION 2 — SYSTEMS & EVALUA
 └─ [ ] MOCK ROUND: Architecture                 └─ [ ] MOCK ROUND: Systems
 
 SESSION 3 — CORE THEORY                         SESSION 4 — DL & TRANSFORMERS
-├─ [ ] Bias–variance decomposition              ├─ [ ] Backprop mechanics
-├─ [ ] Regularization as priors (L2/L1)         ├─ [ ] Normalization family
-├─ [ ] MLE / MAP / cross-entropy                ├─ [ ] Attention variants
-├─ [ ] SGD → momentum → Adam → AdamW            ├─ [ ] Training pathologies
-├─ [ ] Metrics & validation design              └─ [ ] MOCK ROUND: DL
-└─ [ ] MOCK ROUND: ML breadth
-                                                SESSION 6 — DSA
-SESSION 5 — LLMs & RETRIEVAL                    ├─ [ ] Pattern fluency
-├─ [ ] PEFT landscape                           ├─ [ ] Interview protocol
-├─ [ ] Decoding & sampling                      └─ [ ] MOCK ROUND: Coding
-├─ [ ] RAG design space
-├─ [ ] LLM evaluation                           SESSION 8 — LP & STAR
-└─ [ ] MOCK ROUND: LLMs                         ├─ [ ] Story bank (12 stories)
-                                                ├─ [ ] STAR with quantified results
-SESSION 7 — ML FROM SCRATCH                     ├─ [ ] Failure/conflict sourcing
-├─ [ ] Attention from blank editor              └─ [ ] MOCK ROUND: Behavioral
-├─ [ ] Classic ML from blank editor
-└─ [ ] MOCK ROUND: Whiteboard
+├─ [ ] Bias–variance decomposition              ├─ [ ] Backprop derivation & shapes
+├─ [ ] Regularization as priors (L2/L1)         ├─ [ ] Vanishing/exploding & residuals
+├─ [ ] MLE / MAP / cross-entropy                ├─ [ ] LayerNorm vs BatchNorm vs RMSNorm
+├─ [ ] SGD → momentum → Adam → AdamW            ├─ [ ] Attention O(n²) & the KV cache
+├─ [ ] Metrics & validation design              ├─ [ ] MHA / MQA / GQA / FlashAttention
+└─ [ ] MOCK ROUND: ML breadth                   ├─ [ ] Training pathologies & debugging
+                                                └─ [ ] MOCK ROUND: DL breadth
+SESSION 5 — LLMs & RETRIEVAL
+├─ [ ] PEFT landscape                           SESSION 6 — DSA
+├─ [ ] Decoding & sampling                      ├─ [ ] Pattern fluency
+├─ [ ] RAG design space                         ├─ [ ] Interview protocol
+├─ [ ] LLM evaluation                           └─ [ ] MOCK ROUND: Coding
+└─ [ ] MOCK ROUND: LLMs
+                                                SESSION 8 — LP & STAR
+SESSION 7 — ML FROM SCRATCH                     ├─ [ ] Story bank (12 stories)
+├─ [ ] Attention from blank editor              ├─ [ ] STAR with quantified results
+├─ [ ] Classic ML from blank editor             ├─ [ ] Failure/conflict sourcing
+└─ [ ] MOCK ROUND: Whiteboard                   └─ [ ] MOCK ROUND: Behavioral
 
 SESSION 9 — MOCK LOOP
 └─ [ ] FINAL MOCK LOOP: all four rounds
@@ -52,7 +52,7 @@ SESSION 9 — MOCK LOOP
 |---|---|---|---|---|
 | | | | | |
 
-Recording reminder: log depth survived per chain, note where you run out of depth, and mark whether hand-waving or unbacked numbers caused a level drop.
+Recording reminder: log the depth you survived per chain, note exactly where your depth ran out, and flag any answer where you hand-waved or quoted a number you could not back.
 
 ---
 

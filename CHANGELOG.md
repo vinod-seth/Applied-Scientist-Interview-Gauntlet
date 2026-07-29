@@ -2,7 +2,22 @@
 
 All notable changes to this course are documented here. Versioning follows `MAJOR.MINOR`.
 
-## [1.6] — 2026-07-28
+## [1.7] — 2026-07-29
+
+### Added
+- **Session 4 — ML Fundamentals: Deep Learning & Transformers** (`tutorial/04_deep_learning_transformers/`), replacing its locked stub. Where Session 3 rewarded compression, this session rewards **derivation**: the questions have exact answers and the interviewer knows them.
+  - Session README with the scope brief framed as "the version everyone gives vs. the version that scores," plus an explicit note on how this session relates to Session 1 (which defended *your* transformer) — it assumes that material and pushes past it rather than repeating it.
+  - Lesson 1: Backpropagation & Gradient Flow — the linear-layer derivation with shapes, why activations must be stored (and what checkpointing trades), vanishing/exploding as a *product of Jacobians*, and the residual derivative $I + \partial F/\partial h$.
+  - Lesson 2: The Normalization Family — LayerNorm's exact computation and axis, three distinct reasons transformers can't use BatchNorm, RMSNorm's deletion, GroupNorm as the middle ground, and the fact that the internal-covariate-shift explanation was **overturned** by Santurkar et al. 2018.
+  - Lesson 3: Attention Variants — the $O(n^2)$ arithmetic and where the FFN crossover sits, KV-cache sizing worked on a real 7B configuration, MHA/MQA/GQA trade-offs, and FlashAttention as an **exact** I/O optimization (explicitly distinguished from sparse and linear attention).
+  - Lesson 4: Training Pathologies — a diagnosis-first playbook (symptom → mechanism → discriminating test → act), covering NaN spikes, flat loss, overfitting response ordering, mixed-precision failures, dying ReLU, and clipping's limits.
+  - Lesson 5: Mock Round — 12 turn-by-turn questions, two dedicated **board questions** (backprop for an MLP; KV-cache arithmetic), an honest self-assessment table, and a synthesis question tracing gradient flow → depth → quadratic attention → inference memory.
+  - Chapter quiz (12 questions + 2 reflections) and five interview suites (junior/mid/senior, 3 each) totalling **45 questions**, each suite carrying a `rehearsal` block per the updated guidelines.
+  - Armory notebook `deep_learning_lab.ipynb`: hand-derived gradients verified against autograd (exact match), gradient norms measured across 40 layers with and without residuals, LayerNorm's batch-independence demonstrated against BatchNorm's, the $O(n^2)$ and KV-cache tables computed, and fp16 overflow/underflow reproduced with the loss-scaler fingerprint.
+
+### Changed
+- PROGRESS.md mastery tracker: Session 4's seven core topics added and the two-column layout re-aligned.
+- README course map: Session 4 marked delivered; header table corrected to drop a leftover "assessment that gates the next" (superseded in 1.6) and refresh the version and verification date.
 
 ### Changed
 - **The whole course is now de-gamed**, so Sessions 1–2 match Session 3 and the updated `course-generation-guidelines/interview_prep` rules. Removed XP, medal tiers, boss fights, and progress gating throughout; kept every drill, interrogation chain, and rubric intact — only the framing changed.

@@ -1,0 +1,188 @@
+{
+  "lesson_title": "Training Pathologies & the Debugging Playbook",
+  "rehearsal": {
+    "prompt": "Debugging rehearsal. Always: read the symptom, name the mechanism, give the discriminating test, then act. Jumping to a fix without a diagnosis is exactly the failure being tested.",
+    "minSeconds": 30,
+    "maxSeconds": 90,
+    "rubric": "mechanism",
+    "questions": [
+      "Your training loss is not decreasing at all. What do you check first?",
+      "What is overfitting in a neural network, and how do you see it in the curves?",
+      "What is gradient clipping and when do you use it?",
+      "Your loss spikes to NaN at step 40k. Walk through your diagnosis in priority order.",
+      "What breaks in fp16 training, and how do loss scaling and bf16 address it?",
+      "What is the dying ReLU problem and how would you detect and fix it?",
+      "Loss looks healthy but evaluation metrics are terrible. How do you investigate?",
+      "How do you distinguish an optimization problem from a capacity problem?",
+      "You inherit a training run that diverges around 30% of the time on identical settings. How do you proceed?"
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "tp_j1",
+        "question": "Your training loss is not decreasing at all. What do you check first?",
+        "complexity": "Easy",
+        "core_intent": "Tests debugging instinct over hyperparameter guessing.",
+        "preparation_guide": "Try to overfit a single batch - it separates a bug from a tuning problem.",
+        "explanation": "Try to overfit a single small batch, around eight examples. A healthy model and data pipeline can drive loss to nearly zero on eight examples within a few hundred steps. If it cannot, the problem is a bug in the model or data pipeline - shuffled labels, a mask zeroing everything, the wrong tensor being fed - and no amount of hyperparameter tuning will fix it. If it can overfit, the machinery works and you have a tuning problem: learning rate, schedule, or capacity. That test is worth running before anything else because it classifies the entire problem space.",
+        "star_framework_tip": "Name the single-batch overfit test first and say what each outcome rules out.",
+        "common_pitfalls": [
+          "Immediately adjusting the learning rate",
+          "Adding capacity or data before establishing the pipeline works"
+        ],
+        "references": []
+      },
+      {
+        "id": "tp_j2",
+        "question": "What is overfitting in a neural network, and how do you see it in the curves?",
+        "complexity": "Easy",
+        "core_intent": "Baseline check connecting Session 3's decomposition to observed curves.",
+        "preparation_guide": "Training loss falls while validation loss rises - the variance term growing.",
+        "explanation": "Overfitting is fitting sample-specific noise rather than generalizable structure, which is the variance term of the bias-variance decomposition. In the curves it appears as training loss continuing to fall while validation loss turns and rises; the gap between them is the signature. Underfitting looks different - both curves high and close together, because the model cannot fit even the training data. The distinction matters because the remedies are opposite: overfitting wants more data or regularization or less capacity, underfitting wants more capacity or better features.",
+        "star_framework_tip": "Contrast the two signatures explicitly; the diagnosis determines which direction to move.",
+        "common_pitfalls": [
+          "Describing overfitting without the validation-curve signature",
+          "Prescribing 'more data' as a universal fix, including for underfitting"
+        ],
+        "references": []
+      },
+      {
+        "id": "tp_j3",
+        "question": "What is gradient clipping and when do you use it?",
+        "complexity": "Easy",
+        "core_intent": "Common practical technique.",
+        "preparation_guide": "Rescale the gradient when its norm exceeds a threshold; used against exploding gradients.",
+        "explanation": "Gradient clipping rescales the gradient whenever its norm exceeds a chosen threshold. Clipping by global norm is preferred because it preserves direction and only shortens the step, unlike clipping by value which truncates components independently and distorts direction. You use it when gradients can spike - deep networks, recurrent models, and transformer training - as cheap insurance against a single large update destroying the run. Set the threshold from logged gradient norms rather than guessing, around the upper end of the healthy observed range.",
+        "star_framework_tip": "Mention choosing the threshold from logged norms; it shows practice rather than recitation.",
+        "common_pitfalls": [
+          "Not distinguishing clip-by-norm from clip-by-value",
+          "Believing clipping addresses vanishing gradients"
+        ],
+        "references": [
+          {
+            "title": "Pascanu et al. 2013 - On the difficulty of training RNNs",
+            "url": "https://arxiv.org/abs/1211.5063"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "tp_m1",
+        "question": "Your loss spikes to NaN at step 40k. Walk through your diagnosis in priority order.",
+        "complexity": "Medium",
+        "core_intent": "The canonical debugging scenario; tests systematic elimination.",
+        "preparation_guide": "Localize with gradient and activation logs, then order: fp16 overflow, exploding gradients, bad batch, numerical edge cases, learning rate.",
+        "explanation": "Localize before fixing: log per-layer gradient norms and activation ranges, and establish whether the blow-up was gradual or instantaneous and which layer moved first. Then work the hypotheses in order. Mixed-precision overflow is first because it is common and has a clear fingerprint - fp16 tops out near 65504, and a dynamic loss scaler repeatedly halving its scale and skipping steps confirms it. Exploding gradients show gradual norm growth beforehand and respond to clipping. A bad batch - a corrupted label, an all-padding sequence - reproduces deterministically. Numerical edge cases in the loss such as log of zero or a fully masked softmax row produce NaN in the forward pass, which clipping cannot prevent. Learning rate too high, or warmup ending too early, comes last. The discriminating test is to re-run the same batch with the same seed: deterministic reproduction points at data or numerics, non-reproduction at accumulated instability.",
+        "star_framework_tip": "Give the ordering and the discriminating test. The seed-reproduction test is what separates a strong answer.",
+        "common_pitfalls": [
+          "Jumping straight to lowering the learning rate",
+          "Not mentioning mixed precision, the most common cause in modern training",
+          "Offering an unordered list with no discriminating experiment"
+        ],
+        "references": [
+          {
+            "title": "Micikevicius et al. 2018 - Mixed Precision Training",
+            "url": "https://arxiv.org/abs/1710.03740"
+          },
+          {
+            "title": "Pascanu et al. 2013 - On the difficulty of training RNNs",
+            "url": "https://arxiv.org/abs/1211.5063"
+          }
+        ]
+      },
+      {
+        "id": "tp_m2",
+        "question": "What breaks in fp16 training, and how do loss scaling and bf16 address it?",
+        "complexity": "Medium",
+        "core_intent": "Practical mixed-precision knowledge.",
+        "preparation_guide": "fp16's narrow exponent range causes overflow and underflow; scaling fixes underflow, bf16 fixes range.",
+        "explanation": "fp16 has a narrow exponent range, roughly 6e-5 to 65504, so large activations or gradients overflow to infinity and then NaN, while small gradients underflow to exactly zero and vanish from the update. Loss scaling multiplies the loss by a large constant so small gradients remain representable, then unscales before the optimizer step; dynamic scalers halve the factor and skip the step whenever infinity or NaN is detected, and repeated skipping is the diagnostic fingerprint of overflow. bf16 takes the other approach, keeping fp32's exponent range while sacrificing mantissa precision, so overflow essentially disappears and no loss scaling is needed - training tolerates the reduced precision well, which is why bf16 is the default on hardware that supports it.",
+        "star_framework_tip": "Name the scaler-skipping fingerprint; it converts theory into something you would actually spot in a log.",
+        "common_pitfalls": [
+          "Not knowing why loss scaling exists",
+          "Thinking bf16 is simply more precise than fp16 - it trades precision for range"
+        ],
+        "references": [
+          {
+            "title": "Micikevicius et al. 2018 - Mixed Precision Training",
+            "url": "https://arxiv.org/abs/1710.03740"
+          }
+        ]
+      },
+      {
+        "id": "tp_m3",
+        "question": "What is the dying ReLU problem and how would you detect and fix it?",
+        "complexity": "Medium",
+        "core_intent": "Tests understanding of an activation-level failure mode.",
+        "preparation_guide": "A unit stuck at zero output has zero gradient and cannot recover; detect via zero-activation fraction.",
+        "explanation": "A ReLU unit whose pre-activation is pushed persistently negative outputs zero and, because the derivative of ReLU is zero there, receives no gradient - so it can never recover and is effectively dead. It is usually caused by an oversized early update or poor initialization. Detect it by measuring the fraction of activations that are exactly zero per layer; a large fraction that grows and never recovers is the signal, as distinct from the healthy sparsity ReLU normally produces. Fixes: use LeakyReLU or GELU, which pass gradient for negative inputs, lower the learning rate, and check initialization - He initialization for ReLU-family activations.",
+        "star_framework_tip": "Distinguish dead units from healthy ReLU sparsity; that distinction is the substance of the answer.",
+        "common_pitfalls": [
+          "Confusing it with vanishing gradients, which is a depth-wise multiplicative effect",
+          "Not offering a detection method"
+        ],
+        "references": [
+          {
+            "title": "He et al. 2015 - Delving Deep into Rectifiers (Kaiming init)",
+            "url": "https://arxiv.org/abs/1502.01852"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "tp_s1",
+        "question": "Loss looks healthy but evaluation metrics are terrible. How do you investigate?",
+        "complexity": "Hard",
+        "core_intent": "Tests the ability to question the measurement rather than the model.",
+        "preparation_guide": "Suspect the evaluation path first: label alignment, metric axis, preprocessing skew, then distribution mismatch.",
+        "explanation": "A healthy loss means the model is optimizing the objective it was given, so suspect the gap between that objective and the evaluation. First check alignment: are predictions and labels matched correctly at evaluation, is the metric computed along the right axis, is argmax being taken over the right dimension. Then check preprocessing consistency between training and evaluation - different tokenization, normalization or padding is a frequent culprit, and Session 3's leakage rules apply in reverse here. Then ask whether the loss and the metric actually agree: cross-entropy can improve while accuracy stagnates if the model grows confident on examples it already got right. Finally consider a genuine train-evaluation distribution mismatch. The ordering matters because the measurement is more likely to be wrong than the model.",
+        "star_framework_tip": "Say explicitly that you suspect the evaluation before the model, and justify why.",
+        "common_pitfalls": [
+          "Immediately retraining with different hyperparameters",
+          "Not considering that the loss and the metric can legitimately disagree"
+        ],
+        "references": []
+      },
+      {
+        "id": "tp_s2",
+        "question": "How do you distinguish an optimization problem from a capacity problem?",
+        "complexity": "Hard",
+        "core_intent": "Tests the diagnostic that determines which direction to move.",
+        "preparation_guide": "Can the model fit the training data? Failure to fit is optimization or bug; fitting with a large gap is capacity or variance.",
+        "explanation": "The separating question is whether the model can fit the training data at all. Try to overfit a small subset: success means the machinery and capacity suffice and any generalization problem is variance-related, while failure means either an optimization problem or a bug. To separate those two, vary the optimizer and schedule - if a different learning rate, warmup, or optimizer suddenly fits, it was optimization; if nothing fits, suspect a bug or genuinely insufficient capacity. Then check the training curve shape: a high plateau on both curves indicates bias, while a low training loss with a large validation gap indicates variance. This is Session 3's decomposition applied as a debugging procedure rather than a formula.",
+        "star_framework_tip": "Frame it as one experiment that partitions the space, then the follow-up that splits the remaining branch.",
+        "common_pitfalls": [
+          "Guessing from the loss value alone without the fit test",
+          "Not connecting the diagnosis back to bias versus variance"
+        ],
+        "references": []
+      },
+      {
+        "id": "tp_s3",
+        "question": "You inherit a training run that diverges around 30% of the time on identical settings. How do you proceed?",
+        "complexity": "Hard",
+        "core_intent": "Realistic scenario about nondeterminism and instability.",
+        "preparation_guide": "Establish reproducibility first, then find what varies: seed, data order, numerics, or a genuine stability edge.",
+        "explanation": "First make the failure reproducible, because an intermittent bug you cannot trigger cannot be fixed. Fix all seeds and enable deterministic kernels, then check whether divergence follows the seed - if it does, the run is sitting near a stability edge rather than hitting a specific bad input. Log gradient norms, activation ranges and the loss scaler state continuously so you have the trace when it happens. Then look for what varies between runs: data ordering can surface a pathological batch, nondeterministic reductions differ slightly across runs, and mixed precision can push a marginal case over the overflow boundary in some runs but not others. The typical root cause is a configuration already close to the stability boundary - learning rate slightly too high, warmup too short, missing clipping - where run-to-run noise decides the outcome. Fix the margin rather than the symptom, then confirm across several seeds.",
+        "star_framework_tip": "Lead with reproducibility. 'Fix the margin, not the symptom' is the framing that reads as senior.",
+        "common_pitfalls": [
+          "Trying fixes without first making the failure reproducible",
+          "Assuming a hardware fault before exhausting numerics and configuration"
+        ],
+        "references": [
+          {
+            "title": "Micikevicius et al. 2018 - Mixed Precision Training",
+            "url": "https://arxiv.org/abs/1710.03740"
+          },
+          {
+            "title": "Pascanu et al. 2013 - On the difficulty of training RNNs",
+            "url": "https://arxiv.org/abs/1211.5063"
+          }
+        ]
+      }
+    ]
+  }
+}

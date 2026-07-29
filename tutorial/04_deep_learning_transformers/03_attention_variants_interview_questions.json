@@ -1,0 +1,228 @@
+{
+  "lesson_title": "Attention Variants: MHA, MQA, GQA, KV Cache, FlashAttention",
+  "rehearsal": {
+    "prompt": "Attention and inference-cost rehearsal. Do the arithmetic out loud; a worked KV-cache number beats any amount of terminology. Be precise that FlashAttention is exact while sparse and linear attention change the math.",
+    "minSeconds": 30,
+    "maxSeconds": 90,
+    "rubric": "mechanism",
+    "questions": [
+      "Why is self-attention quadratic in sequence length?",
+      "What is the KV cache and why does it exist?",
+      "What is multi-head attention and why use multiple heads?",
+      "Compute the KV cache size for a 7B-class model at 8k context, and say what it implies.",
+      "Compare MHA, MQA and GQA. What is traded?",
+      "Is FlashAttention an approximation? Explain what it does.",
+      "Your long-context serving is out of memory from the KV cache. What are your options?",
+      "How do sparse, linear and I/O-aware attention differ, and when is each appropriate?",
+      "Attention is quadratic, yet transformers scaled anyway. Explain why, quantitatively."
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "at_j1",
+        "question": "Why is self-attention quadratic in sequence length?",
+        "complexity": "Easy",
+        "core_intent": "Foundational cost question.",
+        "preparation_guide": "QK^T produces an n-by-n score matrix - one score per pair of positions.",
+        "explanation": "Attention computes softmax(QK^T/sqrt(d))V. The product QK^T multiplies an n-by-d matrix by a d-by-n matrix, producing an n-by-n matrix with one score for every pair of positions, so compute is O(n^2 d) and naive memory is O(n^2). The practical consequence is that doubling context quadruples attention cost - going from 2k to 8k is sixteen times more work - which is the fact behind every efficiency technique in this area.",
+        "star_framework_tip": "Give the practical consequence with a number, not just the complexity class.",
+        "common_pitfalls": [
+          "Stating O(n^2) without explaining where the n-by-n matrix comes from",
+          "Not knowing the FFN is only linear in n, so the two dominate at different scales"
+        ],
+        "references": [
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          }
+        ]
+      },
+      {
+        "id": "at_j2",
+        "question": "What is the KV cache and why does it exist?",
+        "complexity": "Easy",
+        "core_intent": "The central inference-efficiency concept.",
+        "preparation_guide": "It stores past keys and values so each generated token does not recompute them.",
+        "explanation": "In autoregressive decoding the model generates one token at a time, and without caching, producing token t would recompute keys and values for all t-1 previous tokens at every step. The KV cache stores K and V for all past tokens so each new token computes only its own, turning repeated O(t) recomputation into O(1) new work plus a read of the cache. The cost is memory that grows with every generated token, which is what makes long-context serving expensive.",
+        "star_framework_tip": "State both what it saves (recomputation) and what it costs (memory that grows per token).",
+        "common_pitfalls": [
+          "Describing the saving without the memory cost",
+          "Thinking the cache is used during training - it is a decoding-time structure"
+        ],
+        "references": [
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          },
+          {
+            "title": "Shazeer 2019 - Fast Transformer Decoding: One Write-Head is All You Need",
+            "url": "https://arxiv.org/abs/1911.02150"
+          }
+        ]
+      },
+      {
+        "id": "at_j3",
+        "question": "What is multi-head attention and why use multiple heads?",
+        "complexity": "Easy",
+        "core_intent": "Basic architecture check.",
+        "preparation_guide": "Parallel attention in separate learned subspaces, concatenated and mixed by an output projection.",
+        "explanation": "Multi-head attention projects the input into h separate query, key and value subspaces of dimension d_model/h, runs scaled dot-product attention independently in each, concatenates the results and mixes them with an output projection W_O. Multiple heads let the model attend to several different relationships at once - positional, syntactic, rare-token - where a single head would have to average them into one attention pattern. The output projection matters because without it each head's subspace would remain isolated.",
+        "star_framework_tip": "Explain what W_O contributes; candidates routinely omit it.",
+        "common_pitfalls": [
+          "Forgetting the output projection",
+          "Claiming more heads is always better - head dimension shrinks as head count grows"
+        ],
+        "references": [
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "at_m1",
+        "question": "Compute the KV cache size for a 7B-class model at 8k context, and say what it implies.",
+        "complexity": "Medium",
+        "core_intent": "Tests whether the candidate can do inference arithmetic live rather than gesture at it.",
+        "preparation_guide": "2 x layers x heads x d_head x tokens x bytes; then compare against model weights at realistic batch sizes.",
+        "explanation": "The formula is 2 (for K and V) times layers times heads times d_head times tokens times bytes per element. For a 7B-class model with 32 layers, 32 heads, d_head 128, in fp16 at 8192 tokens: 2 x 32 x 32 x 128 x 8192 x 2 bytes, which is roughly 4.3 GB for a single sequence. Batch eight concurrent requests and the cache alone reaches about 34 GB, exceeding the roughly 14 GB of fp16 weights. The implication is that serving is memory-bound rather than compute-bound, and since every generated token reads the whole cache, decoding is limited by memory bandwidth - which is exactly the pressure that produced MQA and GQA.",
+        "star_framework_tip": "Do the arithmetic out loud and end on the implication. The comparison against weight memory is what makes it land.",
+        "common_pitfalls": [
+          "Knowing the formula but not attempting the arithmetic",
+          "Forgetting the factor of 2 for K and V",
+          "Not connecting the number to why GQA exists"
+        ],
+        "references": [
+          {
+            "title": "Shazeer 2019 - Fast Transformer Decoding: One Write-Head is All You Need",
+            "url": "https://arxiv.org/abs/1911.02150"
+          },
+          {
+            "title": "Ainslie et al. 2023 - GQA: Training Generalized Multi-Query Transformer Models",
+            "url": "https://arxiv.org/abs/2305.13245"
+          },
+          {
+            "title": "Kwon et al. 2023 - Efficient Memory Management for LLM Serving (PagedAttention)",
+            "url": "https://arxiv.org/abs/2309.06180"
+          }
+        ]
+      },
+      {
+        "id": "at_m2",
+        "question": "Compare MHA, MQA and GQA. What is traded?",
+        "complexity": "Medium",
+        "core_intent": "Core modern-architecture question.",
+        "preparation_guide": "All keep h query heads; they differ in key/value head count, trading cache size against quality.",
+        "explanation": "All three keep h query heads and differ only in how many key/value heads exist. MHA has one K/V head per query head - maximum expressivity, largest cache. MQA has a single K/V head shared by all query heads, shrinking the cache by a factor of h, but with measurable quality degradation and reported training instability. GQA groups query heads, giving each group its own K/V head, shrinking the cache by h/g; at g equal to eight it typically matches MHA quality closely while cutting the cache four to eight times, which is why it is the modern default from Llama 2 70B onward. Importantly, query and output projections are unchanged, so training compute barely moves - these are inference-memory optimizations.",
+        "star_framework_tip": "Say explicitly that training compute is essentially unaffected; that distinction is frequently missed.",
+        "common_pitfalls": [
+          "Thinking MQA/GQA reduce query heads",
+          "Presenting it as a training-speed optimization"
+        ],
+        "references": [
+          {
+            "title": "Shazeer 2019 - Fast Transformer Decoding: One Write-Head is All You Need",
+            "url": "https://arxiv.org/abs/1911.02150"
+          },
+          {
+            "title": "Ainslie et al. 2023 - GQA: Training Generalized Multi-Query Transformer Models",
+            "url": "https://arxiv.org/abs/2305.13245"
+          }
+        ]
+      },
+      {
+        "id": "at_m3",
+        "question": "Is FlashAttention an approximation? Explain what it does.",
+        "complexity": "Medium",
+        "core_intent": "Separates candidates who understand the I/O argument from those who have only heard the name.",
+        "preparation_guide": "Exact, not approximate: tiling plus an online softmax to avoid HBM round-trips.",
+        "explanation": "It is exact - mathematically identical output. The insight is that attention on GPUs is memory-bandwidth bound rather than compute bound: the naive implementation writes the n-by-n score matrix to high-bandwidth memory, reads it back for the softmax, writes again and reads again for the multiplication by V, and those round-trips dominate runtime. FlashAttention tiles the computation, loading blocks of Q, K and V into on-chip SRAM and using an online softmax that maintains running maximum and sum statistics so a correct softmax is produced without ever materializing the full matrix. Memory falls from O(n^2) to O(n) and wall-clock improves two to four times while performing more FLOPs, since the backward pass recomputes tiles rather than storing them.",
+        "star_framework_tip": "Lead with 'it is exact'. The trade of extra compute for fewer memory round-trips is the memorable form.",
+        "common_pitfalls": [
+          "Calling it an approximation",
+          "Confusing it with sparse or linear attention, which do change the math"
+        ],
+        "references": [
+          {
+            "title": "Dao et al. 2022 - FlashAttention",
+            "url": "https://arxiv.org/abs/2205.14135"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "at_s1",
+        "question": "Your long-context serving is out of memory from the KV cache. What are your options?",
+        "complexity": "Hard",
+        "core_intent": "Practical serving engineering with explicit quality trade-offs.",
+        "preparation_guide": "Fewer K/V heads, quantize the cache, bound what is kept, or manage it better with paging.",
+        "explanation": "Four families, roughly by increasing quality cost. First, reduce K/V heads: adopt GQA, and an existing MHA checkpoint can be converted by mean-pooling K/V heads within each group followed by brief continued training, which recovers most quality. Second, quantize the cache to int8 or fp8, usually a small and measurable quality cost. Third, bound what you keep - sliding-window attention, or evicting and summarizing distant tokens - which is the largest capability loss since the model genuinely loses access to that context. Fourth, manage the memory better: PagedAttention treats the cache as fixed-size pages like virtual memory, eliminating worst-case over-allocation and allowing requests with shared prefixes to share pages, which is close to free. Order by what the workload can tolerate and measure the quality cost of each rather than assuming.",
+        "star_framework_tip": "Name the quality cost of every option and note that only the paging one is close to free.",
+        "common_pitfalls": [
+          "Listing techniques without their costs",
+          "Not knowing MHA checkpoints can be converted to GQA"
+        ],
+        "references": [
+          {
+            "title": "Ainslie et al. 2023 - GQA: Training Generalized Multi-Query Transformer Models",
+            "url": "https://arxiv.org/abs/2305.13245"
+          },
+          {
+            "title": "Kwon et al. 2023 - Efficient Memory Management for LLM Serving (PagedAttention)",
+            "url": "https://arxiv.org/abs/2309.06180"
+          }
+        ]
+      },
+      {
+        "id": "at_s2",
+        "question": "How do sparse, linear and I/O-aware attention differ, and when is each appropriate?",
+        "complexity": "Hard",
+        "core_intent": "Tests precision about a commonly conflated set of techniques.",
+        "preparation_guide": "Sparse and linear change the math; FlashAttention changes only the schedule.",
+        "explanation": "FlashAttention changes only the execution schedule and is exact, so it is always appropriate where a suitable kernel exists - there is no accuracy trade to weigh. Sparse attention changes the math by restricting which pairs are computed, using sliding windows, strided or block patterns, and works well when the useful attention structure really is local or otherwise predictable, but it loses genuinely long-range interactions. Linear or kernelized attention approximates the softmax with a feature map to reach O(n) scaling, which helps at extreme lengths but has historically underperformed on tasks needing sharp, selective retrieval. State-space models such as Mamba are a further step, replacing attention rather than approximating it. The decision rule is that exact methods come first, and approximations are justified only when the length regime makes exact attention infeasible.",
+        "star_framework_tip": "Give the decision rule - exact first, approximate only under a length constraint - not just the taxonomy.",
+        "common_pitfalls": [
+          "Treating FlashAttention as one approximation among several",
+          "Claiming linear attention is a free replacement for softmax attention"
+        ],
+        "references": [
+          {
+            "title": "Dao et al. 2022 - FlashAttention",
+            "url": "https://arxiv.org/abs/2205.14135"
+          },
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          }
+        ]
+      },
+      {
+        "id": "at_s3",
+        "question": "Attention is quadratic, yet transformers scaled anyway. Explain why, quantitatively.",
+        "complexity": "Hard",
+        "core_intent": "Tests understanding of where FLOPs actually go at realistic scales.",
+        "preparation_guide": "At typical training lengths the FFN dominates; attention only takes over as n approaches and passes d_ff.",
+        "explanation": "Because the quadratic term is not the dominant cost at the sequence lengths transformers were trained on. Attention costs roughly 4 n^2 d_model while the feed-forward blocks cost roughly 4 n d_model d_ff, so attention's share only reaches half of total FLOPs when n equals d_ff, typically four times d_model. For a model with d_model 4096, that crossover is around 16k tokens - so at the 2k contexts common in earlier training runs, attention was a small fraction of compute and the FFN dominated. The quadratic term only became the binding constraint as context windows grew, which is precisely when FlashAttention and the long-context literature appeared. The parallel constraint at inference is different again: there the KV cache and memory bandwidth bind, not FLOPs.",
+        "star_framework_tip": "Do the crossover arithmetic - n equals d_ff - and note the training and inference bottlenecks differ.",
+        "common_pitfalls": [
+          "Assuming attention always dominates compute",
+          "Not distinguishing the training bottleneck from the inference bottleneck"
+        ],
+        "references": [
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          },
+          {
+            "title": "Dao et al. 2022 - FlashAttention",
+            "url": "https://arxiv.org/abs/2205.14135"
+          }
+        ]
+      }
+    ]
+  }
+}
