@@ -6,7 +6,7 @@
 | **Time** | ~14 min visible + drills |
 | **Domain tag** | Coding round / testing and data-scale problems |
 
-> 📍 **How this lesson works:** two halves. Drills 1–2 make beat 4 systematic — tests designed *before* coding, each tied to an invariant, plus the bug list that produces most interview failures. Drills 3–5 are the problems an AS interviewer picks *because* you are an AS candidate: top-*k* over a stream, near-duplicate detection, and incremental grouping. These are DSA problems with a data-scale framing, not ML implementations — **[Session 7](../07_ml_from_scratch/00_locked.md) covers writing ML algorithms from a blank editor.**
+> 📍 **How this lesson works:** two halves. Drills 1–2 make beat 4 systematic — tests designed *before* coding, each tied to an invariant, plus the bug list that produces most interview failures. Drills 3–5 are the problems an AS interviewer picks *because* you are an AS candidate: top-*k* over a stream, near-duplicate detection, and incremental grouping. These are DSA problems with a data-scale framing, not ML implementations — **[Session 7](../07_ml_from_scratch/README.md) covers writing ML algorithms from a blank editor.**
 
 ## 🟢 Learning Objectives
 

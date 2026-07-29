@@ -1,0 +1,211 @@
+{
+  "lesson_title": "Attention From a Blank Editor",
+  "rehearsal": {
+    "prompt": "Attention implementation rehearsal. Say the shape of every tensor as you describe it, and end each answer with the test that would catch the bug. This is the highest-probability implementation ask in the loop.",
+    "minSeconds": 30,
+    "maxSeconds": 90,
+    "rubric": "mechanism",
+    "questions": [
+      "What does scaled dot-product attention compute? Walk me through the shapes.",
+      "Why is there a square root of d_k in the denominator?",
+      "What is a causal mask and how do you implement it?",
+      "Convert single-head attention to multi-head. What exactly is the reshape?",
+      "You masked by zeroing attention weights after the softmax. What is wrong with that?",
+      "How would you test an attention implementation?",
+      "Implement RoPE and explain why relative position falls out of the dot product.",
+      "Your attention runs but the model trains worse than expected. Give me a diagnosis order.",
+      "Adapt your implementation to grouped-query attention and an inference-time KV cache."
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "at_j1",
+        "question": "What does scaled dot-product attention compute? Walk me through the shapes.",
+        "complexity": "Easy",
+        "core_intent": "Checks whether the candidate can produce the computation rather than describe it metaphorically.",
+        "preparation_guide": "Give the formula, then name each intermediate shape in order.",
+        "explanation": "Attention computes softmax(Q K-transpose / sqrt(d_k)) V. With batched multi-head inputs, Q, K and V each have shape (B, H, T, d_head). The score matrix Q @ K-transpose is (B, H, T, T) - square in sequence length, which is where the quadratic cost physically lives. After scaling and masking, the softmax is taken over the LAST axis so each query's distribution over keys sums to one, and multiplying by V contracts the key axis and returns (B, H, T, d_head). Merging heads and applying the output projection returns (B, T, d_model). Use swapaxes(-1, -2) rather than .T, because .T on a 4-D array reverses every axis and scrambles batch and heads.",
+        "star_framework_tip": "Say the shapes out loud in order; the shape sequence is the answer, and it also demonstrates you have typed this.",
+        "common_pitfalls": [
+          "Softmaxing over the query axis instead of the key axis - it compiles, runs, trains, and is wrong",
+          "Using .T on a 4-D array, which reverses all axes rather than the last two"
+        ],
+        "references": [
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          }
+        ]
+      },
+      {
+        "id": "at_j2",
+        "question": "Why is there a square root of d_k in the denominator?",
+        "complexity": "Easy",
+        "core_intent": "Tests whether the scaling is derived or memorised.",
+        "preparation_guide": "Give the variance argument, then the consequence for the softmax.",
+        "explanation": "A variance argument. Treating components of q and k as independent with zero mean and unit variance, their dot product is a sum of d_k such products, so its variance is d_k and its standard deviation is sqrt(d_k). At d_k = 64 that is a spread of roughly plus or minus 8 before training begins. Scores of that magnitude drive the softmax toward one-hot, and a saturated softmax has vanishing gradients because the derivative of the probabilities with respect to the scores goes to zero at the corners of the simplex. Dividing by sqrt(d_k) restores unit variance and keeps the softmax in its responsive region. This is the argument in the original paper's footnote. Scaling by d_k instead would over-correct: scores collapse toward zero, the softmax goes uniform, and attention loses the ability to select.",
+        "star_framework_tip": "Name the variance, then the standard deviation, then the softmax consequence - three steps, about fifteen seconds.",
+        "common_pitfalls": [
+          "Saying it 'keeps values small' without the variance derivation",
+          "Confusing the failure mode of no scaling (saturation) with that of over-scaling (uniformity)"
+        ],
+        "references": [
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          },
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          }
+        ]
+      },
+      {
+        "id": "at_j3",
+        "question": "What is a causal mask and how do you implement it?",
+        "complexity": "Easy",
+        "core_intent": "A basic implementation detail with a specific correct placement.",
+        "preparation_guide": "Upper-triangular, applied as negative infinity to the scores before the softmax.",
+        "explanation": "A causal mask stops each position attending to later positions, so a decoder cannot use tokens it has not yet generated. It is an upper-triangular boolean above the diagonal - np.triu(np.ones((T, T), bool), k=1) - broadcast over batch and heads. It is applied by writing negative infinity into the SCORES, before the softmax: exp(-inf) is zero, so masked entries drop out of the denominator as well and the row renormalises over the survivors automatically. A padding mask is separate, shaped (B, 1, 1, T) on the key axis, and the two combine with a logical OR. The edge case worth naming is a fully masked row, where every score is negative infinity, the denominator is zero, and the result is NaN that propagates through the batch.",
+        "star_framework_tip": "Sketch the 4x4 triangle if there is a whiteboard - it is instant proof you have implemented it.",
+        "common_pitfalls": [
+          "Applying the mask after the softmax, which leaves the surviving weights un-renormalised",
+          "Putting the padding mask on the query axis instead of the key axis"
+        ],
+        "references": [
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "at_m1",
+        "question": "Convert single-head attention to multi-head. What exactly is the reshape?",
+        "complexity": "Medium",
+        "core_intent": "The step where shapes go wrong silently.",
+        "preparation_guide": "Reshape splits the feature axis; the transpose is mandatory, not cosmetic.",
+        "explanation": "Reshape (B, T, d_model) to (B, T, H, d_head), splitting the FEATURE axis, then transpose to (B, H, T, d_head). Two things must both hold. First, the split is on features, not time - reshaping directly to (B, H, T, d_head) would interleave time with heads and silently scramble the sequence. Second, the transpose is required because the matmul must batch over (B, H) and contract over d_head, so the two sequence axes have to be last; skipping it can produce output of the right shape with wrong content, which is the worst kind of bug. Merging reverses both steps, transposing BEFORE reshaping, since reshape reads memory in order. d_head = d_model / H keeps the parameter and FLOP count equal to single-head attention at full width, so more heads buy several lower-dimensional subspaces rather than more compute.",
+        "star_framework_tip": "Say 'splits the feature axis' and 'the transpose is mandatory' explicitly - those two phrases are the whole answer.",
+        "common_pitfalls": [
+          "Reshaping straight to (B, H, T, d_head) in one call, mixing time into heads",
+          "Reshaping without transposing back when merging heads"
+        ],
+        "references": [
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          }
+        ]
+      },
+      {
+        "id": "at_m2",
+        "question": "You masked by zeroing attention weights after the softmax. What is wrong with that?",
+        "complexity": "Medium",
+        "core_intent": "A silent-failure question - the code runs and trains.",
+        "preparation_guide": "Renormalisation. The row no longer sums to one.",
+        "explanation": "Zeroing weights after the softmax leaves the surviving weights un-renormalised. The row no longer sums to one, so the output is a shrunken convex combination whose magnitude depends on how many positions were masked - a row with three of eight positions surviving produces an output scaled by roughly the surviving mass rather than a proper weighted average. Nothing crashes; the model simply trains to something worse, which is the defining characteristic of bugs in this round. The correct placement is negative infinity in the scores before the softmax, because exp(-inf) is zero and the masked entries then contribute nothing to the denominator either, so renormalisation happens for free. The test that catches it is one line: assert the attention weights sum to one along the key axis.",
+        "star_framework_tip": "Lead with 'the row no longer sums to one' - that is the mechanism, and the rest follows from it.",
+        "common_pitfalls": [
+          "Describing it as merely inefficient rather than incorrect",
+          "Not naming the one-line row-sum assertion that detects it"
+        ],
+        "references": [
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          }
+        ]
+      },
+      {
+        "id": "at_m3",
+        "question": "How would you test an attention implementation?",
+        "complexity": "Medium",
+        "core_intent": "Verification is scored as heavily as mechanism in this round.",
+        "preparation_guide": "Four tests, with the leakage test as the strongest.",
+        "explanation": "Four tests, cheap and specific. One: assert the output shape is (B, T, d_model), which catches reshape and transpose errors. Two: assert attention weights sum to one along the last axis, which catches a wrong softmax axis. Three: run with n_heads=1 and assert exact equality with a single-head implementation - with one head the transpose is a content no-op, so any discrepancy is a reshape error. Four, and the strongest: a LEAKAGE test for causality - perturb the token at position 3 and assert the outputs at positions 0 through 2 are bit-identical. That proves the property the mask exists for, rather than proving the mask has the right shape. For the whole function, comparing against a naive triple-nested Python loop on a tiny input gives a reference you can trust.",
+        "star_framework_tip": "Name all four in about fifteen seconds, then offer to write whichever they find most interesting.",
+        "common_pitfalls": [
+          "Only checking shapes, which catches the least dangerous class of bug",
+          "Saying 'I'd compare against PyTorch' without being able to state what property is being checked"
+        ],
+        "references": [
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "at_s1",
+        "question": "Implement RoPE and explain why relative position falls out of the dot product.",
+        "complexity": "Hard",
+        "core_intent": "Directly re-implementable resume claim; the orthogonality argument is the discriminator.",
+        "preparation_guide": "Rotate dimension pairs by a position-dependent angle; Q and K only; orthogonality gives relative position.",
+        "explanation": "For position m and dimension pair i, with theta_i = 10000 raised to the power -2i/d, rotate the pair (x_2i, x_2i+1) by the angle m * theta_i using the standard 2-D rotation matrix. Three facts carry the answer. One: it is applied to Q and K ONLY, never to V - position must shape which positions are attended to, not the content that gets summed, and rotating V is a real and common bug. Two: relative position emerges because rotations are orthogonal, so the inner product of R_m q with R_n k equals the inner product of q with R_(n-m) k - the score depends on n minus m alone, never on m and n separately. That single line of linear algebra is the whole justification for the method. Three: rotations preserve norms, so RoPE cannot rescale the scores the way an additive positional embedding can. The frequency ladder gives each dimension pair a different wavelength so short-range and long-range position are both representable.",
+        "star_framework_tip": "Give the orthogonality identity explicitly - it is one line and it is what separates implementing from importing.",
+        "common_pitfalls": [
+          "Applying the rotation to V as well as Q and K",
+          "Not knowing which layout was used - interleaved pairs versus split-half are not interchangeable with the same weights"
+        ],
+        "references": [
+          {
+            "title": "Su et al. 2021 - RoFormer: Enhanced Transformer with Rotary Position Embedding",
+            "url": "https://arxiv.org/abs/2104.09864"
+          },
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          }
+        ]
+      },
+      {
+        "id": "at_s2",
+        "question": "Your attention implementation runs but the model trains worse than expected. Give me a diagnosis order.",
+        "complexity": "Hard",
+        "core_intent": "Tests debugging method for bugs that never raise an exception.",
+        "preparation_guide": "Order the checks by how silent and how likely each failure is.",
+        "explanation": "Order by silence and likelihood. First, assert the attention weights sum to one along the key axis - this catches a wrong softmax axis, the single most common silent bug, and it is one line. Second, run the leakage test: perturb a later token and confirm earlier outputs are unchanged, which catches a missing or misplaced causal mask; without it the model sees the future during training and its evaluation loss will diverge from training loss in a characteristic way. Third, compare against the single-head path with n_heads=1 to catch a missing transpose in split_heads or merge_heads. Fourth, check the loss at initialisation against log K - if it is wrong there, the bug is not in attention at all. Fifth, confirm the scaling divisor is sqrt(d_head) and not d_head or nothing. Sixth, check that RoPE was not applied to V. Each of these is one or two lines and none requires training a model.",
+        "star_framework_tip": "Order the list by how silent each failure is, not by how likely - and say that is the ordering principle.",
+        "common_pitfalls": [
+          "Proposing to retrain with different hyperparameters before running any assertion",
+          "Debugging by inspecting attention heatmaps, which is slow and rarely conclusive"
+        ],
+        "references": [
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          },
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          }
+        ]
+      },
+      {
+        "id": "at_s3",
+        "question": "Adapt your implementation to grouped-query attention and to an inference-time KV cache.",
+        "complexity": "Hard",
+        "core_intent": "Separates a training-time reimplementation from someone who has thought about serving.",
+        "preparation_guide": "Fewer K/V heads that broadcast against Q; the cache changes the score shape per step.",
+        "explanation": "For grouped-query attention, K and V are projected to fewer heads than Q - one head in the multi-query limit, or G groups in general - so split_heads uses a different head count for K and V, and they broadcast or repeat against Q's heads before the matmul. The shape bookkeeping is where these implementations get fiddly, and it is worth saying that the point is inference memory: the KV cache shrinks by the ratio of query heads to key-value heads, while the training-time FLOP count barely changes. For the cache itself, generation appends one token at a time: K and V are accumulated across steps, and the score matrix per step becomes (B, H, 1, T) rather than (B, H, T, T), so the quadratic term disappears from each step and reappears as a linear growth in cache size. The causal mask becomes unnecessary during incremental decoding, because the cache only ever contains past tokens.",
+        "star_framework_tip": "Name the inference-memory motivation for GQA rather than describing it as a generic efficiency trick.",
+        "common_pitfalls": [
+          "Describing GQA as reducing training compute, when the real target is KV-cache memory at serving time",
+          "Forgetting that beam search or batched generation requires the cache to be reordered when hypotheses are reordered"
+        ],
+        "references": [
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          }
+        ]
+      }
+    ]
+  }
+}

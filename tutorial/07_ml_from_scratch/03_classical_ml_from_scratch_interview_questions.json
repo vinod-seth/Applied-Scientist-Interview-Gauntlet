@@ -1,0 +1,199 @@
+{
+  "lesson_title": "Classical ML From Scratch",
+  "rehearsal": {
+    "prompt": "Classical ML rehearsal. Name the OBJECTIVE before the algorithm - every follow-up here is a question about the objective. Each answer should end in a property-based test.",
+    "minSeconds": 30,
+    "maxSeconds": 90,
+    "rubric": "mechanism",
+    "questions": [
+      "Write k-means. What are the two steps and what shapes are involved?",
+      "What objective does k-means minimise?",
+      "Write logistic regression and its gradient.",
+      "Prove k-means terminates. Does that mean it finds the best clustering?",
+      "What does k-means++ buy you, precisely?",
+      "Why does logistic regression need no random restarts when k-means does?",
+      "When is k-means the wrong model, and what replaces it?",
+      "You cluster unnormalised sentence embeddings with k-means. What is wrong?",
+      "What happens to logistic regression on perfectly separable data?"
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "cm_j1",
+        "question": "Write k-means. What are the two steps and what shapes are involved?",
+        "complexity": "Easy",
+        "core_intent": "A basic implementation with one scaling trade-off worth volunteering.",
+        "preparation_guide": "Two alternating steps, the (N, k) distance matrix, and the memory trade.",
+        "explanation": "Two alternating steps. Assignment: compute an (N, k) matrix of squared distances from every point to every centroid and take the argmin along the cluster axis. Update: set each centroid to the mean of the points assigned to it. Written with broadcasting, X[:, None, :] at (N, 1, D) against C[None, :, :] at (1, k, D) gives an (N, k, D) intermediate that reduces to (N, k). The trade-off to volunteer: that intermediate is large - at N = 1e6, k = 100 and D = 128 it is about 51 GB. Expanding the square instead, as norm of x squared minus twice x-dot-c plus norm of c squared, gives the distance matrix from one matmul plus two cached norm vectors, so memory is (N, k) and the work hits BLAS. The cost is precision: it is a difference of large similar numbers, so cancellation can produce small negative squared distances that should be clipped at zero. Complexity is O(N k D) per iteration, dominated by assignment.",
+        "star_framework_tip": "Volunteer the memory arithmetic before being asked - it converts a textbook answer into a practitioner's answer.",
+        "common_pitfalls": [
+          "Writing nested Python loops over points and centroids instead of vectorising",
+          "Using the expanded-square formula without clipping, and being surprised by negative distances"
+        ],
+        "references": [
+          {
+            "title": "Lloyd 1982 - Least Squares Quantization in PCM, IEEE Trans. Inf. Theory 28(2), 129-137",
+            "url": "https://doi.org/10.1109/TIT.1982.1056489"
+          }
+        ]
+      },
+      {
+        "id": "cm_j2",
+        "question": "What objective does k-means minimise?",
+        "complexity": "Easy",
+        "core_intent": "Whether the candidate knows the objective or only the procedure.",
+        "preparation_guide": "State the within-cluster sum of squares and why the mean is the update.",
+        "explanation": "The within-cluster sum of squared distances from each point to its assigned centroid, usually called the inertia: the sum over all points of the squared norm of x_i minus the centroid of its assigned cluster. Both steps of the algorithm are exact minimisations of this objective with one variable held fixed. The assignment step minimises over assignments with centroids fixed, by sending each point to its nearest centroid. The update step minimises over centroids with assignments fixed, and the minimiser is the MEAN - differentiating the sum of squared distances with respect to c gives minus twice the sum of x_i minus c, which is zero at the sample mean. Knowing the objective is what makes every follow-up answerable: convergence, initialisation sensitivity, and why the algorithm changes if the distance metric changes.",
+        "star_framework_tip": "Say 'the mean is the minimiser of squared distance' and show the one-line derivative - that is why the update step is what it is.",
+        "common_pitfalls": [
+          "Describing the procedure without naming the quantity being minimised",
+          "Believing the algorithm would work unchanged with a different distance metric"
+        ],
+        "references": [
+          {
+            "title": "Lloyd 1982 - Least Squares Quantization in PCM, IEEE Trans. Inf. Theory 28(2), 129-137",
+            "url": "https://doi.org/10.1109/TIT.1982.1056489"
+          }
+        ]
+      },
+      {
+        "id": "cm_j3",
+        "question": "Write logistic regression and its gradient.",
+        "complexity": "Easy",
+        "core_intent": "Connects to the same p minus y structure as softmax cross-entropy.",
+        "preparation_guide": "Give the gradient in matrix form and note the shared structure.",
+        "explanation": "Predictions are the sigmoid of X w. The gradient of the mean negative log-likelihood is X-transpose times (p minus y), divided by N, plus the L2 term if regularised. It is structurally identical to the softmax cross-entropy gradient from the loss lesson, now projected onto the features - one derivation covers softmax classification, binary classification, and linear regression where p is simply X w. Implementation details that matter: the sigmoid should branch on the sign so it never exponentiates a positive number, and the loss should be computed from logits with the stable binary cross-entropy form rather than as log of the sigmoid. Verification is the finite-difference check on the gradient, plus asserting the loss decreases monotonically for a small enough step size.",
+        "star_framework_tip": "Point out that it is the same p minus y as the softmax case - noticing the shared structure is the mark of having derived rather than memorised.",
+        "common_pitfalls": [
+          "Getting the transpose wrong in X-transpose (p - y), which the finite-difference check catches immediately",
+          "Computing the loss as log(sigmoid(z)) instead of using the stable logit form"
+        ],
+        "references": [
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "cm_m1",
+        "question": "Prove k-means terminates. Does that mean it finds the best clustering?",
+        "complexity": "Medium",
+        "core_intent": "Separates understanding the objective from remembering the loop.",
+        "preparation_guide": "Monotone decrease plus finiteness; then be explicit that termination is not optimality.",
+        "explanation": "Three steps. The assignment step cannot increase the inertia, because centroids are held fixed and each point is reassigned to its nearest centroid, so every term in the sum falls or stays equal. The update step cannot increase it either, because assignments are held fixed and the mean is the unique minimiser of the sum of squared distances for a fixed set of points. So the inertia is non-increasing, and since there are finitely many possible assignments - at most k to the N - the algorithm must halt in finitely many steps. But termination is NOT optimality. The objective is non-convex in the assignments, the landscape genuinely has multiple local minima, and finding the global optimum is NP-hard in general. Lloyd's algorithm descends into whichever basin its initialisation sits above, which is exactly why implementations expose an n_init parameter and you keep the run with the lowest inertia.",
+        "star_framework_tip": "Say 'terminates but only at a local minimum' as one sentence - conflating the two is the most common error on this question.",
+        "common_pitfalls": [
+          "Claiming k-means converges to the global optimum",
+          "Claiming the objective is convex because each individual step is an exact minimisation"
+        ],
+        "references": [
+          {
+            "title": "Lloyd 1982 - Least Squares Quantization in PCM, IEEE Trans. Inf. Theory 28(2), 129-137",
+            "url": "https://doi.org/10.1109/TIT.1982.1056489"
+          }
+        ]
+      },
+      {
+        "id": "cm_m2",
+        "question": "What does k-means++ buy you, precisely?",
+        "complexity": "Medium",
+        "core_intent": "Tests whether the candidate knows the actual guarantee or just the procedure.",
+        "preparation_guide": "D-squared sampling, and the O(log k) competitive bound before any iteration runs.",
+        "explanation": "The procedure: choose the first centroid uniformly at random from the data, then choose each subsequent centroid with probability proportional to D(x) squared, the squared distance to the nearest already-chosen centroid. What it buys precisely: the expected inertia of the SEEDING ALONE is within O(log k) of the global optimum, before a single Lloyd iteration has run. Uniform random seeding carries no such bound and can start arbitrarily badly, for example by placing two centroids inside one true cluster while another true cluster gets none. The squared weighting rather than linear is what the proof requires and it also spreads seeds more aggressively. The cost is one extra pass per centroid, O(N k D) overall, which is the same order as a single Lloyd iteration and negligible against the iterations it saves. It does not remove the need for restarts, since the guarantee is in expectation.",
+        "star_framework_tip": "Quote the guarantee as 'before a single iteration runs' - that framing is what makes it striking rather than generic.",
+        "common_pitfalls": [
+          "Saying it 'gives better initial centroids' with no guarantee attached",
+          "Claiming it removes the need for multiple restarts"
+        ],
+        "references": [
+          {
+            "title": "Arthur & Vassilvitskii 2007 - k-means++: The Advantages of Careful Seeding, SODA",
+            "url": "http://theory.stanford.edu/~sergei/papers/kMeansPP-soda.pdf"
+          }
+        ]
+      },
+      {
+        "id": "cm_m3",
+        "question": "Why does logistic regression need no random restarts when k-means does?",
+        "complexity": "Medium",
+        "core_intent": "A convexity question with a concrete Hessian answer.",
+        "preparation_guide": "Convex objective, positive semi-definite Hessian, so every local optimum is global.",
+        "explanation": "Because the negative log-likelihood of logistic regression is convex in the weights. Its Hessian is X-transpose S X, with S the diagonal matrix of p_i times (1 minus p_i), which is a non-negative diagonal, so the whole product is positive semi-definite. A convex objective has no non-global local minima, so gradient descent from any initialisation reaches the same optimum - initialisation affects only speed. k-means is the opposite: its objective is non-convex in the assignments, with genuine local minima, so the initialisation determines which basin you land in and restarts are how you sample basins. Two refinements worth adding: convex is not the same as having a FINITE optimum, and on perfectly separable data the logistic weights diverge until an L2 penalty makes the objective strictly convex; and convexity applies to the linear model, not to a deep network with a logistic output.",
+        "star_framework_tip": "Give the Hessian explicitly. 'It's convex' is a claim; X-transpose S X with S positive semi-definite is a reason.",
+        "common_pitfalls": [
+          "Asserting convexity without being able to name the Hessian",
+          "Extending the convexity claim to deep networks with a sigmoid output"
+        ],
+        "references": [
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "cm_s1",
+        "question": "When is k-means the wrong model, and what replaces it?",
+        "complexity": "Hard",
+        "core_intent": "A breadth question that an implementation round uses to probe outside NLP.",
+        "preparation_guide": "Three regimes, each with a named replacement, plus the one-line geometric diagnosis.",
+        "explanation": "Three regimes. One: clusters that are not roughly spherical or comparable in size - minimising squared distance to a centroid assumes isotropic, similar-variance clusters, so elongated or nested shapes get sliced through; a Gaussian mixture fits per-cluster covariance and gives soft assignments, and spectral clustering handles genuinely non-convex shapes. Two: varying density or real noise - every point must join some cluster, so outliers drag centroids and there is no 'none of these' option; DBSCAN finds density-connected regions, requires no k, and labels outliers as noise. Three: features on different scales - squared Euclidean distance is dominated by whichever feature has the largest units, so standardise first; this is the most common real-world failure and it is a preprocessing bug rather than a model choice. The one-line diagnosis to offer: k-means draws a Voronoi partition, so its boundaries are always straight lines between centroids - if the structure you want cannot be described by straight cuts, no amount of restarting will find it.",
+        "star_framework_tip": "Close with the Voronoi sentence - it compresses all three regimes into one geometric statement.",
+        "common_pitfalls": [
+          "Listing alternatives without saying which failure each one addresses",
+          "Omitting feature scaling, which is the most frequent real cause of bad k-means results"
+        ],
+        "references": [
+          {
+            "title": "Lloyd 1982 - Least Squares Quantization in PCM, IEEE Trans. Inf. Theory 28(2), 129-137",
+            "url": "https://doi.org/10.1109/TIT.1982.1056489"
+          }
+        ]
+      },
+      {
+        "id": "cm_s2",
+        "question": "You cluster unnormalised sentence embeddings with k-means, intending cosine similarity. What is wrong?",
+        "complexity": "Hard",
+        "core_intent": "A specific and very common applied mistake, directly relevant to embedding work.",
+        "preparation_guide": "Euclidean and cosine coincide only on the unit sphere.",
+        "explanation": "k-means minimises squared Euclidean distance, but embeddings are conventionally compared by cosine similarity, and those two objectives coincide only for L2-normalised vectors - for unit vectors, the squared distance between x and c equals 2 minus twice their dot product, so minimising distance is exactly maximising cosine. Without normalisation, the clustering is driven partly by vector MAGNITUDE rather than direction, and embedding norms often correlate with incidental properties such as text length or token frequency rather than with meaning. So the clusters partially encode something you did not intend. Fixes: L2-normalise before clustering, or use spherical k-means, which normalises the centroids each iteration. A further consideration in high dimensions is distance concentration - pairwise distances become increasingly similar as dimension grows, so reducing dimension first often improves cluster quality.",
+        "star_framework_tip": "State the identity for unit vectors explicitly - it turns a rule of thumb into a derivation.",
+        "common_pitfalls": [
+          "Assuming k-means is metric-agnostic and works with any similarity",
+          "Not knowing whether your own clustering code normalised the vectors"
+        ],
+        "references": [
+          {
+            "title": "Lloyd 1982 - Least Squares Quantization in PCM, IEEE Trans. Inf. Theory 28(2), 129-137",
+            "url": "https://doi.org/10.1109/TIT.1982.1056489"
+          }
+        ]
+      },
+      {
+        "id": "cm_s3",
+        "question": "What happens to logistic regression on perfectly separable data?",
+        "complexity": "Hard",
+        "core_intent": "A subtle failure that connects optimisation to calibration.",
+        "preparation_guide": "Weights diverge; the optimum is at infinity; regularisation restores a finite solution.",
+        "explanation": "The maximum-likelihood solution does not exist as a finite vector. If a hyperplane separates the classes exactly, the likelihood increases without bound as the weight norm grows, because scaling the weights up pushes every predicted probability closer to 0 or 1 while keeping the classification identical. So the optimiser drives the norm toward infinity, training never truly converges, and the model becomes arbitrarily overconfident. Any L2 penalty makes the objective STRICTLY convex and gives a finite unique solution; from a probabilistic view that penalty is a zero-mean Gaussian prior on the weights, so the fit becomes MAP rather than maximum likelihood. This is also a calibration story: an unregularised separable fit is maximally miscalibrated, reporting probabilities near 0 and 1 that carry no real information about uncertainty. Practical signals are a monotonically growing weight norm and a training loss that keeps creeping toward zero.",
+        "star_framework_tip": "Connect it to calibration at the end - that link is what makes this a scientist's answer rather than an optimiser's.",
+        "common_pitfalls": [
+          "Believing separable data is the easy case with no numerical consequences",
+          "Adding regularisation without being able to explain what it corresponds to probabilistically"
+        ],
+        "references": [
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          }
+        ]
+      }
+    ]
+  }
+}

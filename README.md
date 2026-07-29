@@ -5,7 +5,7 @@
 | **Target role** | Applied Scientist (entry-level, NLP/LLM focus) |
 | **Candidate profile** | M.Tech Robotics & AI (IIT Guwahati), B.Tech CS (AI/ML), no industry experience — four flagship projects carry the resume |
 | **Format** | 9 sessions, delivered one at a time; each ends with a mock round and an honest self-assessment |
-| **Version** | 2.0 |
+| **Version** | 2.1 |
 | **Last verified** | 2026-07-29 (model names, paper links, and Leadership Principles list checked on this date) |
 
 ---
@@ -99,7 +99,7 @@ Built to the **Resume-to-Offer** archetype: the syllabus below is *derived* from
 | 4 | ML Fundamentals: Deep Learning & Transformers | Backprop & gradient flow, normalization family, attention variants (MQA/GQA/Flash, KV cache), training pathologies | ✅ Delivered |
 | 5 | LLMs, Fine-Tuning & Retrieval | PEFT landscape, decoding & sampling, scaling behavior & post-training, RAG design space, evaluating LLM systems | ✅ Delivered |
 | 6 | Coding: DSA & Algorithms | The five beats (clarify → approach → narrate → test → optimize), constraints → pattern → invariant, complexity & three proof shapes, test design, and the data-scale problem set | ✅ Delivered |
-| 7 | Coding: ML From Scratch | Attention, losses, k-means, logistic regression, beam search from a blank editor | 🔒 Locked |
+| 7 | Coding: ML From Scratch | Attention + RoPE, stable losses and their gradients, k-means and logistic regression, beam search — each from a blank editor, each with the test that verifies it | ✅ Delivered |
 | 8 | Behavioral: Leadership Principles & STAR | LP mapping, STAR with quantified results, fresher-sourcing of failure/conflict stories | 🔒 Locked |
 | 9 | Mock Loop & Integration | Full 4-round simulated loop, playbook execution, final gap audit | 🔒 Locked |
 

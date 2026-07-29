@@ -1,0 +1,219 @@
+{
+  "lesson_title": "Decoding & Beam Search From Scratch",
+  "rehearsal": {
+    "prompt": "Decoder implementation rehearsal. Order of operations and edge cases decide these answers. End each one with the identity test that would catch the bug - decoders are unusually verifiable.",
+    "minSeconds": 30,
+    "maxSeconds": 90,
+    "rubric": "mechanism",
+    "questions": [
+      "Implement top-k and top-p sampling. What is the order of operations?",
+      "Why must beam search work in log space?",
+      "What is length normalisation for?",
+      "Write beam search. What are the non-obvious parts?",
+      "A beam emits EOS at step 2 of 20. What exactly happens to it?",
+      "How do you test a decoder?",
+      "Is beam search guaranteed to find the most probable sequence?",
+      "Does a larger beam always produce better output?",
+      "How would you batch beam search on a GPU, and what breaks with a KV cache?"
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "dc_j1",
+        "question": "Implement top-k and top-p sampling. What is the order of operations?",
+        "complexity": "Easy",
+        "core_intent": "The order is the entire question, and both orders run without error.",
+        "preparation_guide": "Temperature, then truncate, then softmax, then sample - and say why temperature is first.",
+        "explanation": "Temperature first, then truncation, then softmax, then sampling. Temperature must come first because it reshapes the distribution and therefore changes WHICH tokens fall inside the nucleus: at temperature 0.5 a top-p of 0.9 might contain three tokens, while at 1.5 the same p might contain hundreds. Truncating first freezes the candidate set and demotes temperature to a re-weighting of a fixed shortlist. Both orders run, which is what makes this worth knowing rather than guessing. Truncate in the LOGIT domain by writing negative infinity, not by zeroing probabilities, so the softmax renormalises over survivors automatically. Two details: the nucleus must INCLUDE the token that crosses p - with probabilities 0.5, 0.4, 0.1 and p = 0.8 the cumulative sums are 0.5, 0.9, 1.0, and stopping before crossing keeps only half the intended mass - and temperature of exactly zero must be special-cased to argmax, since dividing by zero gives NaN.",
+        "star_framework_tip": "State the four steps in order first, then justify why temperature leads - the ordering IS the answer.",
+        "common_pitfalls": [
+          "Truncating before applying temperature, which changes the resulting distribution",
+          "Excluding the token that crosses the cumulative threshold, an off-by-one that silently shrinks the nucleus"
+        ],
+        "references": [
+          {
+            "title": "Holtzman et al. 2020 - The Curious Case of Neural Text Degeneration",
+            "url": "https://arxiv.org/abs/1904.09751"
+          },
+          {
+            "title": "Fan, Lewis & Dauphin 2018 - Hierarchical Neural Story Generation",
+            "url": "https://arxiv.org/abs/1805.04833"
+          }
+        ]
+      },
+      {
+        "id": "dc_j2",
+        "question": "Why must beam search work in log space?",
+        "complexity": "Easy",
+        "core_intent": "A concrete arithmetic answer, not a stylistic preference.",
+        "preparation_guide": "Give the underflow numbers.",
+        "explanation": "Because a product of many probabilities underflows. A 400-token sequence with a typical per-token probability around 0.1 has probability about 10 to the minus 400, while the smallest positive normal float64 is about 2.2 times 10 to the minus 308. The product therefore underflows to EXACTLY zero, every candidate ties at zero, and the ranking that beam search depends on is destroyed. Summing log-probabilities has no such limit: the score becomes a moderate negative number that grows linearly in length rather than shrinking geometrically. This is the same discipline as computing cross-entropy from logits rather than from probabilities - exponentiate as late as possible, and never take the log of something you just exponentiated. A consequence to carry forward: log-probabilities are negative, so scores only decrease with length, which is exactly the bias length normalisation corrects.",
+        "star_framework_tip": "Quote the two numbers - 10^-400 against float64's 2.2e-308. Specifics make it an arithmetic answer rather than an assertion.",
+        "common_pitfalls": [
+          "Saying 'for numerical stability' without the underflow threshold",
+          "Believing log-probabilities are positive"
+        ],
+        "references": [
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          }
+        ]
+      },
+      {
+        "id": "dc_j3",
+        "question": "What is length normalisation for?",
+        "complexity": "Easy",
+        "core_intent": "A diagnosis question with a one-line cause.",
+        "preparation_guide": "Beam search prefers short sequences because every step adds a negative number.",
+        "explanation": "Because log-probabilities are at most zero, every additional token can only lower a sequence's cumulative score. So a short sequence that finishes early is compared against longer ones on a scale that structurally favours it, and unnormalised beam search reliably returns the shortest plausible output. The fix is to divide the total log-probability by a length penalty: either the simple form, the total divided by length to the power alpha, or the GNMT form, ((5 + length) to the alpha) divided by (6 to the alpha), with alpha typically 0.6 to 0.7. The GNMT offset makes the penalty gentler at short lengths so it does not over-reward the first few tokens. Apply it when RANKING FINISHED sequences, not during expansion, because normalising mid-search distorts comparisons between beams of different current lengths and can prune good long candidates early.",
+        "star_framework_tip": "Say 'every step adds a negative number' - that one clause is the whole diagnosis.",
+        "common_pitfalls": [
+          "Applying the penalty during expansion rather than at final ranking",
+          "Setting alpha to 1, which over-corrects and starts favouring long rambling outputs"
+        ],
+        "references": [
+          {
+            "title": "Wu et al. 2016 - Google's Neural Machine Translation System",
+            "url": "https://arxiv.org/abs/1609.08144"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "dc_m1",
+        "question": "Write beam search. What are the non-obvious parts?",
+        "complexity": "Medium",
+        "core_intent": "The set-piece implementation of this lesson.",
+        "preparation_guide": "Global selection, log space, separate finished pool, and honesty that it is a heuristic.",
+        "explanation": "Maintain b hypotheses, each a sequence plus a cumulative log-probability. Each step, expand every live beam over the vocabulary, pool ALL candidates together, and take the global top b. The non-obvious parts are these. Selection must be global rather than per-beam: taking the best continuation from each beam is a different and weaker algorithm, because it cannot let one strong beam contribute two continuations, which is much of the point. Only the local top b per beam needs to be ranked, since no beam can contribute more than b survivors - a genuine optimisation rather than a shortcut. Scores must be accumulated in log space, because a long product underflows float64 to exactly zero. Finished sequences go to a separate pool rather than staying in the live beam. And it should be said plainly that beam search is a HEURISTIC: the exact argmax requires searching V to the power T sequences, and beam search can prune the true optimum's prefix at any step.",
+        "star_framework_tip": "Volunteer that it is a heuristic before being asked - many candidates assert optimality, so the contrast is noticed.",
+        "common_pitfalls": [
+          "Selecting the top continuation per beam instead of globally across all expansions",
+          "Keeping finished beams in the live set, which shrinks the effective beam width"
+        ],
+        "references": [
+          {
+            "title": "Wu et al. 2016 - Google's Neural Machine Translation System",
+            "url": "https://arxiv.org/abs/1609.08144"
+          },
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          }
+        ]
+      },
+      {
+        "id": "dc_m2",
+        "question": "A beam emits EOS at step 2 of a 20-step search. What exactly happens to it?",
+        "complexity": "Medium",
+        "core_intent": "The most common beam-search bug, and it is invisible in a quick test.",
+        "preparation_guide": "Three required behaviours, each with its own failure mode.",
+        "explanation": "It must be retired, retained, and have its slot freed - three properties, each with a corresponding bug. Retired: stop expanding it. Otherwise it keeps generating past EOS, usually re-emitting EOS, and its score keeps dropping until it loses to worse but shorter candidates. Retained: keep it in the final pool so it competes at the end. Dropping finished beams means the search returns only sequences that ran to max_len, which is precisely the wrong set. Slot freed: the remaining beams should continue at full width. Holding the slot open shrinks the effective beam width every time a beam finishes, so a width-5 search silently becomes width-2 and quality degrades for a reason nobody finds by reading the scoring code. That third property is why implementations keep a separate finished list rather than a flag. The stopping rule: stop when you hold b finished hypotheses and the best live score can no longer beat the worst finished one - valid because scores only decrease with length.",
+        "star_framework_tip": "Enumerate the three properties as three separate bugs - that structure shows you have debugged this, not just written it.",
+        "common_pitfalls": [
+          "Discarding finished beams instead of retiring them to a pool",
+          "Leaving finished beams occupying live slots, silently reducing the beam width"
+        ],
+        "references": [
+          {
+            "title": "Wu et al. 2016 - Google's Neural Machine Translation System",
+            "url": "https://arxiv.org/abs/1609.08144"
+          }
+        ]
+      },
+      {
+        "id": "dc_m3",
+        "question": "How do you test a decoder?",
+        "complexity": "Medium",
+        "core_intent": "Decoders are unusually verifiable and almost nobody exploits it.",
+        "preparation_guide": "Identity tests - each an exact equality rather than an approximation.",
+        "explanation": "By identity, and each of these is an exact equality rather than a tolerance. Beam width 1 must equal greedy decoding EXACTLY, by definition. On a toy vocabulary - four tokens and length four, so 256 sequences - enumerate every sequence by brute force and assert that a sufficiently wide beam finds the true argmax; this is the strongest available test because it checks the entire search against ground truth rather than against intuition. Temperature approaching zero must equal argmax. A top-p of 1.0 must equal untruncated sampling, and a top-k equal to the vocabulary size likewise. For the sampler itself, empirical frequencies over a hundred thousand seeded draws should match the truncated distribution within about three standard errors. What the beam-1 test does NOT catch is anything multi-beam - global versus per-beam selection, finished-beam handling, and cache reordering - which is why the brute-force identity earns its place alongside it.",
+        "star_framework_tip": "Name all the identities in about fifteen seconds, then offer to write the brute-force one - it is the most impressive and the shortest.",
+        "common_pitfalls": [
+          "Judging a decoder by whether its output looks fluent",
+          "Comparing against a larger beam width, which is a different heuristic rather than ground truth"
+        ],
+        "references": [
+          {
+            "title": "Wu et al. 2016 - Google's Neural Machine Translation System",
+            "url": "https://arxiv.org/abs/1609.08144"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "dc_s1",
+        "question": "Is beam search guaranteed to find the most probable sequence?",
+        "complexity": "Hard",
+        "core_intent": "Many candidates assert optimality; the correct answer is no, with a reason.",
+        "preparation_guide": "No - it is a heuristic, and say exactly where the optimum can be lost.",
+        "explanation": "No. Beam search is a heuristic. Finding the exact most probable sequence requires evaluating V to the power T candidates, which is intractable for any realistic vocabulary and length. Beam search keeps only b hypotheses at each step, so if the prefix of the globally optimal sequence ever falls outside the top b at some step, it is pruned permanently and can never be recovered - and that is entirely possible, because a sequence can begin with locally low-probability tokens and become dominant later. Increasing b reduces the chance but never eliminates it, and the search becomes exact only when b is large enough to hold every partial sequence. Two things worth adding: this is testable on a toy vocabulary by brute-force enumeration, and for open-ended generation a wider beam is not even reliably better, because higher-likelihood text tends toward bland repetition.",
+        "star_framework_tip": "Lead with a plain 'no' and then explain where the optimum is lost - hedging here reads as uncertainty about a definite fact.",
+        "common_pitfalls": [
+          "Claiming beam search finds the optimal sequence, or that it does so for sufficiently large beams in practice",
+          "Not being able to say at which step the optimum is lost"
+        ],
+        "references": [
+          {
+            "title": "Wu et al. 2016 - Google's Neural Machine Translation System",
+            "url": "https://arxiv.org/abs/1609.08144"
+          },
+          {
+            "title": "Holtzman et al. 2020 - The Curious Case of Neural Text Degeneration",
+            "url": "https://arxiv.org/abs/1904.09751"
+          }
+        ]
+      },
+      {
+        "id": "dc_s2",
+        "question": "Does a larger beam always produce better output?",
+        "complexity": "Hard",
+        "core_intent": "A counter-intuitive result that distinguishes reading from experience.",
+        "preparation_guide": "No - name the task dependence and the degeneration result.",
+        "explanation": "No, and the direction of the effect depends on the task. For constrained tasks such as translation and summarisation, where there is a genuinely correct output and the model's likelihood is well aligned with quality, larger beams help up to a point and then plateau. For open-ended generation, quality often DEGRADES as the beam widens, because the highest-likelihood text is bland, generic and repetitive - which is Holtzman et al.'s degeneration finding, and the reason sampling methods such as nucleus sampling exist for those tasks at all. The underlying point is that maximising sequence likelihood is not the same as maximising quality, and beam search maximises the former exactly as asked. There is also a mechanical contributor: repeated phrases are locally high-probability, so a wider search finds more of them, which is why n-gram blocking is a common patch. Larger beams also cost latency linearly in b.",
+        "star_framework_tip": "Split the answer by task type first - that framing is what makes the counter-intuitive claim credible.",
+        "common_pitfalls": [
+          "Assuming more search is monotonically better",
+          "Not connecting the effect to the mismatch between likelihood and quality"
+        ],
+        "references": [
+          {
+            "title": "Holtzman et al. 2020 - The Curious Case of Neural Text Degeneration",
+            "url": "https://arxiv.org/abs/1904.09751"
+          },
+          {
+            "title": "Wu et al. 2016 - Google's Neural Machine Translation System",
+            "url": "https://arxiv.org/abs/1609.08144"
+          }
+        ]
+      },
+      {
+        "id": "dc_s3",
+        "question": "How would you batch beam search on a GPU, and what breaks with a KV cache?",
+        "complexity": "Hard",
+        "core_intent": "Separates a toy implementation from someone who has served a model.",
+        "preparation_guide": "The flatten-topk-divmod trick, and cache reordering after beam selection.",
+        "explanation": "Treat the beams as a batch dimension: the model scores all b hypotheses at once, producing a (b, V) matrix of next-token log-probabilities added to the running (b, 1) scores. Flatten that to a single vector of length b times V, take a top-k over it, then recover which beam and which token each winner came from by integer division and modulo against V. That divmod step is what real implementations do, and it makes selection a single fused operation rather than a Python loop. What breaks with a KV cache: each beam has its own cache of past keys and values, and the top-b selection REORDERS the beams - a winner may descend from any previous beam, and one beam may win twice. So the caches must be gathered into the new beam order at every step, using the beam indices from the divmod. Forgetting that gather is a real and painful production bug: generation continues and produces plausible text conditioned on the wrong history.",
+        "star_framework_tip": "Name the divmod trick and the cache gather specifically - those two details are what show serving experience.",
+        "common_pitfalls": [
+          "Batching the beams but forgetting to reorder the KV cache after selection",
+          "Assuming each beam's cache can stay attached to its slot index"
+        ],
+        "references": [
+          {
+            "title": "Wu et al. 2016 - Google's Neural Machine Translation System",
+            "url": "https://arxiv.org/abs/1609.08144"
+          },
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          }
+        ]
+      }
+    ]
+  }
+}

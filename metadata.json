@@ -18,10 +18,10 @@
     "Hands-on experience with the four resume projects this course defends",
     "Comfort with PyTorch and C++ DSA"
   ],
-  "estimated_hours": 59,
+  "estimated_hours": 65,
   "modules": 9,
-  "lessons": 50,
-  "version": "2.0",
+  "lessons": 56,
+  "version": "2.1",
   "delivery_note": "Sessions are generated one at a time. The curriculum lists ONLY delivered content so the portal never points at a file that does not exist yet. Each new session appends a module here. The full 9-session plan lives in README.md.",
   "curriculum": [
     {
@@ -496,14 +496,71 @@
     },
     {
       "module_id": "module_07",
-      "title": "🔒 Session 7: Coding — ML From Scratch",
+      "title": "Session 7: Coding — ML From Scratch",
       "lessons": [
         {
-          "id": "m7_locked",
-          "title": "Locked — not yet generated",
+          "id": "m7_l0",
+          "title": "Session 7 Overview & Scope Brief",
           "defaultMode": "mdx",
           "modes": {
-            "mdx": "tutorial/07_ml_from_scratch/00_locked.md"
+            "mdx": "tutorial/07_ml_from_scratch/README.md"
+          }
+        },
+        {
+          "id": "m7_l1",
+          "title": "Attention From a Blank Editor",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/07_ml_from_scratch/01_attention_from_scratch.md",
+            "notebook": "tutorial/07_ml_from_scratch/ml_from_scratch_lab.ipynb",
+            "interview": "tutorial/07_ml_from_scratch/01_attention_from_scratch_interview_questions.json"
+          }
+        },
+        {
+          "id": "m7_l2",
+          "title": "Losses & Numerical Stability",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/07_ml_from_scratch/02_losses_and_numerical_stability.md",
+            "notebook": "tutorial/07_ml_from_scratch/ml_from_scratch_lab.ipynb",
+            "interview": "tutorial/07_ml_from_scratch/02_losses_and_numerical_stability_interview_questions.json"
+          }
+        },
+        {
+          "id": "m7_l3",
+          "title": "Classical ML From Scratch",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/07_ml_from_scratch/03_classical_ml_from_scratch.md",
+            "notebook": "tutorial/07_ml_from_scratch/ml_from_scratch_lab.ipynb",
+            "interview": "tutorial/07_ml_from_scratch/03_classical_ml_from_scratch_interview_questions.json"
+          }
+        },
+        {
+          "id": "m7_l4",
+          "title": "Decoding & Beam Search From Scratch",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/07_ml_from_scratch/04_decoding_from_scratch.md",
+            "notebook": "tutorial/07_ml_from_scratch/ml_from_scratch_lab.ipynb",
+            "interview": "tutorial/07_ml_from_scratch/04_decoding_from_scratch_interview_questions.json"
+          }
+        },
+        {
+          "id": "m7_l5",
+          "title": "Mock Round: The 45-Minute ML Implementation Round",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/07_ml_from_scratch/05_mock_round.md"
+          }
+        },
+        {
+          "id": "m7_l6",
+          "title": "Session 7 Chapter Quiz",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/07_ml_from_scratch/quiz.md",
+            "interview": "tutorial/07_ml_from_scratch/quiz_interview_questions.json"
           }
         }
       ]
@@ -514,7 +571,7 @@
       "lessons": [
         {
           "id": "m8_locked",
-          "title": "Locked — clear the Session 7 assessment",
+          "title": "Locked — not yet generated",
           "defaultMode": "mdx",
           "modes": {
             "mdx": "tutorial/08_leadership_principles_star/00_locked.md"

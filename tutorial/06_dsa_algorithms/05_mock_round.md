@@ -201,4 +201,4 @@ Coding interviewers occasionally close with a reflective question rather than an
 - Your gap is the most closable one in your map. Ability is evidenced by 700+ problems; the protocol converts in about a week of daily out-loud repetition.
 - **Rehearse the synthesis answer.** "What did all that practice teach you?" is likely for your specific résumé, and the honest version of it is a strong answer.
 
-**Session complete.** Next: the [Chapter Quiz](quiz.md), then [Session 7 — Coding: ML From Scratch](../07_ml_from_scratch/00_locked.md) *(locked)*.
+**Session complete.** Next: the [Chapter Quiz](quiz.md), then [Session 7 — Coding: ML From Scratch](../07_ml_from_scratch/README.md).

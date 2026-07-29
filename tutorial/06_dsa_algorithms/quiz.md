@@ -194,4 +194,4 @@ Note the pairing with the introduction advice: the material is not being hidden,
 
 ---
 
-**Next:** [Mock Round — The 45-Minute Coding Round](05_mock_round.md) if you have not run it, then [Session 7 — Coding: ML From Scratch](../07_ml_from_scratch/00_locked.md) *(locked)*.
+**Next:** [Mock Round — The 45-Minute Coding Round](05_mock_round.md) if you have not run it, then [Session 7 — Coding: ML From Scratch](../07_ml_from_scratch/README.md).

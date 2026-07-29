@@ -1,0 +1,211 @@
+{
+  "lesson_title": "Losses & Numerical Stability",
+  "rehearsal": {
+    "prompt": "Loss implementation rehearsal. Every answer needs the formula AND the verification. Never leave the log domain, and quote the overflow thresholds - they are what make the answer concrete.",
+    "minSeconds": 30,
+    "maxSeconds": 90,
+    "rubric": "mechanism",
+    "questions": [
+      "Implement cross-entropy from logits. Why not softmax then log?",
+      "What is the gradient of softmax cross-entropy with respect to the logits?",
+      "Your four-class classifier starts at loss 4.7. What do you check?",
+      "How do you verify a hand-written gradient?",
+      "Write a numerically stable binary cross-entropy from logits.",
+      "How do you handle class imbalance in the loss?",
+      "Implement label smoothing. What does it buy, and what does it destroy?",
+      "Why cross-entropy and not squared error for classification? Answer with gradients.",
+      "A colleague passes softmax output into CrossEntropyLoss. What happens, and how would you detect it?"
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "ls_j1",
+        "question": "Implement cross-entropy from logits. Why not softmax then log?",
+        "complexity": "Easy",
+        "core_intent": "The most common numerical-stability question in ML interviews.",
+        "preparation_guide": "Give the algebraic identity, then the two failure modes it removes.",
+        "explanation": "Cross-entropy is logsumexp(z) minus z_y, which follows directly from substituting the softmax into -log p_y. Stabilise the logsumexp by subtracting the maximum, which is EXACT rather than approximate because softmax is shift-invariant: the exp(-m) factor cancels identically between numerator and denominator. After the shift, the largest exponent evaluated is exp(0) = 1, so overflow is impossible. The naive path fails twice: exp overflows to infinity above about 88.7 in float32 and 709.8 in float64, and logits of a few hundred are ordinary in an untrained or diverging network; separately, a confidently wrong prediction gives p_y near zero and log(0) is negative infinity. The common patch of log(p + 1e-9) is a bandage on a self-inflicted wound, since the stable form never produces the zero.",
+        "star_framework_tip": "Use the word 'exact' for the max subtraction - it shows you know it does not change the answer.",
+        "common_pitfalls": [
+          "Describing the max subtraction as an approximation or a numerical trick rather than an identity",
+          "Passing softmax output into a framework loss that already fuses log-softmax, applying it twice"
+        ],
+        "references": [
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          },
+          {
+            "title": "PyTorch documentation - torch.nn.CrossEntropyLoss",
+            "url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html"
+          }
+        ]
+      },
+      {
+        "id": "ls_j2",
+        "question": "What is the gradient of softmax cross-entropy with respect to the logits?",
+        "complexity": "Easy",
+        "core_intent": "A two-line derivation the candidate should produce on demand.",
+        "preparation_guide": "Derive it, then give the practical consequences.",
+        "explanation": "It is p minus y. From L = logsumexp(z) - z_y, the derivative of logsumexp with respect to z_i is exactly the softmax probability p_i, and the -z_y term contributes the negative one-hot indicator - so the gradient is p_i minus the indicator that i is the label. Three consequences worth volunteering. It is bounded in [-1, 1], so it cannot explode however wrong the prediction is. It needs no softmax Jacobian - the messy diag(p) minus p p-transpose collapses when fused with the log, which is why frameworks implement a fused operation. And it gives a free sanity check: at initialisation with K balanced classes the probabilities are about 1/K, so the loss should start near log K. If the loss is defined as a mean over the batch, remember to divide the gradient by N as well.",
+        "star_framework_tip": "Derive it rather than stating it - the two-line derivation takes ten seconds and is much stronger than recall.",
+        "common_pitfalls": [
+          "Forgetting the 1/N when the loss is a mean, which makes the effective learning rate scale with batch size",
+          "Attempting to compute the softmax Jacobian separately instead of using the fused result"
+        ],
+        "references": [
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          }
+        ]
+      },
+      {
+        "id": "ls_j3",
+        "question": "Your four-class classifier starts at loss 4.7 on the very first batch. What do you check?",
+        "complexity": "Easy",
+        "core_intent": "Whether the candidate knows the cheapest diagnostic in deep learning.",
+        "preparation_guide": "Compare against log K and name the three bugs that produce a mismatch.",
+        "explanation": "With four balanced classes an untrained model should start near log 4, which is about 1.386, because the softmax is roughly uniform at initialisation. A value of 4.7 is roughly log 110, so the number of effective classes is wrong. The three usual causes: misaligned labels, for instance an off-by-one from one-indexed classes or a wrong axis in the indexing; a double softmax, where probabilities are passed to a loss that applies log-softmax internally; and a wrong class count, such as a vocabulary-sized output layer being used for a four-class task. This check costs one line and should be run before any training, because a wrong-but-decreasing loss curve can look healthy for hours. For an imbalanced dataset the expected value shifts toward the entropy of the class prior rather than log K exactly.",
+        "star_framework_tip": "Quote the number: log 4 is 1.386. A specific expected value is far more convincing than 'it should be small'.",
+        "common_pitfalls": [
+          "Blaming the learning rate or batch size, which affect the trajectory rather than the value at step zero",
+          "Not knowing the expected initial loss for their own task"
+        ],
+        "references": [
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "ls_m1",
+        "question": "How do you verify a hand-written gradient?",
+        "complexity": "Medium",
+        "core_intent": "The verification habit that this whole round is built around.",
+        "preparation_guide": "Central finite differences, with the four details that make the check meaningful.",
+        "explanation": "Central finite differences: (L(z + h) - L(z - h)) / 2h, central rather than forward because the truncation error is O(h squared) instead of O(h). Four details make the check real rather than decorative. Run it in float64, because float32 differencing noise alone can produce 1e-3 relative error on a perfectly correct gradient. Use h around 1e-5, since larger means truncation error dominates and smaller means floating-point cancellation does. Compare RELATIVE error, because 1e-4 absolute is fine at gradient magnitude 100 and catastrophic at 1e-6. Expect a tolerance near 1e-7. The trap to name unprompted is a kink: at a ReLU exactly at zero, or a max whose winner changes between z+h and z-h, the derivative genuinely does not exist and a correct implementation fails legitimately - perturb away from the kink rather than 'fixing' the gradient. It is a unit test on a tiny model, since the cost is one forward pass per parameter.",
+        "star_framework_tip": "Give all four numeric details - dtype, h, relative error, tolerance. Vague answers here sound like reading rather than practice.",
+        "common_pitfalls": [
+          "Running the check in float32 and concluding the gradient is wrong",
+          "Not knowing that a kink produces a legitimate failure"
+        ],
+        "references": [
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          }
+        ]
+      },
+      {
+        "id": "ls_m2",
+        "question": "Write a numerically stable binary cross-entropy from logits.",
+        "complexity": "Medium",
+        "core_intent": "A specific identity that a candidate has either implemented or has not.",
+        "preparation_guide": "Give the max-form identity and say why the residual exponent can only underflow.",
+        "explanation": "The stable form is max(z, 0) - z*y + log1p(exp(-|z|)). Two things make it safe: the max(z, 0) term extracts the dominant part algebraically, and the residual exponent is -|z| which is never positive, so exp can only underflow toward zero and never overflow. log1p then preserves precision when that exponential is tiny, where log(1 + x) would lose it to rounding. The naive form -y log(sigmoid(z)) - (1-y) log(1 - sigmoid(z)) overflows for large positive or negative z. To derive it: for z >= 0 the expression log(1 + exp(-z)) is already safe; for z < 0 factor exp(z) out of log(1 + exp(z)); the two branches unify to the max form. The sigmoid itself needs the same care - branch on the sign so it never exponentiates a positive number.",
+        "star_framework_tip": "Sketch the two-branch derivation rather than reciting the formula - that is what shows it was not memorised.",
+        "common_pitfalls": [
+          "Computing sigmoid first and then taking logs, which reintroduces every overflow the form avoids",
+          "Using log instead of log1p, losing precision when the exponential is tiny"
+        ],
+        "references": [
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          }
+        ]
+      },
+      {
+        "id": "ls_m3",
+        "question": "How do you handle class imbalance in the loss?",
+        "complexity": "Medium",
+        "core_intent": "A practical question that connects directly to the candidate's own dataset.",
+        "preparation_guide": "Weighting before sampling; then connect the loss choice to the metric choice.",
+        "explanation": "Three options, and the ordering matters. Class weighting is the default: scale each example's loss by a per-class weight, which costs nothing and discards no data. Oversampling the minority class is worth it when the imbalance is severe enough that batches often contain none of it. Undersampling the majority is rarely justified, because it throws away signal to fix what is really a loss-weighting problem. Focal loss is a further option that down-weights easy examples, but it adds a hyperparameter and targets the extreme case of many easy negatives, so it should follow a demonstrated need rather than precede it. The point most candidates miss is that the loss choice must be coherent with the METRIC choice: macro-F1 weights every class equally regardless of frequency, so it is the evaluation counterpart of class weighting in the loss. Macro-F1 with a plain unweighted loss is a mismatch an interviewer may probe.",
+        "star_framework_tip": "Connect the loss weighting to the evaluation metric explicitly - that pairing is what makes the answer sound like experience.",
+        "common_pitfalls": [
+          "Reaching for resampling first, when weighting is cheaper and lossless",
+          "Optimising an unweighted loss while reporting a macro-averaged metric, without noticing the mismatch"
+        ],
+        "references": [
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "ls_s1",
+        "question": "Implement label smoothing. What does it buy, and what does it destroy?",
+        "complexity": "Hard",
+        "core_intent": "The cost side of this trade is known by very few candidates.",
+        "preparation_guide": "State the target, the calibration benefit, and the representation cost.",
+        "explanation": "Replace the one-hot target with (1 - eps) on the true class plus eps/K on every class, then compute the same cross-entropy against the soft target. The gradient remains p minus the target, since the derivation never assumed one-hotness. What it buys: a hard one-hot target is only satisfied as the true logit goes to infinity, so the model is pushed toward unbounded confidence forever; smoothing gives a finite optimum, which reduces overconfidence and measurably improves calibration. What it destroys, which is the part few candidates know: Mueller, Kornblith and Hinton found that label smoothing erases information in the penultimate-layer representations about how classes relate to one another - it tightens each class into a tighter cluster and discards the structure encoding that class 2 resembles class 3 more than class 1. The practical consequence is that a smoothed teacher is a WORSE teacher for knowledge distillation, even when it is the more accurate model.",
+        "star_framework_tip": "Lead with the benefit, then say 'and the cost most people do not know' before the distillation finding - it lands harder.",
+        "common_pitfalls": [
+          "Presenting label smoothing as free regularisation with no downside",
+          "Claiming a calibration result on your own data that you never measured"
+        ],
+        "references": [
+          {
+            "title": "Szegedy et al. 2016 - Rethinking the Inception Architecture for Computer Vision",
+            "url": "https://arxiv.org/abs/1512.00567"
+          },
+          {
+            "title": "Mueller, Kornblith & Hinton 2019 - When Does Label Smoothing Help?",
+            "url": "https://arxiv.org/abs/1906.02629"
+          }
+        ]
+      },
+      {
+        "id": "ls_s2",
+        "question": "Why cross-entropy and not squared error for classification? Answer with gradients.",
+        "complexity": "Hard",
+        "core_intent": "Tests whether a standard recommendation can be justified mechanically.",
+        "preparation_guide": "Compare the two gradients in the confidently-wrong regime.",
+        "explanation": "Compare what each gradient does when the model is confidently wrong, because that is the regime where learning matters most. Cross-entropy on logits gives p minus y: bounded in [-1, 1], and at its LARGEST exactly when the prediction is most wrong. Squared error applied to softmax outputs carries an extra factor of p(1-p) from the chain rule through the softmax, and that factor goes to ZERO as p approaches 0 or 1 - so a confidently wrong prediction produces almost no gradient and the model cannot correct itself. That is the argument. Two supporting points: cross-entropy is the negative log-likelihood of a categorical model, so minimising it is maximum likelihood, whereas squared error corresponds to a Gaussian noise model that does not describe class labels; and cross-entropy is convex in the logits of a linear model, though not in the parameters of a deep network - a distinction worth stating precisely.",
+        "star_framework_tip": "Name the p(1-p) factor explicitly and say where it vanishes - that single term is the entire argument.",
+        "common_pitfalls": [
+          "Answering 'because it works better empirically' with no mechanism",
+          "Claiming cross-entropy makes a deep network's objective convex"
+        ],
+        "references": [
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          }
+        ]
+      },
+      {
+        "id": "ls_s3",
+        "question": "A colleague passes softmax output into CrossEntropyLoss. What happens, and how would you detect it?",
+        "complexity": "Hard",
+        "core_intent": "A realistic code-review scenario with a quantifiable signature.",
+        "preparation_guide": "Describe the double softmax, its effect, and the initialisation check that reveals it.",
+        "explanation": "The framework loss fuses log-softmax with negative log-likelihood and expects raw logits, so passing probabilities applies the softmax twice. The second application operates on values already squashed into [0, 1], which are all close together, so the resulting distribution is much flatter than intended. The model still trains, but gradients are attenuated and convergence is slow - the classic symptom is a model that learns, just far more slowly than it should, with no error anywhere. How to detect it: the loss at initialisation is the giveaway. A double softmax over near-uniform probabilities produces a value that does not match log K for the class count, so the log K check catches it immediately. Two supporting checks: inspect the range of the tensor being passed to the loss, since values confined to [0, 1] and summing to one are probabilities rather than logits; and confirm the model's final layer has no activation.",
+        "star_framework_tip": "Give the detection method, not just the diagnosis - the initialisation check is what makes this an answer rather than an observation.",
+        "common_pitfalls": [
+          "Assuming a double softmax would raise an error or produce obviously broken output",
+          "Adding an explicit softmax to the model head 'for clarity' and leaving the fused loss in place"
+        ],
+        "references": [
+          {
+            "title": "PyTorch documentation - torch.nn.CrossEntropyLoss",
+            "url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html"
+          },
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          }
+        ]
+      }
+    ]
+  }
+}

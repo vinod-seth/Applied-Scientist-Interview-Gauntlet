@@ -1,0 +1,215 @@
+{
+  "lesson_title": "Session 7 Chapter Quiz - Coding: ML From Scratch",
+  "rehearsal": {
+    "prompt": "Session-wide implementation rehearsal. Shapes, stability, derivation, verification. Every answer needs a formula or a shape AND the test that would catch it being wrong.",
+    "minSeconds": 35,
+    "maxSeconds": 110,
+    "rubric": "mechanism",
+    "questions": [
+      "What are the silent bugs in ML implementation code, and why do they matter more than crashes?",
+      "Give me a property-based test for three different algorithms.",
+      "NumPy or PyTorch when you are asked to implement something from scratch?",
+      "Your resume says you wrote a transformer from scratch. Write the attention.",
+      "What single rule governs numerical stability across losses and decoding?",
+      "What would you check first in ML code you had never seen before?",
+      "Take me from a loss definition to a verified implementation.",
+      "Which is convex, k-means or logistic regression, and what follows from that?",
+      "What can you honestly claim to have implemented, and what can you not?"
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "q7_j1",
+        "question": "What are the silent bugs in ML implementation code, and why do they matter more than crashes?",
+        "complexity": "Easy",
+        "core_intent": "The framing question for the whole implementation round.",
+        "preparation_guide": "Name concrete silent bugs, then the reason they are worse than exceptions.",
+        "explanation": "A bug in ordinary algorithmic code throws or returns an obviously wrong answer. An ML bug TRAINS. A softmax over the wrong axis, a transposed reshape in multi-head attention, a mask applied after the softmax instead of before, a loss taken on probabilities instead of logits, a missing 1/N in a mean gradient, RoPE applied to values as well as queries and keys - none of these raise. Each produces a slightly worse model, discovered days later if at all, and attributed to hyperparameters rather than to code. That asymmetry is why the follow-up in an implementation round is almost always 'how would you know that's right?', and why property-based tests matter: assert attention rows sum to one, assert the initial loss equals log K, assert k-means inertia never increases. Each of those is one line and each fails loudly on a bug that would otherwise be invisible.",
+        "star_framework_tip": "Give three concrete silent bugs by name before generalising - the specifics are what make the point land.",
+        "common_pitfalls": [
+          "Treating testing as optional in an interview because 'the code is short'",
+          "Assuming a model that trains at all is evidence the implementation is correct"
+        ],
+        "references": [
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          }
+        ]
+      },
+      {
+        "id": "q7_j2",
+        "question": "Give me a property-based test for three different algorithms.",
+        "complexity": "Easy",
+        "core_intent": "Whether verification is a habit or an afterthought.",
+        "preparation_guide": "Pick properties that follow from the objective, not from a known-good reference.",
+        "explanation": "Attention: the attention weights must sum to one along the key axis, which catches a wrong softmax axis; and a leakage test - perturb a later token and assert earlier outputs are unchanged - proves causality. Cross-entropy: at initialisation with K balanced classes the loss must be about log K, which catches label misalignment, a double softmax, and a wrong class count. k-means: the inertia must never increase between iterations, which follows directly from the convergence proof and catches essentially every implementation error for free. Beam search: beam width 1 must equal greedy decoding exactly, and on a toy vocabulary a sufficiently wide beam must match brute-force enumeration of all sequences. The common thread is that each test asserts a PROPERTY implied by the objective, so it needs no known-good reference to compare against - which is exactly what makes it usable on code you just wrote.",
+        "star_framework_tip": "Emphasise that these need no reference implementation - that is what makes them practical in an interview.",
+        "common_pitfalls": [
+          "Proposing only shape assertions, which catch the least dangerous errors",
+          "Relying on comparison against a library, which is unavailable when writing from scratch"
+        ],
+        "references": [
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          },
+          {
+            "title": "Lloyd 1982 - Least Squares Quantization in PCM, IEEE Trans. Inf. Theory 28(2), 129-137",
+            "url": "https://doi.org/10.1109/TIT.1982.1056489"
+          }
+        ]
+      },
+      {
+        "id": "q7_j3",
+        "question": "NumPy or PyTorch when you are asked to implement something from scratch?",
+        "complexity": "Easy",
+        "core_intent": "A clarifying-question habit, and an understanding of what 'from scratch' tests.",
+        "preparation_guide": "Ask, and default to NumPy for anything involving a derivative.",
+        "explanation": "Ask - it is a legitimate clarifying question and it takes three seconds. The default assumption should be NumPy, because if autograd computes the derivative then the derivative has not been demonstrated, and gradients are usually the point of the exercise. Tensor operations, shapes, masking and numerical stability are identical in both, so nothing is lost by writing NumPy. Where a framework is explicitly allowed, say what you are choosing not to use: 'I'll write the backward pass manually rather than relying on autograd, so the derivation is visible.' The related clarification is scope: batched or single example, masked or unmasked, and self-attention only or cross-attention too. Those three answers determine the function signature, so asking them before typing is the beat-1 behaviour from the coding-protocol session.",
+        "star_framework_tip": "Frame it as a clarifying question rather than a preference - that is the behaviour being scored.",
+        "common_pitfalls": [
+          "Using autograd for a question whose point is the gradient derivation",
+          "Starting to type before establishing whether the implementation should be batched"
+        ],
+        "references": [
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "q7_m1",
+        "question": "Your resume says you implemented multi-head attention and RoPE from scratch. Write the attention.",
+        "complexity": "Medium",
+        "core_intent": "The most likely opening of this round for this candidate specifically.",
+        "preparation_guide": "Clarify, state shapes, write it, then verify with the leakage test.",
+        "explanation": "Clarify first: NumPy or a framework, batched or not, causal only or padding masks too. Then state the shape contract - input (B, T, d_model), output the same. The steps: project to Q, K and V; reshape splitting the FEATURE axis into (B, T, H, d_head) and transpose to (B, H, T, d_head); apply RoPE to Q and K only; compute scores as Q times K-transpose over sqrt(d_head), giving (B, H, T, T); add the causal mask as negative infinity BEFORE the softmax; softmax over the last axis; multiply by V; merge heads by transposing back then reshaping; apply the output projection. Then verify without being asked: output shape, attention rows summing to one, equality with the single-head path at n_heads=1, and a leakage test proving positions 0 to 2 are unchanged when token 3 is perturbed. Finish by bounding it: no dropout, no padding mask, no KV cache, so this is a training-time forward pass rather than an inference path.",
+        "star_framework_tip": "Volunteer the leakage test - it proves the property the mask exists for, and almost no candidate offers it.",
+        "common_pitfalls": [
+          "Typing before stating the shape contract, then discovering shapes by running the code",
+          "Finishing the implementation and stopping, without offering any verification"
+        ],
+        "references": [
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          },
+          {
+            "title": "Su et al. 2021 - RoFormer: Enhanced Transformer with Rotary Position Embedding",
+            "url": "https://arxiv.org/abs/2104.09864"
+          }
+        ]
+      },
+      {
+        "id": "q7_m2",
+        "question": "What single rule governs numerical stability across losses and decoding?",
+        "complexity": "Medium",
+        "core_intent": "Tests whether the candidate sees the shared principle or four separate tricks.",
+        "preparation_guide": "Stay in the log domain; exponentiate as late as possible.",
+        "explanation": "Never leave the log domain, and never take the log of something you just exponentiated. It shows up four times. Cross-entropy is logsumexp(z) minus z_y rather than softmax then log, because exp overflows above about 88.7 in float32 and a confident wrong prediction gives log(0). Binary cross-entropy uses max(z, 0) minus z*y plus log1p(exp(-|z|)), so the residual exponent is never positive and can only underflow. Masking writes negative infinity into logits rather than zeroing probabilities, so the softmax renormalises correctly over survivors. And beam search accumulates log-probabilities rather than multiplying probabilities, because a 400-token product underflows float64's 2.2e-308 to exactly zero. The unifying statement is that exponentiation is the only lossy step, so it should happen once, as late as possible, and never be undone by a logarithm.",
+        "star_framework_tip": "Give the four instances quickly, then the unifying sentence - the pattern is what is being tested.",
+        "common_pitfalls": [
+          "Listing the individual tricks without recognising they are one principle",
+          "Patching with epsilon additions instead of restructuring the computation"
+        ],
+        "references": [
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          }
+        ]
+      },
+      {
+        "id": "q7_m3",
+        "question": "What would you check first in ML code you had never seen before?",
+        "complexity": "Medium",
+        "core_intent": "A code-review question that reveals what the candidate believes goes wrong.",
+        "preparation_guide": "Reduction axes, logits versus probabilities, and whether any test could fail.",
+        "explanation": "Three things, in order. First, the reduction axes: every softmax, sum, mean and argmax, checked against what the mathematics says the axis should be. This is where the silent bugs live, because an operation over the wrong axis still produces a correctly shaped tensor. Second, whether the loss consumes logits or probabilities - a double softmax is common, produces no error, and just slows training. Third, and usually the real finding: whether there is a single assertion anywhere in the file that would fail if the algorithm were wrong. Most research code has no test capable of distinguishing a correct implementation from a plausible one. After those, I would check shapes at layer boundaries, whether any epsilon patches are hiding a stability problem rather than solving it, and whether random seeds are set so a failure is reproducible.",
+        "star_framework_tip": "Put the missing-test observation last and name it as the real finding - it is a judgement about the codebase, not just a checklist item.",
+        "common_pitfalls": [
+          "Starting with style or naming rather than correctness",
+          "Reading the training loop before checking the loss and the reduction axes"
+        ],
+        "references": [
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "q7_s1",
+        "question": "Take me from a loss definition to a verified implementation.",
+        "complexity": "Hard",
+        "core_intent": "The full workflow, which is what an implementation round is actually sampling.",
+        "preparation_guide": "Definition, stable rearrangement, gradient, code, then a layered verification.",
+        "explanation": "Five steps. One: write the loss mathematically and identify what it consumes - logits, not probabilities. Two: rearrange it into a numerically stable form before writing any code; for softmax cross-entropy that is logsumexp(z) minus z_y with the max shift, which is exact. Three: derive the gradient analytically - here it is p minus y, in two lines, and remember the 1/N if the loss is a mean. Four: implement, narrating shapes, keeping the reduction axes explicit with keepdims so broadcasting is deliberate rather than accidental. Five: verify in layers - a known-value test that the loss is log K at initialisation with balanced classes; a stability test that logits of magnitude 1e3 give a finite result where the naive form returns inf; a central finite-difference check in float64 at h around 1e-5 with relative error below 1e-7; and a directional check that a small step along the negative gradient decreases the loss, which catches a sign error that finite differences can miss if the negation is consistent. Then bound it: state what it does not handle.",
+        "star_framework_tip": "Present it as five ordered steps and finish on the bounding statement - the structure is what makes this a senior answer.",
+        "common_pitfalls": [
+          "Implementing before rearranging into the stable form, then patching with epsilons",
+          "Treating verification as a single gradient check rather than layered tests"
+        ],
+        "references": [
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          }
+        ]
+      },
+      {
+        "id": "q7_s2",
+        "question": "Which is convex, k-means or logistic regression, and what follows from that?",
+        "complexity": "Hard",
+        "core_intent": "Connects two implementations through the property that explains both.",
+        "preparation_guide": "Logistic regression is convex; k-means is not; derive the practical consequences.",
+        "explanation": "Logistic regression is convex - its Hessian is X-transpose S X with S the diagonal of p_i times (1 - p_i), which is positive semi-definite - so every local optimum is global and initialisation affects only convergence speed, never the destination. k-means is not convex in the assignments; its landscape has genuine local minima and finding the global optimum is NP-hard. What follows practically: k-means needs multiple restarts and careful seeding, which is why implementations expose n_init and why k-means++ exists with its O(log k) expected guarantee before any iteration runs; logistic regression needs neither. Two refinements that strengthen the answer. Convex is not the same as having a finite optimum: on perfectly separable data the logistic weights diverge, and an L2 penalty is what makes the objective strictly convex with a unique finite solution. And convexity here belongs to the linear model - a deep network with a logistic output is not convex in its parameters, so none of this transfers.",
+        "star_framework_tip": "Derive both consequences from the single property rather than listing facts about each algorithm separately.",
+        "common_pitfalls": [
+          "Claiming k-means is convex because each individual step exactly minimises the objective",
+          "Extending the convexity of logistic regression to deep networks"
+        ],
+        "references": [
+          {
+            "title": "Goodfellow, Bengio & Courville 2016 - Deep Learning, MIT Press",
+            "url": "https://www.deeplearningbook.org/"
+          },
+          {
+            "title": "Arthur & Vassilvitskii 2007 - k-means++: The Advantages of Careful Seeding, SODA",
+            "url": "http://theory.stanford.edu/~sergei/papers/kMeansPP-soda.pdf"
+          }
+        ]
+      },
+      {
+        "id": "q7_s3",
+        "question": "What can you honestly claim to have implemented, and what can you not?",
+        "complexity": "Hard",
+        "core_intent": "A calibration question this candidate should expect given the resume claims.",
+        "preparation_guide": "Be specific about depth of experience; never overclaim; name what you would need to verify.",
+        "explanation": "The defensible form of this answer is specific rather than general. For the transformer work: I implemented multi-head attention and rotary position embeddings from scratch, so I can derive the scaling factor from the variance argument, state why RoPE goes on queries and keys only, and reproduce the code in an editor - and I should know which RoPE layout my code used, interleaved pairs or split-half, because they are not interchangeable. For classical models, if I have implemented one from scratch I can derive its objective and its update, but I have not used it at production scale, and saying so is stronger than implying breadth I do not have. For anything I have not written, the honest sentence is 'I have used it but not implemented it, so I can describe the objective but I would want to check the update rule before claiming the derivation.' An interviewer can verify implementation claims live, which is exactly why they must be true - a claim that collapses under a follow-up costs more than the claim was worth.",
+        "star_framework_tip": "Give one concrete, checkable detail for a claim you DO make - specificity is what makes honesty credible rather than modest.",
+        "common_pitfalls": [
+          "Claiming familiarity with algorithms never implemented, in a round designed to test exactly that",
+          "Over-hedging to the point of underselling work that was genuinely done from scratch"
+        ],
+        "references": [
+          {
+            "title": "Su et al. 2021 - RoFormer: Enhanced Transformer with Rotary Position Embedding",
+            "url": "https://arxiv.org/abs/2104.09864"
+          },
+          {
+            "title": "Vaswani et al. 2017 - Attention Is All You Need",
+            "url": "https://arxiv.org/abs/1706.03762"
+          }
+        ]
+      }
+    ]
+  }
+}

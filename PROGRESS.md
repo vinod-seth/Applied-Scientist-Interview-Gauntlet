@@ -43,9 +43,19 @@ SESSION 5 — LLMs & RETRIEVAL
 
                                                 SESSION 8 — LP & STAR
 SESSION 7 — ML FROM SCRATCH                     ├─ [ ] Story bank (12 stories)
-├─ [ ] Attention from blank editor              ├─ [ ] STAR with quantified results
-├─ [ ] Classic ML from blank editor             ├─ [ ] Failure/conflict sourcing
-└─ [ ] MOCK ROUND: Whiteboard                   └─ [ ] MOCK ROUND: Behavioral
+├─ [ ] Attention + shapes, from blank editor    ├─ [ ] STAR with quantified results
+├─ [ ] The √d_k variance argument               ├─ [ ] Failure/conflict sourcing
+├─ [ ] Masking: −∞ before the softmax           └─ [ ] MOCK ROUND: Behavioral
+├─ [ ] RoPE + the relative-position proof
+├─ [ ] Cross-entropy from logits (log-sum-exp)
+├─ [ ] ∇ = p − y, derived
+├─ [ ] Finite-difference gradient check
+├─ [ ] Label smoothing: gain and cost
+├─ [ ] k-means + monotone-inertia proof
+├─ [ ] Convex vs non-convex (logreg vs k-means)
+├─ [ ] Beam search in log space
+├─ [ ] Decoder identity tests
+└─ [ ] MOCK ROUND: Implementation
 
 SESSION 9 — MOCK LOOP
 └─ [ ] FINAL MOCK LOOP: all four rounds
@@ -156,3 +166,20 @@ These are **your own rehearsal measurements**, not lab outputs. Take them from a
 | Beats completed out of 5 | [FILL] | |
 | Verified LeetCode solved count (from your profile) | [FILL] | |
 | ⚠️ Permitted coding language, per recruiter | [FILL] | |
+
+### Session 7 — Implementation Self-Audit
+
+Claim Vault #8 and #9 are the only résumé claims an interviewer can verify **in the room**. Fill these from your own repository, not from memory — Reflection prompt 1 in the Session 7 quiz walks the audit.
+
+| Slot | Value from your code | Source (file + line) |
+|---|---|---|
+| ROPE model: layers / heads / d_model / d_head | [FILL] | |
+| RoPE layout used: interleaved pairs or split-half | [FILL] | |
+| Did you remember the layout correctly before checking? (y/n) | [FILL] | |
+| Is RoPE applied anywhere to V? (y/n) | [FILL] | |
+| Pre-LN or Post-LN, and where exactly the norm sits | [FILL] | |
+| Softmax axis in your attention (key axis?) | [FILL] | |
+| Any assertion in the file that would fail if it were wrong | [FILL] | |
+| Loss computed from logits or from probabilities | [FILL] | |
+| Blank-editor time: attention + RoPE, unaided | [FILL] | |
+| Were the clustered embeddings L2-normalised? (Claim Vault #10) | [FILL] | |

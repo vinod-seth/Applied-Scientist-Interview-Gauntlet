@@ -2,6 +2,36 @@
 
 All notable changes to this course are documented here. Versioning follows `MAJOR.MINOR`.
 
+## [2.1] — 2026-07-29
+
+### Added
+- **Session 7 — Coding: ML From Scratch** (`tutorial/07_ml_from_scratch/`), replacing its locked stub. Built from two dossier findings rather than from the topic name. First, **Claim Vault #8 and #9** — *"custom Pre-LayerNorm Transformer encoder from scratch"* and *"Implemented RoPE and Multi-Head Attention"* — are the only résumé claims an interviewer can verify **in the room**: every other number is defended with words, these are defended by typing. Second, **Gap #5** (*ML breadth outside NLP untested*, priority 16.2), which an implementation round probes by asking for a classical model. The session's stated failure mode is what separates it from Session 6: a DSA bug throws, an **ML bug trains** — so every drill ends in *"how would you know that's right?"*
+  - Session README with the scope brief framed as "the version everyone gives vs. the version that scores", the Claim Vault table explaining why this round is different, and the four practice rules (blank editor, say every shape, write the test first, NumPy not autograd).
+  - Lesson 1: Attention From a Blank Editor — the four shape transitions, the $\sqrt{d_k}$ **variance derivation** rather than folklore, masking as $-\infty$ before the softmax with the all-masked-row `NaN` case, the mandatory multi-head transpose, and RoPE with the one-line orthogonality argument for why relative position emerges.
+  - Lesson 2: Losses & Numerical Stability — "never leave the log domain" stated once and applied four times: `logsumexp(z) - z_y` with the exact max shift and the fp32 overflow threshold of ~88.7, $\nabla_z L = p - y$ derived in two lines, the finite-difference check with dtype/$h$/tolerance/kink caveat, stable BCE-with-logits, and label smoothing with **both** the calibration gain and the distillation cost from Müller et al.
+  - Lesson 3: Classical ML From Scratch — k-means with the monotone-inertia **termination proof** and the explicit statement that termination is not optimality, k-means++ with its $O(\log k)$ guarantee *before any iteration runs*, logistic regression with the $X^\top S X$ Hessian showing why it needs no restarts, the separable-data divergence, and three regimes where k-means is the wrong model.
+  - Lesson 4: Decoding & Beam Search From Scratch — the temperature-then-truncate order of operations and why reversing it changes the distribution, log space justified by the float64 underflow arithmetic, global versus per-beam selection, length normalisation as an admitted calibrated correction, the three separate finished-beam bugs, and the identity tests that make decoders unusually verifiable.
+  - Lesson 5: Mock Round — a 14-question rapid round plus **three timed set-pieces with full five-beat transcripts** (the résumé attention question; loss and gradient with the verification as half the answer; beam search with a proof), a 15-row self-assessment, and a synthesis answer on what the four implementations have in common.
+  - Chapter quiz (12 questions + 2 reflection prompts, one of which is a **self-audit of the candidate's own transformer code** against what they just wrote) and five interview suites (junior/mid/senior, 3 each) totalling **45 questions**, each carrying a `rehearsal` block.
+  - Armory notebook `ml_from_scratch_lab.ipynb` (CPU-only, NumPy + Matplotlib, ~13 s end to end, **35 assertions**): attention checked against a naive triple loop, the leakage test proving causality, RoPE norm preservation and the relative-position identity, the $\sqrt{d_k}$ variance law measured across five head dimensions, $\log K$ verified at three class counts, the stable-versus-naive overflow contrast at $|z| \sim 10^3$, finite-difference gradient checks at $10^{-9}$ relative error, label smoothing's finite optimum plotted, monotone inertia asserted across six seeds, k-means++ against uniform seeding over 30 restarts, separable-data weight divergence tabulated against iteration budget, sampler identity tests, and **beam search against brute-force enumeration of all 256 sequences on a table where greedy is deliberately suboptimal**.
+
+### Changed
+- README course map: Session 7 marked delivered; version bumped to 2.1.
+- PROGRESS.md: Session 7's thirteen core topics replace the three placeholders, plus a **Session 7 Implementation Self-Audit** vault for the Claim Vault #8/#9 re-implementation check.
+- metadata.json: `module_07` unlocked with seven lessons and per-lesson modes; lesson count 50 → 56; estimated hours 59 → 65. The Session 8 stub's title no longer refers to "clearing" the Session 7 assessment, matching the de-gaming already applied elsewhere.
+- Session 6's mock round, quiz and Lesson 4 now link forward to the Session 7 README instead of the deleted locked stub.
+- **Guideline 05 §1 volume:** concept checks raised to **3 questions per lesson** (12 across the four lessons) so the chapter carries **24 distinct questions** against the 20 minimum, up from exactly 20 in Session 6.
+- **Python guideline §4.3 Colab badges:** every lesson markdown in this session carries an "Open in Colab" badge under its title, as required for any lesson paired with a notebook under `modes`. Earlier sessions place the badge only in the session README — a pre-existing deviation, now corrected going forward rather than retrofitted.
+- **Guideline 02 §6 hands-on labs:** each lesson ends with an explicit **🔷 Blank-Editor Drill** — a timed implementation task plus the four tests to write — rather than leaving the practice task implicit in the drill cards.
+
+### Removed
+- `tutorial/07_ml_from_scratch/00_locked.md`.
+
+### Known deviations (deliberate, recorded for reviewers)
+- **Colab badges not retrofitted to Sessions 1–6 lessons.** Correcting forward avoids a large diff across delivered content; the session READMEs already carry the badge and link, so no notebook is unreachable.
+- **Interview-suite count is 45, not 54** — four lessons plus the quiz, as in Sessions 4 and 6. The per-suite structure is unchanged.
+- Carried forward and still applicable: no `companies` tags on interview questions (`interview_prep` §9 overrides generic guideline 05 for Resume-to-Offer courses); no mixed-audience Lesson Roadmap table; uniform drill-card skeleton across lessons; and guideline 05 §5's cumulative final assessment and capstone rubric remain Session 9's deliverables.
+
 ## [2.0] — 2026-07-29
 
 Major bump because the course crosses a boundary here: Sessions 1–5 prepared the **knowledge** rounds, where the score comes from what you can derive. Sessions 6–7 prepare the **coding** rounds, where the score comes from what is audible while you build. The lesson shape is unchanged; what is being trained is not.
