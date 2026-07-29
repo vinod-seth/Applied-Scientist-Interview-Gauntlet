@@ -2,6 +2,35 @@
 
 All notable changes to this course are documented here. Versioning follows `MAJOR.MINOR`.
 
+## [2.0] — 2026-07-29
+
+Major bump because the course crosses a boundary here: Sessions 1–5 prepared the **knowledge** rounds, where the score comes from what you can derive. Sessions 6–7 prepare the **coding** rounds, where the score comes from what is audible while you build. The lesson shape is unchanged; what is being trained is not.
+
+### Added
+- **Session 6 — Coding: DSA & Algorithms** (`tutorial/06_dsa_algorithms/`), replacing its locked stub. This session is written against the candidate's own audit rather than against a generic syllabus: Chapter 2 scored Coding **4/5** — the highest technical dimension — and Chapter 5 listed "grind LeetCode volume" under **things not to do**, because *the gap is protocol, not ability* (Gap #8). So the session teaches no new algorithms. It trains making the solving **visible**, and its stated failure mode is the one fluency causes: recognising a pattern in four seconds and typing, which skips two scored beats.
+  - Session README with the scope brief framed as "the version everyone gives vs. the version that scores", the five-beat diagram, and the practice rules (speak everything, always on a timer, in the loop language).
+  - Lesson 1: The Five Beats — clarify, approach, narrate, test, optimize, with each beat mapped to the **evidence it produces for a hiring debrief**. Includes the two-or-three-clarifying-questions rule off three axes, the four-part approach statement that *ends in a question*, narrating invariants rather than syntax, "let me test it" instead of "done", and a four-move recovery script for being wrong at minute 25.
+  - Lesson 2: From Constraints to Pattern — the bound-to-complexity ladder with the arithmetic said out loud ($n \le 2\times10^5$ with $O(n^2)$ is $4\times10^{10}$ operations), ten pattern families each paired with **the invariant that makes it correct**, the sliding-window/two-pointer/prefix-sum distinction and the silent failure negatives cause, and four reduction moves for problems that match nothing.
+  - Lesson 3: Complexity & Correctness You Can Defend — the complexity of *your code* including the costs Python and C++ hide in their containers, the three proof shapes (loop invariant, exchange argument, monotone predicate), heap vs sort vs quickselect with the streaming argument, amortised versus average-case stated precisely, and binary search's two independent hazards.
+  - Lesson 4: Test Design & the AS-Flavoured Problem Set — four test classes tied to invariants (with **inversion** named as the class that catches real bugs), six bug classes including the aliasing trap that returns a wrong answer in idiomatic code, and the data-scale problems an AS interviewer actually picks: streaming top-*k*, reservoir sampling with its telescoping proof, shingle→MinHash→LSH near-duplicate detection with the 51 GB signature arithmetic, and union–find for incremental grouping.
+  - Lesson 5: Mock Round — a 14-question rapid round plus **three timed set-piece problems** with full five-beat model transcripts (a window problem; a top-100-queries problem with an out-of-memory pivot; a minimum-ship-capacity problem whose monotonicity argument is the scored part), a 15-row self-assessment, and a synthesis answer for "what did 700+ problems actually teach you?"
+  - Chapter quiz (12 questions + 2 reflection prompts, one of which asks the candidate to record and measure their own protocol) and five interview suites (junior/mid/senior, 3 each) totalling **45 questions**, each carrying a `rehearsal` block.
+  - Armory notebook `dsa_lab.ipynb` (CPU-only, standard library + NumPy/Matplotlib, no downloads, ~25 s end to end): list-vs-set membership timed to a 2,000× ratio at 16k elements, heap/sort/quickselect timed across six values of *k* showing the heap's advantage disappearing as *k* → *n*, a **differential test** that catches an off-by-one and a non-terminating binary search on random inputs plus a 32-bit overflow simulation, reservoir sampling verified uniform to within ±3 standard errors over 40,000 runs, union–find against BFS-per-edge on identical component sequences (≈650× at 1,200 nodes), MinHash error measured against $\sqrt{J(1-J)/m}$, and a `ProtocolClock` for timing your own out-loud runs.
+
+### Changed
+- README course map: Session 6 marked delivered; version bumped to 2.0.
+- PROGRESS.md: Session 6's ten core topics replace the three placeholders, and a **Session 6 Metric Vault** section added for the candidate's own rehearsal measurements — explicitly marked as recording-derived, since no notebook timing belongs in the Vault.
+- metadata.json: `module_06` unlocked with seven lessons and per-lesson modes; lesson count 44 → 50; estimated hours 54 → 59. The Session 7 stub's title no longer refers to "clearing" the Session 6 assessment, a de-gaming leftover from 1.7.
+- Session 5's mock round now links forward to the Session 6 README instead of the deleted locked stub.
+- Guideline 04 hover definitions: **29 across the four lessons** (7 / 6 / 10 / 6), each ≤25 words, none repeated within a lesson and none inside a heading. Prerequisite vocabulary an advanced ML course may assume — array, hash map, BFS, big-O, brute force — is deliberately left unannotated.
+
+### Removed
+- `tutorial/06_dsa_algorithms/00_locked.md`.
+
+### Known deviations (deliberate, recorded for reviewers)
+- **Interview-suite count is 45, not 54.** The per-suite structure is unchanged (junior/mid/senior × 3); Session 6 has four lessons plus the quiz rather than five plus the quiz, matching Session 4.
+- Carried forward from 1.9 and still applicable: no `companies` tags on interview questions (`interview_prep` §9 overrides generic guideline 05 for Resume-to-Offer courses); no mixed-audience Lesson Roadmap table (single-reader course); uniform drill-card skeleton across lessons; and guideline 05 §5's cumulative final assessment remains Session 9's deliverable.
+
 ## [1.9] — 2026-07-29
 
 Guideline-compliance pass over Session 5, run against all three reference packs after delivery. `interview_prep/01` §8 states that round-prep chapters apply the standard technical-course guidelines in full, and §5's glossary-density exception is scoped to the Chapter 3 tech-stack list only — so generic guidelines 01, 02 and 04 bind here and were not fully met on first delivery.

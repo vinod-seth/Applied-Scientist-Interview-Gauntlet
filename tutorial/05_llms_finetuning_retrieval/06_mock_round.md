@@ -133,4 +133,4 @@ Then the part that decides whether any of it worked: **evaluation in layers.** C
 - The three set-piece questions — design the retrieval system, design the evaluation, spend one 24 GB GPU — are the highest-probability open questions in an applied LLM round.
 - The synthesis arc — **split knowledge from behavior → retrieve for knowledge, adapt for behavior → decode for the task → evaluate in layers** — connects all five lessons, and offering it unprompted is what a strong candidate does.
 
-**Session complete.** Next: the [Chapter Quiz](quiz.md), then [Session 6 — Coding: DSA & Algorithms](../06_dsa_algorithms/00_locked.md) *(locked)*.
+**Session complete.** Next: the [Chapter Quiz](quiz.md), then [Session 6 — Coding: DSA & Algorithms](../06_dsa_algorithms/README.md).

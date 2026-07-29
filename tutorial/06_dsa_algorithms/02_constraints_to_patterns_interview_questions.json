@@ -1,0 +1,203 @@
+{
+  "lesson_title": "From Constraints to Pattern",
+  "rehearsal": {
+    "prompt": "Pattern-selection rehearsal. Read the bound before the problem, and never name a pattern without the invariant that makes it correct. Every answer needs a number or an invariant.",
+    "minSeconds": 30,
+    "maxSeconds": 90,
+    "rubric": "mechanism",
+    "questions": [
+      "The constraints say n is at most 200,000. What have you learned?",
+      "What is a sliding window, and what makes it linear?",
+      "The problem says n is at most 20. What does that suggest?",
+      "Name four patterns together with the invariant that makes each correct.",
+      "Longest subarray summing to exactly k, with negatives allowed. Why is a sliding window wrong?",
+      "Maximum of every fixed-size window: deque or heap?",
+      "You do not recognize the problem at all. What is your method?",
+      "When is binary search on the answer the intended solution, and what must you verify?",
+      "Two patterns both fit the problem. How do you choose, out loud?"
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "cp_j1",
+        "question": "The constraints say n is at most 200,000. What have you learned?",
+        "complexity": "Easy",
+        "core_intent": "Checks whether the candidate reads constraints as design information.",
+        "preparation_guide": "Do the arithmetic out loud, then name the admissible complexity class.",
+        "explanation": "That O(n squared) is dead - 4 x 10^10 operations against a rule of thumb of roughly 10^8 simple operations per second - so the intended solution is O(n) or O(n log n). That single deduction removes most of the pattern space before the problem has even been read: it points at a single pass with a hash map, a sort, a heap, or a sliding window. Saying the arithmetic rather than the folklore is what makes it a derivation: 'n squared at 2 x 10^5 is 4 x 10^10 operations, so that is out' is a much stronger sentence than 'n squared is too slow'.",
+        "star_framework_tip": "Say the multiplication out loud - the number is the evidence that you derived it.",
+        "common_pitfalls": [
+          "Reciting a complexity class without the operation count behind it",
+          "Reading the constraints after designing the solution rather than before"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      },
+      {
+        "id": "cp_j2",
+        "question": "What is a sliding window, and what makes it linear?",
+        "complexity": "Easy",
+        "core_intent": "Tests whether the candidate can state the invariant, not just the mechanic.",
+        "preparation_guide": "Two pointers plus the invariant, and the amortized counting argument for linearity.",
+        "explanation": "Two indices bound a contiguous range. The right index expands the window; whenever the window violates the condition, the left index contracts it until the condition holds again. The invariant is that the window between left and right always satisfies the condition. Linearity comes from an amortized counting argument, not from the loop structure: each element is added exactly once when right passes it and removed at most once when left passes it, so the total work across the whole scan is at most 2n even though the inner contraction loop looks nested. That counting sentence is the answer to the follow-up 'why is that not quadratic', which always comes.",
+        "star_framework_tip": "State the invariant and the enters-once-leaves-once argument in the same breath - together they give correctness and complexity.",
+        "common_pitfalls": [
+          "Describing the two pointers without stating the invariant, which leaves the correctness argument unanswered",
+          "Claiming O(n) because there is one outer loop, without addressing the inner contraction"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      },
+      {
+        "id": "cp_j3",
+        "question": "The problem says n is at most 20. What does that suggest?",
+        "complexity": "Easy",
+        "core_intent": "The reverse reading of constraints - a test for over-engineering.",
+        "preparation_guide": "A small bound is a hint that the intended solution is exponential.",
+        "explanation": "That the intended solution is probably exponential - backtracking, subset enumeration, bitmask dynamic programming, or meet-in-the-middle - because 2^20 is about a million and 2^20 times n squared is still tractable, while no bound that small would be necessary if a polynomial algorithm existed. A suspiciously small bound is a hint, not a mercy. The interviewer is often checking whether you will over-engineer: reaching for a clever polynomial approach that does not exist wastes the clock, and a candidate who says 'n at most 20 means I should consider enumerating subsets' has read the problem the way it was written.",
+        "star_framework_tip": "Say the arithmetic for 2^n at the given bound so the deduction is visible.",
+        "common_pitfalls": [
+          "Assuming a polynomial solution must exist because exponential feels wrong",
+          "Confusing the bound on n with the bound on the values"
+        ],
+        "references": [
+          {
+            "title": "Skiena 2020 - The Algorithm Design Manual, 3rd edition",
+            "url": "https://www.algorist.com/"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "cp_m1",
+        "question": "Name four patterns together with the invariant that makes each correct.",
+        "complexity": "Medium",
+        "core_intent": "The invariant column is the one candidates skip, and it is what the follow-up tests.",
+        "preparation_guide": "Pair each name with one sentence of invariant.",
+        "explanation": "Sliding window: the window always satisfies the condition, and each element enters and leaves at most once - which gives both correctness and linearity. Two pointers: everything outside the current range has been proven not to belong to any better answer. Heap for top-k: the heap holds exactly the best k seen so far and its root is the admission threshold for an arriving element. Binary search on the answer: the feasibility predicate is monotone - false then true - so lo is always infeasible, hi is always feasible, and the boundary is unique. Others worth having ready: union-find, where every element points transitively at its set representative; topological sort, where every emitted node has all prerequisites already emitted; monotonic stack, where anything popped has found its answer and can never be needed again.",
+        "star_framework_tip": "Deliver them as name-plus-invariant pairs; a list of bare names is an incomplete answer here.",
+        "common_pitfalls": [
+          "Naming patterns without invariants, which forces you to reconstruct the correctness argument live",
+          "Confusing the two-pointer and sliding-window invariants, which rest on different assumptions"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      },
+      {
+        "id": "cp_m2",
+        "question": "Longest subarray summing to exactly k, with negatives allowed. Why is a sliding window wrong?",
+        "complexity": "Medium",
+        "core_intent": "The canonical trap - the wrong structure fails silently rather than crashing.",
+        "preparation_guide": "The window invariant requires monotonicity in window size, and negatives destroy it.",
+        "explanation": "Because the window invariant needs the sum to be monotone in window size - growing can only overshoot, shrinking can only bring it back. Negative values destroy that: a longer window can have a smaller sum, so contracting from the left no longer reliably reduces it, and the algorithm silently returns a wrong answer rather than crashing. The sample case usually does not expose it. The replacement is prefix sums with a hash map from prefix value to earliest index: at each position, ask whether prefix minus k has been seen before, and if so the subarray between them sums to k. That is O(n) time and O(n) space, and it is indifferent to sign. This is also why 'can the values be negative?' earns one of the two or three clarifying questions - the answer decides the pattern.",
+        "star_framework_tip": "Name the failure as silent rather than as a crash - that is what makes it dangerous and what shows you have hit it.",
+        "common_pitfalls": [
+          "Proposing to sort the array, which destroys the contiguity the problem requires",
+          "Patching the window with special cases instead of changing structure"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      },
+      {
+        "id": "cp_m3",
+        "question": "Maximum of every fixed-size window: deque or heap?",
+        "complexity": "Medium",
+        "core_intent": "Tests understanding of which operation each structure cannot do cheaply.",
+        "preparation_guide": "Monotonic deque for O(n); explain the heap's specific weakness.",
+        "explanation": "A monotonic deque of indices held in decreasing value. Before pushing a new index, pop every index whose value is smaller - they can never be the maximum again while the new element is in the window - and pop from the front any index that has left the window. Each index is pushed once and popped once, so the total is O(n) and the front is always the current maximum. A heap gives O(n log w) and, more importantly, has a specific structural weakness here: removing an arbitrary element - the one that just expired from the window - is not a heap operation, so you end up lazily deleting stale entries, which works but is strictly more complicated. Prefix sums do not apply at all, because maximum has no inverse operation, so nothing can be subtracted off the back the way a sum can.",
+        "star_framework_tip": "Name why the heap is awkward rather than only that the deque is faster - the reason is the scored part.",
+        "common_pitfalls": [
+          "Claiming a heap cannot solve it, when it can, just at a worse bound and with lazy deletion",
+          "Reaching for prefix sums by analogy with the sum version"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "cp_s1",
+        "question": "You do not recognize the problem at all. What is your method?",
+        "complexity": "Hard",
+        "core_intent": "Whether the candidate has a reduction method or relies on recall.",
+        "preparation_guide": "Four moves, tried out loud in order.",
+        "explanation": "Four moves. (1) Ask what the brute force recomputes - almost every optimization in this domain removes repeated work: a recomputed sum wants prefix sums, a recomputed maximum wants a deque or heap, a recomputed membership test wants a hash set, an overlapping subproblem wants memoization. State the brute force first; it is a complete approach statement and it is where the improvement is found. (2) Change the representation - sort it, reverse it, index by value instead of by position, or solve the complement; a large share of hard problems are easy problems in the wrong coordinates. (3) Model it as a graph - nodes are states, edges are legal moves, after which the pattern is BFS, DFS or topological sort. (4) Binary search the answer - if you cannot compute the optimum but can cheaply test whether a value is achievable, and the test is monotone, search over the answer instead.",
+        "star_framework_tip": "Perform the moves out loud on the actual problem rather than listing them abstractly.",
+        "common_pitfalls": [
+          "Going quiet while searching memory for a similar problem",
+          "Jumping between half-formed ideas without stating any of them"
+        ],
+        "references": [
+          {
+            "title": "Skiena 2020 - The Algorithm Design Manual, 3rd edition",
+            "url": "https://www.algorist.com/"
+          }
+        ]
+      },
+      {
+        "id": "cp_s2",
+        "question": "When is binary search on the answer the intended solution, and what must you verify?",
+        "complexity": "Hard",
+        "core_intent": "Tests the precondition, which is the entire correctness argument.",
+        "preparation_guide": "Monotone feasibility. The phrasing 'minimize the maximum' is close to a giveaway.",
+        "explanation": "When you cannot compute the optimum directly but can cheaply test feasibility of a candidate value, and that test is monotone in the value - feasible for everything above some boundary and infeasible below it. The verification that must be stated is exactly that monotonicity: if capacity x works, every capacity above x works, because every step can carry at least as much. That makes the predicate false-then-true with a unique boundary, findable in O(log R) feasibility checks. The phrasings 'minimize the maximum' and 'maximize the minimum' are close to giveaways, and the feasibility check is usually a simple greedy scan. The common failure is applying the technique to a predicate that flips more than once, where binary search converges to an arbitrary flip rather than the answer.",
+        "star_framework_tip": "State the monotonicity argument as a sentence, not as an assumption - it is the proof the interviewer wants.",
+        "common_pitfalls": [
+          "Coding the search without ever stating why feasibility is monotone",
+          "Getting the search range wrong - the lower bound is usually the largest single item, not zero"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      },
+      {
+        "id": "cp_s3",
+        "question": "Two patterns both fit the problem. How do you choose, out loud?",
+        "complexity": "Hard",
+        "core_intent": "Separates a candidate who picks by habit from one who picks by cost.",
+        "preparation_guide": "Name both, compare on a concrete axis, commit, and say what would change your mind.",
+        "explanation": "Name both, compare them on a concrete axis, then commit - refusing to choose reads as evasion. For example: 'both a heap and a full sort solve this. The sort is O(n log n) and gives me a total ordering I do not need; the size-k heap is O(n log k), uses O(k) memory instead of O(n), and works on a stream, which the sort cannot. I will take the heap.' Then add the condition that would flip it: 'if k were close to n, the heap advantage disappears and I would just sort', or 'if I needed the full ranking later, the sort pays for itself'. Naming the alternative, the axis, the choice, and the switch condition is the senior version of this answer and it takes about fifteen seconds.",
+        "star_framework_tip": "Finish with the condition that would change your choice - that sentence is what distinguishes judgment from preference.",
+        "common_pitfalls": [
+          "Listing both options and leaving the decision to the interviewer",
+          "Choosing the more sophisticated structure for its own sake when the simpler one meets the constraint"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          },
+          {
+            "title": "Skiena 2020 - The Algorithm Design Manual, 3rd edition",
+            "url": "https://www.algorist.com/"
+          }
+        ]
+      }
+    ]
+  }
+}

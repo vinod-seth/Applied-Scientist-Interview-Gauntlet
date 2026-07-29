@@ -1,0 +1,211 @@
+{
+  "lesson_title": "Complexity & Correctness You Can Defend",
+  "rehearsal": {
+    "prompt": "Analysis rehearsal. Every answer needs a bound and the reason for it. State the complexity of the code you actually wrote, including what your language hides, and back correctness with one of the three proof shapes.",
+    "minSeconds": 30,
+    "maxSeconds": 90,
+    "rubric": "mechanism",
+    "questions": [
+      "What is the complexity of your solution, and how did you derive it?",
+      "Why is a heap better than a sort for top-k?",
+      "What does amortized mean?",
+      "What costs does your language hide inside its containers?",
+      "Prove your greedy solution is optimal.",
+      "Is hash-map lookup amortized O(1) or average-case O(1)? Does the distinction matter?",
+      "Can you do better? Give me the complete response.",
+      "Write binary search. What are the two hazards?",
+      "Your O(n) solution benchmarks slower than the O(n squared) one. Explain."
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "cc_j1",
+        "question": "What is the complexity of your solution, and how did you derive it?",
+        "complexity": "Easy",
+        "core_intent": "Checks whether the bound was derived or recalled from the pattern's reputation.",
+        "preparation_guide": "Three passes: loop nesting, cost of each operation inside, recursion depth.",
+        "explanation": "Derive it in three passes. First, loop nesting - how many times does each level run. Second, the cost of each operation inside the loop, which is the pass people skip and where hidden linear costs live. Third, recursion depth for anything recursive. For a typical one-pass solution: 'the outer loop is n, and inside it the hash-map lookup and insert are O(1) on average, so the scan is O(n) time; space is O(n) worst case for the map, which is the trade against the O(1)-space brute force and is what buys the linear time.' Two honesty markers raise the answer: say 'average' for hash containers rather than implying worst case, and say 'amortized' when the bound is amortized rather than per-operation.",
+        "star_framework_tip": "State time and space together, and name what the space buys you.",
+        "common_pitfalls": [
+          "Quoting the textbook complexity of the pattern rather than of the code on the screen",
+          "Ignoring the space bound until asked"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      },
+      {
+        "id": "cc_j2",
+        "question": "Why is a heap better than a sort for top-k?",
+        "complexity": "Easy",
+        "core_intent": "A standard exchange, with three distinct arguments to give.",
+        "preparation_guide": "The bound, the memory, and the streaming argument - in that order.",
+        "explanation": "Three arguments. The bound: a size-k min-heap is O(n log k) against O(n log n) for a full sort, and at n = 10^6 with k = 10 that is about 3.3 comparisons per element against 20. The memory: the heap holds k elements, not n, which matters when n does not fit. And the argument that ends the discussion: you cannot sort a stream - if data arrives continuously and the answer must be available at any moment, the sort is not merely slower, it is unavailable, while a heap peeks in O(1) and updates in O(log k). Use a MIN-heap for the k LARGEST, because its root is the smallest of your current best k and therefore exactly the admission threshold.",
+        "star_framework_tip": "Lead with the numbers, close with the streaming argument - it is the one that cannot be argued against.",
+        "common_pitfalls": [
+          "Inverting the heap type - a max-heap for the k largest is the most common error in this family",
+          "Giving only the asymptotic argument when the memory and streaming arguments are stronger"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      },
+      {
+        "id": "cc_j3",
+        "question": "What does amortized mean?",
+        "complexity": "Easy",
+        "core_intent": "Tests whether a common word is understood precisely.",
+        "preparation_guide": "Cost averaged over a sequence of operations, as a worst-case guarantee.",
+        "explanation": "It means the cost of an operation averaged over a whole sequence of operations, so an occasional expensive step is charged against the many cheap ones - and it is a worst-case guarantee, with no probabilistic assumption about inputs. The canonical example is a dynamic array: most pushes are O(1), a push that triggers a resize copies everything, but because the capacity doubles, the total copying across n pushes is a geometric series bounded by 2n, so each push is O(1) amortized. Union-find with path compression and union by rank is the other standard example, at O(alpha(n)) amortized per operation.",
+        "star_framework_tip": "Give the geometric-series reason for the dynamic array rather than asserting the result.",
+        "common_pitfalls": [
+          "Using amortized and average-case interchangeably - they are different guarantees",
+          "Claiming a single operation is fast when the guarantee is only over a sequence"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "cc_m1",
+        "question": "What costs does your language hide inside its containers?",
+        "complexity": "Medium",
+        "core_intent": "A practical trap that invalidates complexity claims in code that looks correct.",
+        "preparation_guide": "Name concrete operations in the language you will use in the loop.",
+        "explanation": "In Python: 'x in my_list' is a linear scan, so a loop containing it is O(n squared) - use a set; 's += char' in a loop rebuilds the string, also O(n squared) - collect into a list and join once; and slicing copies, so recursing on slices turns an O(n) recursion into O(n squared) time and space. In C++: std::map is a balanced tree at O(log n) while std::unordered_map is O(1) average - use the latter unless ordered iteration is required; and v.insert(v.begin(), x) shifts every element, so use a deque or push to the back and reverse once. Also worth knowing: Python's sort is Timsort, which is stable and linear on already-sorted runs; C++ std::sort is introsort and is not stable, so std::stable_sort is the one to use when ties carry meaning.",
+        "star_framework_tip": "Name the container, not just the operation - the cost belongs to the container choice.",
+        "common_pitfalls": [
+          "Claiming a complexity that the container silently invalidates",
+          "Assuming a hash container is worst-case O(1) rather than average-case"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          },
+          {
+            "title": "Peters - listsort.txt, the Timsort design note in the CPython source",
+            "url": "https://github.com/python/cpython/blob/main/Objects/listsort.txt"
+          }
+        ]
+      },
+      {
+        "id": "cc_m2",
+        "question": "Prove your greedy solution is optimal.",
+        "complexity": "Medium",
+        "core_intent": "Whether the candidate reaches for the right proof shape.",
+        "preparation_guide": "Exchange argument: swap the greedy choice into any optimal solution without loss.",
+        "explanation": "Use an exchange argument. Take any optimal solution and show its first choice can be replaced by the greedy choice without making it worse, then induct on the rest. For interval scheduling: sort by end time and always take the earliest-ending compatible interval. Suppose an optimal schedule takes a different first interval; its end time is no earlier than the greedy one's, so replacing it with the greedy interval cannot conflict with anything the optimal schedule takes later. The count is unchanged and the schedule remains valid, so an optimal solution exists that begins with the greedy choice. The companion skill is showing a greedy is wrong, which is done with a counterexample - coin change with denominations 1, 3 and 4 at amount 6 gives 4 + 1 + 1 greedily against an optimum of 3 + 3.",
+        "star_framework_tip": "Say the words 'exchange argument' and then perform it - naming the shape signals you have a method, not an intuition.",
+        "common_pitfalls": [
+          "Asserting the greedy is obviously right without an argument",
+          "Reaching for a loop invariant, which is the shape for scans rather than for greedy choices"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      },
+      {
+        "id": "cc_m3",
+        "question": "Is hash-map lookup amortized O(1) or average-case O(1)? Does the distinction matter?",
+        "complexity": "Medium",
+        "core_intent": "A discriminating question that separates precise vocabulary from approximate vocabulary.",
+        "preparation_guide": "Average-case. Amortized is a worst-case guarantee over a sequence; average-case assumes a distribution.",
+        "explanation": "Average-case, and the distinction matters. Amortized is a worst-case guarantee averaged over a sequence of operations, holding for every input with no probabilistic assumption - a dynamic-array push is amortized O(1) because doubling makes the total copy work a geometric series. Average-case is over a distribution of inputs and can be defeated adversarially: an attacker who can choose keys that collide degrades a hash map to O(n) per lookup, which is a real denial-of-service class and the reason production hash tables randomize their seed. In an interview, saying 'O(1) average for the hash map, and amortized O(1) for the vector push' in one sentence is a small precision that reads as depth.",
+        "star_framework_tip": "State both definitions in one sentence each, then give the adversarial example - it makes the difference concrete.",
+        "common_pitfalls": [
+          "Treating the two as synonyms, which is the point of the question",
+          "Claiming worst-case O(1) for a hash container"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "cc_s1",
+        "question": "Can you do better? Give me the complete response.",
+        "complexity": "Hard",
+        "core_intent": "Beat 5 is a trade conversation, not an instruction to rewrite.",
+        "preparation_guide": "Four parts, then offer rather than proceed.",
+        "explanation": "Four parts. (1) State the current bound and the bottleneck operation - 'it is O(n squared), and the inner loop is re-scanning for a matching complement'. (2) Name the structure that removes it - 'a hash map of value to index removes that scan'. (3) State the new bound and what it costs - 'that is O(n) time but O(n) extra space, and it gives up running in place'. (4) Say what would settle it in production - 'if memory were the binding constraint I would sort and use two pointers, O(n log n) time and O(1) space, and I would measure peak resident memory against latency at the real input size'. Then offer: 'shall I code the hash-map version?'. Two failure modes to avoid: rewriting unilaterally, which can replace correct code with unfinished code at minute 35 when the interviewer only wanted the analysis, and optimizing before a correct baseline exists.",
+        "star_framework_tip": "End on the offer. Proceeding without it is the mistake the question is probing for.",
+        "common_pitfalls": [
+          "Starting to rewrite immediately rather than answering the question that was asked",
+          "Giving a faster bound with no statement of what it costs"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      },
+      {
+        "id": "cc_s2",
+        "question": "Write binary search. What are the two hazards?",
+        "complexity": "Hard",
+        "core_intent": "The algorithm everyone knows and many write wrong under a clock.",
+        "preparation_guide": "Midpoint overflow and the boundary template - they are independent.",
+        "explanation": "Hazard one, the midpoint: (lo + hi) / 2 overflows when the sum exceeds the maximum of a fixed-width integer type. Bloch documented this in 2006 as a bug that had survived nine years in the Java standard library and decades in published textbooks; write lo + (hi - lo) / 2. Python's arbitrary-precision integers make it impossible, and knowing why it does not apply is stronger than not knowing the hazard exists. Hazard two, the loop condition: fix one template and never mix them. 'while lo <= hi' for an exact match, with the invariant that the target, if present, lies inside [lo, hi], returning -1 when the range empties. 'while lo < hi' for a boundary search, with the invariant that hi is always feasible and lo may not be, returning lo when they meet. The infinite loop comes from a boundary search where mid rounds down and the update is lo = mid; either use lo = mid + 1 or bias the midpoint upward.",
+        "star_framework_tip": "Name both hazards as independent - a candidate who fixes only one usually does not know the other exists.",
+        "common_pitfalls": [
+          "Mixing the two templates within one implementation, which is where most off-by-one bugs come from",
+          "Failing to state the monotonicity precondition when searching over answers rather than over an array"
+        ],
+        "references": [
+          {
+            "title": "Bloch 2006 - Extra, Extra - Read All About It: Nearly All Binary Searches and Mergesorts are Broken",
+            "url": "https://research.google/blog/extra-extra-read-all-about-it-nearly-all-binary-searches-and-mergesorts-are-broken/"
+          },
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      },
+      {
+        "id": "cc_s3",
+        "question": "Your O(n) solution benchmarks slower than the O(n squared) one. Explain.",
+        "complexity": "Hard",
+        "core_intent": "Tests whether the candidate knows what asymptotic analysis does not capture.",
+        "preparation_guide": "Constant factors, memory locality, and the crossover point.",
+        "explanation": "Because asymptotic analysis discards exactly the things that dominate at small n: constant factors and memory locality. A contiguous array scan reads sequential cache lines and prefetches perfectly, while a hash-map solution hashes every key, chases pointers into scattered memory, and may allocate during the loop - so its constant factor can be an order of magnitude larger. Below the crossover point, the quadratic scan wins; above it, the linear solution wins by an unbounded margin. The right response is empirical rather than argumentative: measure both at the real input size, and if the inputs are genuinely small and bounded, the simpler algorithm may be the correct engineering choice. This is also why quickselect with poor pivots and cache-oblivious layouts behave so differently from their bounds in practice.",
+        "star_framework_tip": "Frame the answer as a measurement question, not a debate - naming the crossover point is the senior move.",
+        "common_pitfalls": [
+          "Insisting the asymptotically better algorithm must be faster",
+          "Concluding that complexity analysis is useless rather than that it answers a different question"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          },
+          {
+            "title": "Hoare 1961 - Algorithm 65: Find, Communications of the ACM 4(7), 321-322",
+            "url": "https://doi.org/10.1145/366622.366647"
+          }
+        ]
+      }
+    ]
+  }
+}

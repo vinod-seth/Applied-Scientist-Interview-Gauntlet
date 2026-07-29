@@ -1,0 +1,207 @@
+{
+  "lesson_title": "Session 6 Chapter Quiz - Coding: DSA & Algorithms",
+  "rehearsal": {
+    "prompt": "Session-wide rehearsal. Half protocol, half algorithms. Answer as you would in the round - out loud, with a number or an invariant in every answer, then stop and invite the follow-up.",
+    "minSeconds": 35,
+    "maxSeconds": 110,
+    "rubric": "mechanism",
+    "questions": [
+      "Why does the coding round score protocol and not just correctness?",
+      "Give me the ladder from an input bound to an admissible complexity class.",
+      "For the k largest elements: min-heap or max-heap, and why?",
+      "You have solved 700+ practice problems. What do you do differently now?",
+      "Name the three correctness proof shapes and when each applies.",
+      "Which language will you use in the round, and how do you decide?",
+      "Minimum ship capacity to deliver packages in D days. Design it, including the monotonicity argument.",
+      "Top 100 queries from a ten-million-line log. Full protocol, including the out-of-memory pivot.",
+      "What is the honest weakness in your coding profile, and what have you done about it?"
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "q6_j1",
+        "question": "Why does the coding round score protocol and not just correctness?",
+        "complexity": "Easy",
+        "core_intent": "Whether the candidate understands what the round is measuring.",
+        "preparation_guide": "The interviewer produces evidence for a debrief; each beat is a different piece of it.",
+        "explanation": "Because the interviewer is not marking a submission - they are producing evidence for a hiring debrief, and each beat supplies a different piece. Clarifying shows how ambiguity is handled; the approach statement shows design before building and awareness of cost; narration shows whether the reasoning is legible and whether the candidate can be steered; testing shows ownership of correctness; the optimization exchange shows whether trade-offs can be held without over-engineering. Correct code establishes only that the code is correct. In real work, an engineer who cannot explain a design, cannot be corrected, and does not test is a liability regardless of whether their code compiles - the round is measuring that, and the algorithm problem is only the vehicle.",
+        "star_framework_tip": "Frame it as evidence collection rather than as etiquette - that framing is what makes the answer sound informed.",
+        "common_pitfalls": [
+          "Treating protocol as a soft skill rather than as the substance of the scoring",
+          "Assuming a fast correct answer makes the other beats unnecessary"
+        ],
+        "references": [
+          {
+            "title": "Amazon - Leadership Principles (official list)",
+            "url": "https://www.amazon.jobs/content/en/our-workplace/leadership-principles"
+          }
+        ]
+      },
+      {
+        "id": "q6_j2",
+        "question": "Give me the ladder from an input bound to an admissible complexity class.",
+        "complexity": "Easy",
+        "core_intent": "A recall question that should be instant and quantitative.",
+        "preparation_guide": "State the ladder and the operations-per-second rule of thumb behind it.",
+        "explanation": "Working from a rule of thumb of roughly 10^8 simple operations per second: n up to about 12 admits O(n!); n up to 20 to 25 admits O(2^n times n), which means backtracking, subset enumeration, bitmask DP or meet-in-the-middle; n up to 500 admits O(n cubed); n up to 5,000 admits O(n squared); n up to 10^6 admits O(n log n) or O(n) - sorting, heaps, sliding windows, hashing, one-pass scans; and n up to 10^18 admits only O(log n) or O(sqrt n), meaning binary search, number theory or matrix exponentiation. The reverse reading matters as much: a suspiciously small bound is a hint that the intended solution is exponential, and the interviewer may be checking whether you will over-engineer.",
+        "star_framework_tip": "Say the operation count for the specific bound you are given, not just the class.",
+        "common_pitfalls": [
+          "Reciting the ladder without the operations-per-second reasoning that generates it",
+          "Ignoring the reverse reading, which is where the hint usually lives"
+        ],
+        "references": [
+          {
+            "title": "Skiena 2020 - The Algorithm Design Manual, 3rd edition",
+            "url": "https://www.algorist.com/"
+          }
+        ]
+      },
+      {
+        "id": "q6_j3",
+        "question": "For the k largest elements: min-heap or max-heap, and why?",
+        "complexity": "Easy",
+        "core_intent": "The single most commonly inverted detail in the streaming family.",
+        "preparation_guide": "Min-heap. The root is the admission threshold.",
+        "explanation": "A min-heap of size k. Its root is the smallest of the current best k, which is exactly the threshold an arriving element must beat: if the new element is larger than the root, pop the root and push the new element; otherwise discard it. That gives O(n log k) overall and O(k) memory. A max-heap of size k would put the largest element at the root - the one you least want to evict - leaving no cheap way to remove the weakest member. The mirror rule: k smallest needs a max-heap. And if the query is one-shot on an array you may reorder, quickselect finds the k-th largest in O(n) average time by partitioning and recursing into only one side.",
+        "star_framework_tip": "State the mirror rule too - it demonstrates the principle rather than a memorized case.",
+        "common_pitfalls": [
+          "Inverting the heap type",
+          "Forgetting that quickselect is the better answer for a one-shot in-memory query"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          },
+          {
+            "title": "Hoare 1961 - Algorithm 65: Find, Communications of the ACM 4(7), 321-322",
+            "url": "https://doi.org/10.1145/366622.366647"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "q6_m1",
+        "question": "You have solved 700+ practice problems. What do you do differently now?",
+        "complexity": "Medium",
+        "core_intent": "Directly likely for this candidate - converts volume into evidence of method.",
+        "preparation_guide": "Three causal changes, none of which is 'know more patterns', plus the honest limit.",
+        "explanation": "Three changes. First, read the constraints before the problem - the bound eliminates most of the design space before the structure has been considered at all, and a suspiciously small bound is a hint in the other direction. Second, stop separating the pattern from its invariant: saying 'sliding window, because each element enters and leaves once and the window is always valid' is simultaneously the correctness argument and the complexity argument, and it immediately reveals when the pattern does not apply - the moment negative values are allowed, the monotonicity assumption fails and prefix sums are needed instead. Third, design the test cases before writing code, in four classes, because tests written afterwards test whatever the code happens to do. And the honest limit: practice sites score a submission while an interview scores a transcript, so solving quickly and silently produces no evidence of handling ambiguity or being steerable - that is a separate skill and it has to be drilled separately.",
+        "star_framework_tip": "Make it causal rather than a list, and include the honest limit - it pre-empts the concern the question is really about.",
+        "common_pitfalls": [
+          "Answering with a list of patterns learned, which reinforces the competitive-programmer frame",
+          "Claiming competitive practice makes you a better scientist, which is an overclaim and will be treated as one"
+        ],
+        "references": [
+          {
+            "title": "Skiena 2020 - The Algorithm Design Manual, 3rd edition",
+            "url": "https://www.algorist.com/"
+          }
+        ]
+      },
+      {
+        "id": "q6_m2",
+        "question": "Name the three correctness proof shapes and when each applies.",
+        "complexity": "Medium",
+        "core_intent": "Whether the candidate has a method for correctness arguments or improvises them.",
+        "preparation_guide": "Loop invariant for scans, exchange argument for greedy, monotone predicate for answer search.",
+        "explanation": "Loop invariant, for iterative scans such as sliding windows, two pointers and monotonic stacks: three slots - it holds at entry, each iteration preserves it, and the exit condition together with the invariant gives the answer. Exchange argument, for greedy algorithms: take any optimal solution, show the greedy choice can be swapped in without making it worse, then induct. Monotone predicate, for binary search over answers: show feasibility flips exactly once, false then true, so the boundary is unique and findable in logarithmically many checks. Dynamic programming is a fourth, and it is induction on subproblem size - the recurrence is correct if each state is computed only from strictly smaller states that are themselves optimal, which is the optimal-substructure property. If the clock is tight, name the shape and give the key line; one sentence in the right shape is what is being asked for, not a formal proof.",
+        "star_framework_tip": "Match shape to algorithm family explicitly - reaching for the wrong shape is what makes correctness answers ramble.",
+        "common_pitfalls": [
+          "Attempting a formal proof when one or two sentences were wanted",
+          "Using a loop invariant for a greedy choice, where an exchange argument is the right shape"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      },
+      {
+        "id": "q6_m3",
+        "question": "Which language will you use in the round, and how do you decide?",
+        "complexity": "Medium",
+        "core_intent": "A real open decision for this candidate, with a recruiter dependency.",
+        "preparation_guide": "Decide before the loop, not live. Confirm the policy first.",
+        "explanation": "Decide before the loop rather than in the room. C++ is the fluency home and the right default for a DSA round; an ML-implementation round typically expects Python with NumPy, because the problem will involve arrays, broadcasting and numerical stability rather than containers. The permitted language is a recruiter question and is currently unconfirmed, which makes it one of the open items to close before the loop. The practical consequence of the choice is which hidden container costs apply: in Python it is linear membership tests on lists, string concatenation in loops, slicing copies and a recursion limit of 1000; in C++ it is std::map versus std::unordered_map, front insertion on a vector, and unstable std::sort. The beats are identical in either language - only the cost model changes.",
+        "star_framework_tip": "Flag the recruiter dependency explicitly rather than asserting a policy that has not been confirmed.",
+        "common_pitfalls": [
+          "Deciding live in the interview, which wastes clock and can strand you in a less fluent language",
+          "Assuming one language is permitted for all rounds without confirming"
+        ],
+        "references": [
+          {
+            "title": "Peters - listsort.txt, the Timsort design note in the CPython source",
+            "url": "https://github.com/python/cpython/blob/main/Objects/listsort.txt"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "q6_s1",
+        "question": "Minimum ship capacity to deliver packages in D days. Design it, including the monotonicity argument.",
+        "complexity": "Hard",
+        "core_intent": "A full set-piece: search over answers, greedy feasibility, and the proof.",
+        "preparation_guide": "Binary search on capacity with a greedy O(n) feasibility check; the monotonicity argument is the scored part.",
+        "explanation": "Packages ship in order and cannot be reordered - confirm that first, because it changes the problem entirely. The optimum cannot be computed directly, but a candidate capacity C can be checked cheaply: greedily fill each day until the next package would overflow, then start a new day, which is an O(n) scan returning the day count. Feasibility is monotone: if capacity C finishes within D days, any larger capacity also does, because every day can carry at least as much - so the predicate is false then true with a unique boundary, and binary search finds it. The range is [max weight, total weight]: below the maximum a single package never fits, and the total always works in one day. Overall O(n log(sum of weights)). The greedy check is itself provable by an exchange argument: deliberately leaving a package that fits today can never reduce the day count, since tomorrow's ship then carries strictly more with the same remaining suffix. If reordering were allowed it becomes bin packing, which is NP-hard - naming that boundary is part of the answer.",
+        "star_framework_tip": "State the monotonicity argument as an explicit sentence; it is the difference between using the technique and justifying it.",
+        "common_pitfalls": [
+          "Coding the binary search without ever justifying monotonicity",
+          "Getting the search range wrong by starting the lower bound at zero rather than at the maximum single weight"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          },
+          {
+            "title": "Skiena 2020 - The Algorithm Design Manual, 3rd edition",
+            "url": "https://www.algorist.com/"
+          }
+        ]
+      },
+      {
+        "id": "q6_s2",
+        "question": "Top 100 queries from a ten-million-line log. Full protocol, including the out-of-memory pivot.",
+        "complexity": "Hard",
+        "core_intent": "A full set-piece combining protocol with a data-scale pivot.",
+        "preparation_guide": "Two phases, then the sharding pivot; do the memory arithmetic aloud.",
+        "explanation": "Clarify: roughly how many distinct queries, does the log fit in memory or stream from disk, and how are ties broken. Approach: count with a hash map from query to count, then select the top 100 with a size-100 min-heap over the map entries - O(N) for counting over N lines and O(D log k) for selection over D distinct keys, against O(D log D) for sorting everything, which produces an ordering that is not needed. Memory is O(D): at two million distinct keys and roughly 100 bytes per entry including hash-table overhead, about 200 MB. Narrate the heap invariant while coding, and remember that the heap yields the right set but not the right order, so the final 100 must be sorted - that is the bug the problem is designed to catch. Test with fewer than 100 distinct queries, with all counts equal so the tie-break decides everything, and with one dominant query. Pivot when the distinct keys will not fit: shard by hash of the key, count each shard independently, take a local top-100 and merge - exact, because all occurrences of a key hash to the same shard - or use a count-min sketch if memory is genuinely fixed, presenting it as an approximation with one-sided error.",
+        "star_framework_tip": "Do the memory arithmetic out loud - 'about 200 MB' beats 'it should fit' every time.",
+        "common_pitfalls": [
+          "Returning the heap contents without sorting them, which is the planted bug",
+          "Jumping straight to an approximate sketch when an exact sharded design was available"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      },
+      {
+        "id": "q6_s3",
+        "question": "What is the honest weakness in your coding profile, and what have you done about it?",
+        "complexity": "Hard",
+        "core_intent": "A self-awareness question this candidate should expect, given the resume.",
+        "preparation_guide": "Name the real gap - protocol, not ability - and describe the deliberate practice, without inventing results.",
+        "explanation": "The honest answer is that the volume of solved problems evidences ability but not protocol, and those are different skills. Practice sites score a submission; an interview scores a transcript. The specific failure mode that fluency creates is recognizing a pattern in a few seconds and starting to type, which skips the clarifying and approach beats entirely - so a correct solution can still produce a thin evaluation. What I have done about it: drilled the five beats as their own skill, recorded myself solving problems out loud on a timer, and measured four things in the recording - the seconds before touching the keyboard, whether the approach statement had all four parts and ended in a question, the longest continuous silence, and whether I said 'done' or 'let me test it'. Those numbers moved with daily repetition, which is what tells me it was a rehearsal gap rather than a knowledge gap.",
+        "star_framework_tip": "Give the measurements you actually took rather than claiming improvement in general terms - and never quote a figure you have not recorded.",
+        "common_pitfalls": [
+          "Offering a fake weakness such as 'I care too much about clean code'",
+          "Claiming rehearsal results that were never measured, which collapses on the first follow-up"
+        ],
+        "references": [
+          {
+            "title": "Amazon - Leadership Principles (official list)",
+            "url": "https://www.amazon.jobs/content/en/our-workplace/leadership-principles"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -18,10 +18,10 @@
     "Hands-on experience with the four resume projects this course defends",
     "Comfort with PyTorch and C++ DSA"
   ],
-  "estimated_hours": 54,
+  "estimated_hours": 59,
   "modules": 9,
-  "lessons": 44,
-  "version": "1.9",
+  "lessons": 50,
+  "version": "2.0",
   "delivery_note": "Sessions are generated one at a time. The curriculum lists ONLY delivered content so the portal never points at a file that does not exist yet. Each new session appends a module here. The full 9-session plan lives in README.md.",
   "curriculum": [
     {
@@ -425,14 +425,71 @@
     },
     {
       "module_id": "module_06",
-      "title": "🔒 Session 6: Coding — DSA & Algorithms",
+      "title": "Session 6: Coding — DSA & Algorithms",
       "lessons": [
         {
-          "id": "m6_locked",
-          "title": "Locked — work through Session 5 first",
+          "id": "m6_l0",
+          "title": "Session 6 Overview & Scope Brief",
           "defaultMode": "mdx",
           "modes": {
-            "mdx": "tutorial/06_dsa_algorithms/00_locked.md"
+            "mdx": "tutorial/06_dsa_algorithms/README.md"
+          }
+        },
+        {
+          "id": "m6_l1",
+          "title": "The Five Beats: Making Solving Visible",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/06_dsa_algorithms/01_the_five_beats.md",
+            "notebook": "tutorial/06_dsa_algorithms/dsa_lab.ipynb",
+            "interview": "tutorial/06_dsa_algorithms/01_the_five_beats_interview_questions.json"
+          }
+        },
+        {
+          "id": "m6_l2",
+          "title": "From Constraints to Pattern",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/06_dsa_algorithms/02_constraints_to_patterns.md",
+            "notebook": "tutorial/06_dsa_algorithms/dsa_lab.ipynb",
+            "interview": "tutorial/06_dsa_algorithms/02_constraints_to_patterns_interview_questions.json"
+          }
+        },
+        {
+          "id": "m6_l3",
+          "title": "Complexity & Correctness You Can Defend",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/06_dsa_algorithms/03_complexity_and_correctness.md",
+            "notebook": "tutorial/06_dsa_algorithms/dsa_lab.ipynb",
+            "interview": "tutorial/06_dsa_algorithms/03_complexity_and_correctness_interview_questions.json"
+          }
+        },
+        {
+          "id": "m6_l4",
+          "title": "Test Design & the AS-Flavoured Problem Set",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/06_dsa_algorithms/04_testing_and_the_as_problem_set.md",
+            "notebook": "tutorial/06_dsa_algorithms/dsa_lab.ipynb",
+            "interview": "tutorial/06_dsa_algorithms/04_testing_and_the_as_problem_set_interview_questions.json"
+          }
+        },
+        {
+          "id": "m6_l5",
+          "title": "Mock Round: The 45-Minute Coding Round",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/06_dsa_algorithms/05_mock_round.md"
+          }
+        },
+        {
+          "id": "m6_l6",
+          "title": "Session 6 Chapter Quiz",
+          "defaultMode": "mdx",
+          "modes": {
+            "mdx": "tutorial/06_dsa_algorithms/quiz.md",
+            "interview": "tutorial/06_dsa_algorithms/quiz_interview_questions.json"
           }
         }
       ]
@@ -443,7 +500,7 @@
       "lessons": [
         {
           "id": "m7_locked",
-          "title": "Locked — clear the Session 6 assessment",
+          "title": "Locked — not yet generated",
           "defaultMode": "mdx",
           "modes": {
             "mdx": "tutorial/07_ml_from_scratch/00_locked.md"

@@ -29,13 +29,18 @@ SESSION 3 — CORE THEORY                         SESSION 4 — DL & TRANSFORMER
 └─ [ ] MOCK ROUND: ML breadth                   ├─ [ ] Training pathologies & debugging
                                                 └─ [ ] MOCK ROUND: DL breadth
 SESSION 5 — LLMs & RETRIEVAL
-├─ [ ] PEFT memory arithmetic & landscape       SESSION 6 — DSA
-├─ [ ] Decoding, sampling & speculative         ├─ [ ] Pattern fluency
-├─ [ ] Scaling laws & compute-optimal           ├─ [ ] Interview protocol
-├─ [ ] SFT / RLHF / DPO stack                   └─ [ ] MOCK ROUND: Coding
-├─ [ ] RAG design space & hybrid retrieval
-├─ [ ] LLM evaluation & paired statistics
-└─ [ ] MOCK ROUND: LLMs
+├─ [ ] PEFT memory arithmetic & landscape       SESSION 6 — DSA & ALGORITHMS
+├─ [ ] Decoding, sampling & speculative         ├─ [ ] The five beats, under a clock
+├─ [ ] Scaling laws & compute-optimal           ├─ [ ] Constraint → complexity class
+├─ [ ] SFT / RLHF / DPO stack                   ├─ [ ] Pattern + invariant, together
+├─ [ ] RAG design space & hybrid retrieval      ├─ [ ] Hidden container costs
+├─ [ ] LLM evaluation & paired statistics       ├─ [ ] The three proof shapes
+└─ [ ] MOCK ROUND: LLMs                         ├─ [ ] Heap / sort / quickselect
+                                                ├─ [ ] Binary search: both hazards
+                                                ├─ [ ] Four test classes
+                                                ├─ [ ] Streams: heap, reservoir, union–find
+                                                └─ [ ] MOCK ROUND: Coding
+
                                                 SESSION 8 — LP & STAR
 SESSION 7 — ML FROM SCRATCH                     ├─ [ ] Story bank (12 stories)
 ├─ [ ] Attention from blank editor              ├─ [ ] STAR with quantified results
@@ -135,3 +140,19 @@ Fill before the Systems mock round. Same law: run logs or `QUALITATIVE-ONLY`. Th
 | ECE under clean-fitted T, per severity | [FILL] | |
 | Worst corruption for calibration + hypothesis why | [FILL] | |
 | NLL / Brier reported alongside ECE? | [FILL] | |
+
+### Session 6 — Coding Protocol
+
+These are **your own rehearsal measurements**, not lab outputs. Take them from a recording of yourself solving a problem out loud on a timer (Reflection prompt 1 in the Session 6 quiz). Nothing from `dsa_lab.ipynb` belongs here — those timings are the notebook's machine, not your performance.
+
+| Slot | Value from your recording | Source (date + problem) |
+|---|---|---|
+| Seconds from problem statement to first keystroke | [FILL] | |
+| Approach statement: all four parts present? (y/n) | [FILL] | |
+| Approach statement ended in a question? (y/n) | [FILL] | |
+| Longest continuous silence (seconds) | [FILL] | |
+| Said "done" or "let me test it"? | [FILL] | |
+| Bugs found by you vs. found for you | [FILL] | |
+| Beats completed out of 5 | [FILL] | |
+| Verified LeetCode solved count (from your profile) | [FILL] | |
+| ⚠️ Permitted coding language, per recruiter | [FILL] | |

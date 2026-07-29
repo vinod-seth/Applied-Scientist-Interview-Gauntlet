@@ -1,0 +1,199 @@
+{
+  "lesson_title": "The Five Beats: Making Solving Visible",
+  "rehearsal": {
+    "prompt": "Coding-protocol rehearsal. These are scripts, not facts - say each one at interview pace, out loud, as speech. Every answer should name a beat and what evidence it produces.",
+    "minSeconds": 30,
+    "maxSeconds": 90,
+    "rubric": "mechanism",
+    "questions": [
+      "Walk me through how you approach a coding problem from the moment I finish reading it.",
+      "What clarifying questions do you ask, and how many?",
+      "When do you say you are done?",
+      "You solved it correctly in twenty minutes without speaking. Why might that still score poorly?",
+      "What exactly do you narrate while coding?",
+      "I give you a hint you did not ask for. What do you do?",
+      "Your approach is broken at minute 25. Take me through the next sixty seconds.",
+      "You cannot see the optimal approach when I ask for one. What do you say?",
+      "You are the interviewer. What evidence are you collecting, beat by beat?"
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "fb_j1",
+        "question": "Walk me through how you approach a coding problem from the moment I finish reading it.",
+        "complexity": "Easy",
+        "core_intent": "Checks whether the candidate has a repeatable process or improvises.",
+        "preparation_guide": "Name the five beats in order and say what each one is for.",
+        "explanation": "Five beats. (1) Clarify - restate the problem in one sentence, then ask two or three questions whose answers would change the design, covering input domain and size, the output contract, and edge semantics. (2) Approach - state the pattern, the data structure, the complexity, and why not the obvious alternative, then stop and ask whether that sounds right. (3) Narrate - say the invariant being maintained while typing, not the syntax. (4) Test - never say done; hand-trace one normal case and two degenerate ones out loud. (5) Optimize - state the improvement with its cost and offer it rather than rewriting unilaterally. Each beat is scored separately because each produces a different piece of evidence for the hiring debrief.",
+        "star_framework_tip": "Deliver the beats as a sequence you actually use, not as a list you memorized - give a one-line example of each.",
+        "common_pitfalls": [
+          "Describing only the coding step, which is the one beat the interviewer can already see",
+          "Listing the beats without saying what evidence each produces"
+        ],
+        "references": [
+          {
+            "title": "Amazon - Leadership Principles (official list)",
+            "url": "https://www.amazon.jobs/content/en/our-workplace/leadership-principles"
+          }
+        ]
+      },
+      {
+        "id": "fb_j2",
+        "question": "What clarifying questions do you ask, and how many?",
+        "complexity": "Easy",
+        "core_intent": "Tests calibration - the failure runs in both directions.",
+        "preparation_guide": "Two or three, chosen because their answers would change the design. Name the three axes.",
+        "explanation": "Two or three, preceded by a one-sentence restatement of the problem. The axes are: input domain and size (how large can n get, can values be negative or overflow a 32-bit accumulator - this decides which complexity class is admissible), the output contract (index or value, and what is returned when no answer exists), and edge semantics (duplicates, empty input, tie-breaking). The selection rule is what makes it calibrated: ask only what would change the design. Zero questions reads as assuming rather than checking; twenty reads as stalling. The restatement is separately valuable because it catches a misread before it costs twenty minutes.",
+        "star_framework_tip": "Give real example questions for a specific problem rather than describing the categories abstractly.",
+        "common_pitfalls": [
+          "Asking nothing because practice sites print the constraints - the reflex that hundreds of solved problems installs",
+          "Asking a long list of questions whose answers would not change anything you do"
+        ],
+        "references": [
+          {
+            "title": "Amazon - Leadership Principles (official list)",
+            "url": "https://www.amazon.jobs/content/en/our-workplace/leadership-principles"
+          }
+        ]
+      },
+      {
+        "id": "fb_j3",
+        "question": "When do you say you are done?",
+        "complexity": "Easy",
+        "core_intent": "Checks whether the candidate owns correctness or delegates it to the interviewer.",
+        "preparation_guide": "Never say done - say let me test it, then actually trace.",
+        "explanation": "Never - the word to use is 'let me test it'. Then trace out loud with real values: one normal case walked line by line with actual variable states, two degenerate cases (empty, single element, all-identical, maximum size, or the inversion of the assumption the invariant rests on), and an explicit off-by-one check on every loop boundary and index expression, which is where the bugs actually are. The asymmetry that makes this worth five to eight minutes of a forty-five-minute round: finding your own bug is positive evidence, and the interviewer finding the same bug is negative evidence. If the clock runs out, trace one case and name the others you would run - naming them still scores.",
+        "star_framework_tip": "Say the trace out loud with concrete numbers; 'I would test edge cases' is not a trace.",
+        "common_pitfalls": [
+          "Saying 'done' and waiting, which hands correctness ownership to the interviewer",
+          "Claiming the code works because it compiled or because the sample case passed"
+        ],
+        "references": [
+          {
+            "title": "Amazon - Leadership Principles (official list)",
+            "url": "https://www.amazon.jobs/content/en/our-workplace/leadership-principles"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "fb_m1",
+        "question": "You solved it correctly in twenty minutes without speaking. Why might that still score poorly?",
+        "complexity": "Medium",
+        "core_intent": "The exact failure mode a fluent competitive coder brings into the room.",
+        "preparation_guide": "Explain that the interviewer is collecting evidence, and silence produces none.",
+        "explanation": "Because the interviewer is not marking a submission - they are writing evidence for a hiring debrief, and three of the five observation windows produced nothing. There is no record of how ambiguity was handled (no clarifying questions), no record of designing before building (no approach statement), and no record of being steerable or collaborative (no narration). The code being right establishes only that the code is right. A solution delivered in thirty minutes with all five beats present produces a stronger debrief note than the same solution delivered in twelve with three beats missing, and speed does not substitute for the missing evidence.",
+        "star_framework_tip": "Name the specific beats that produced no evidence rather than saying 'communication matters'.",
+        "common_pitfalls": [
+          "Treating this as a soft-skills question rather than an evidence question",
+          "Assuming speed compensates for missing beats"
+        ],
+        "references": [
+          {
+            "title": "Amazon - Leadership Principles (official list)",
+            "url": "https://www.amazon.jobs/content/en/our-workplace/leadership-principles"
+          }
+        ]
+      },
+      {
+        "id": "fb_m2",
+        "question": "What exactly do you narrate while coding?",
+        "complexity": "Medium",
+        "core_intent": "Separates candidates who narrate intent from those who read their code aloud.",
+        "preparation_guide": "Invariants and intent, never syntax. Include deferring a concern out loud.",
+        "explanation": "Invariants and intent, never syntax. Not 'now I write a for loop over i' but 'this loop maintains the property that everything left of slow is already deduplicated'. Not 'I will call this best' but 'best holds the answer for all windows ending before right, so I never have to look back'. The underrated third move is deferring out loud: 'I am skipping the empty-input check for now and will add it in the test pass' converts an omission into a plan the interviewer can see, because otherwise they cannot tell whether you missed it or postponed it. Trivial code needs no narration - say 'standard boilerplate' and keep typing. Narration is for decisions.",
+        "star_framework_tip": "Contrast a syntax sentence with an intent sentence for the same line - the contrast is the answer.",
+        "common_pitfalls": [
+          "Reading the code aloud, which is noise rather than signal",
+          "Going silent during debugging, which is the second-worst thing you can do in the round"
+        ],
+        "references": [
+          {
+            "title": "Amazon - Leadership Principles (official list)",
+            "url": "https://www.amazon.jobs/content/en/our-workplace/leadership-principles"
+          }
+        ]
+      },
+      {
+        "id": "fb_m3",
+        "question": "I give you a hint you did not ask for. What do you do?",
+        "complexity": "Medium",
+        "core_intent": "Tests whether the candidate updates on evidence or defends a position.",
+        "preparation_guide": "Take it, out loud, and say what it changes.",
+        "explanation": "Take it and say what it changes: 'good point - that means the invariant has to be X rather than Y, so the contraction step moves'. Interviewer hints are steering, and they are almost always given because you are heading somewhere unproductive. Ignoring one is scored as failing Are Right, A Lot, which is about updating on new evidence rather than being right the first time. Two further points: acknowledge the hint explicitly so the interviewer knows it landed, and if you do not understand it, say precisely which part is unclear rather than nodding and continuing unchanged. Silently absorbing a hint and carrying on gives no evidence that you took it.",
+        "star_framework_tip": "Verbalize the update, not just the acceptance - state what specifically changed in your plan.",
+        "common_pitfalls": [
+          "Nodding and continuing with the original plan, which reads as not being steerable",
+          "Treating the hint as criticism and becoming defensive"
+        ],
+        "references": [
+          {
+            "title": "Amazon - Leadership Principles (official list)",
+            "url": "https://www.amazon.jobs/content/en/our-workplace/leadership-principles"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "fb_s1",
+        "question": "Your approach is broken at minute 25. Take me through the next sixty seconds.",
+        "complexity": "Hard",
+        "core_intent": "The round is not lost when the approach fails - it is lost in the recovery.",
+        "preparation_guide": "Four audible moves: name it, diagnose it, propose the pivot with its cost, ask for the steer.",
+        "explanation": "Four moves, all audible and in this order. (1) Name it immediately - 'this will not work, my invariant breaks when values can be negative'; delay is the expensive part, because an interviewer watching you defend a broken approach for five minutes is collecting the wrong evidence. (2) Say what the failure taught you - 'the window sum is not monotone once negatives are allowed, so contracting cannot be relied on to reduce it'. (3) Propose the pivot with its complexity - 'that points at prefix sums with a hash map, O(n) time and O(n) space, and it does not need monotonicity'. (4) Ask for the steer - 'shall I take that, or is there a direction you would prefer?'. This is one of the few moments in a loop where you can demonstrate Are Right, A Lot plus Earn Trust through self-correction, and a clean pivot at minute 25 that finishes at 42 usually outscores a quiet solution that fails on negatives.",
+        "star_framework_tip": "Deliver it as the four moves in sequence - the ordering is what makes it sound rehearsed rather than panicked.",
+        "common_pitfalls": [
+          "Defending the broken approach because abandoning it feels like admitting failure",
+          "Silently restarting, which discards the credit for the diagnosis - the valuable part"
+        ],
+        "references": [
+          {
+            "title": "Amazon - Leadership Principles (official list)",
+            "url": "https://www.amazon.jobs/content/en/our-workplace/leadership-principles"
+          }
+        ]
+      },
+      {
+        "id": "fb_s2",
+        "question": "You cannot see the optimal approach when I ask for one. What do you say?",
+        "complexity": "Hard",
+        "core_intent": "Checks whether the candidate has a method for being stuck, or simply goes quiet.",
+        "preparation_guide": "State the brute force with its complexity and commit to improving it - that is a complete beat.",
+        "explanation": "State the brute force with its complexity and say you will improve it: 'the direct approach is to check every pair, which is O(n squared) because the inner loop recomputes the range sum. Let me start there and then remove the recomputation.' That is a complete approach statement, not a failed one. If even the brute force is unclear, say what you do see - the shape, the closest pattern, and what makes it not fit - then propose solving a restricted version first ('let me solve it for k equal to one and generalize'). Working from a special case out loud is scored as method; sitting in silence is scored as stuck. And if you have a specific blocker, ask a specific question: 'I do not yet see how to remove the inner loop - is the intended structure closer to prefix sums, or a different decomposition?'",
+        "star_framework_tip": "Name what the brute force recomputes - that phrase is usually where the optimization comes from.",
+        "common_pitfalls": [
+          "Going silent while searching for the clever answer, which produces no evidence at all",
+          "Asking for the whole solution rather than for a direction"
+        ],
+        "references": [
+          {
+            "title": "Skiena 2020 - The Algorithm Design Manual, 3rd edition",
+            "url": "https://www.algorist.com/"
+          }
+        ]
+      },
+      {
+        "id": "fb_s3",
+        "question": "You are the interviewer. What evidence are you collecting, beat by beat?",
+        "complexity": "Hard",
+        "core_intent": "Tests whether the candidate understands the round's scoring model rather than its surface.",
+        "preparation_guide": "Map each beat to the debrief line it supports.",
+        "explanation": "Beat 1, clarify: does this person handle ambiguity, and do they think about the real input rather than the sample. Beat 2, approach: do they design before building, and do they know what their design costs. Beat 3, narrate: is their reasoning legible, and can they be corrected and collaborated with under pressure - this is the only direct evidence of how they would work on a team. Beat 4, test: do they own correctness, or does someone else have to find their bugs. Beat 5, optimize: can they hold a trade-off in their head without over-engineering, and do they know when to stop. A debrief has to argue a position with specifics, so a beat that produced nothing is a paragraph the interviewer cannot write - which is why correctness alone is not sufficient evidence for a hire.",
+        "star_framework_tip": "Answer in the interviewer's vocabulary - 'evidence', 'debrief', 'signal' - which shows you understand the mechanism, not just the etiquette.",
+        "common_pitfalls": [
+          "Describing what the candidate should do rather than what the interviewer records",
+          "Reducing the whole round to 'communication is important'"
+        ],
+        "references": [
+          {
+            "title": "Amazon - Leadership Principles (official list)",
+            "url": "https://www.amazon.jobs/content/en/our-workplace/leadership-principles"
+          }
+        ]
+      }
+    ]
+  }
+}

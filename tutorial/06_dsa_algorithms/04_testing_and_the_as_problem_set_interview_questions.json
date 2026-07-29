@@ -1,0 +1,211 @@
+{
+  "lesson_title": "Test Design & the AS-Flavoured Problem Set",
+  "rehearsal": {
+    "prompt": "Testing and data-scale rehearsal. For the protocol questions, name the class and the invariant it attacks. For the problems, give the structure, the bound, the memory arithmetic, and why the obvious approach fails at scale.",
+    "minSeconds": 30,
+    "maxSeconds": 90,
+    "rubric": "mechanism",
+    "questions": [
+      "What test cases would you write, and when do you decide them?",
+      "A stream of billions of events. Keep the top 100. What structure?",
+      "Where do bugs usually appear in interview code?",
+      "Take a uniform sample of 10,000 from a stream of unknown length.",
+      "Edges arrive one at a time. Report the component count after each.",
+      "Top-100 most frequent, but the distinct keys no longer fit in memory.",
+      "Find near-duplicate documents in a 100-million-document corpus.",
+      "How would you test that your sampler is actually uniform?",
+      "Walk a training corpus from raw documents to a deleted duplicate set, and say where you would be wrong."
+    ]
+  },
+  "experience_levels": {
+    "junior": [
+      {
+        "id": "ts_j1",
+        "question": "What test cases would you write, and when do you decide them?",
+        "complexity": "Easy",
+        "core_intent": "Whether testing is designed or improvised.",
+        "preparation_guide": "Four classes, decided at the approach step, each tied to an invariant.",
+        "explanation": "Four classes, named during the approach statement rather than at minute 38. Base: a typical input with a known answer - does it work at all. Boundary: empty, one element, two elements, n at maximum - every loop edge and index expression, where off-by-one errors live. Inversion: negatives, duplicates, unsorted input, all-identical values, target absent - the assumption the invariant rests on, and the class that catches real bugs. Adversarial: already sorted, reverse sorted, colliding keys - this tests the complexity claim, not correctness. Deciding them early matters because tests written before the code test the specification, while tests written after it tend to test whatever the code happens to do; and if the clock runs out, the beat has already earned its evidence.",
+        "star_framework_tip": "Attach each class to the specific invariant it attacks rather than listing generic edge cases.",
+        "common_pitfalls": [
+          "Naming only empty and null inputs, which is the boundary class alone",
+          "Deciding tests after the code exists, which biases them toward the implementation"
+        ],
+        "references": [
+          {
+            "title": "Skiena 2020 - The Algorithm Design Manual, 3rd edition",
+            "url": "https://www.algorist.com/"
+          }
+        ]
+      },
+      {
+        "id": "ts_j2",
+        "question": "A stream of billions of events. Keep the top 100. What structure?",
+        "complexity": "Easy",
+        "core_intent": "A standard streaming question with one commonly inverted detail.",
+        "preparation_guide": "Size-100 min-heap; the root is the admission threshold.",
+        "explanation": "A min-heap of size 100. The root is the smallest of the current best 100, which makes it exactly the admission threshold: if an arriving element beats the root, pop and push; otherwise discard it. That is O(log k) per event and O(k) memory, and the answer is available at any moment. A sort is not merely slower here - it is unavailable, because the stream has no end and cannot be materialized. The detail people invert is the heap type: k largest needs a MIN-heap, k smallest needs a MAX-heap. A max-heap of size k would give instant access to the element you least want to evict, which is the wrong end.",
+        "star_framework_tip": "Say 'the root is the admission threshold' - that phrase both names the invariant and explains the heap type.",
+        "common_pitfalls": [
+          "Using a max-heap for the k largest",
+          "Proposing to sort, which the unbounded stream forbids"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      },
+      {
+        "id": "ts_j3",
+        "question": "Where do bugs usually appear in interview code?",
+        "complexity": "Easy",
+        "core_intent": "A checklist question - the value is in having a specific list.",
+        "preparation_guide": "Six classes, with the check for each.",
+        "explanation": "Six classes. Off-by-one: '<' versus '<=', mid versus mid plus or minus one - trace the first and last iteration by hand every time. Midpoint overflow: write lo + (hi - lo) / 2. Mutation during iteration: removing from a container while looping over it, which skips elements or raises - iterate over a copy or collect keys first. Recursion depth: Python's default limit is 1000, so a DFS on a 10^5-node path graph fails, and in C++ it is a stack overflow - use an explicit stack when depth can be linear. Integer division on negatives: Python floors toward negative infinity so -7 // 2 is -4, while C++ truncates toward zero so -7 / 2 is -3. Aliasing: [[0] * n] * m creates m references to one row, so writing to one row writes to all - use a comprehension instead.",
+        "star_framework_tip": "Give the check alongside each bug class, not just the name - the check is what you actually perform in the round.",
+        "common_pitfalls": [
+          "Listing only off-by-one errors",
+          "Missing the aliasing bug, which produces a wrong answer rather than an error and is common on grid problems"
+        ],
+        "references": [
+          {
+            "title": "Skiena 2020 - The Algorithm Design Manual, 3rd edition",
+            "url": "https://www.algorist.com/"
+          }
+        ]
+      }
+    ],
+    "mid_level": [
+      {
+        "id": "ts_m1",
+        "question": "Take a uniform sample of 10,000 from a stream of unknown length.",
+        "complexity": "Medium",
+        "core_intent": "Reservoir sampling, and whether the candidate can prove uniformity.",
+        "preparation_guide": "Keep the first k, then replace with probability k/i. Have the telescoping proof ready.",
+        "explanation": "Reservoir sampling. Keep the first k items. For item i greater than k, draw a random integer j uniformly in [0, i); if j < k, replace reservoir slot j. Every item that has arrived is in the reservoir with probability exactly k/i, in one pass, in O(k) memory, without ever knowing the stream length. The proof for k = 1: item i is kept on arrival with probability 1/i, then must survive every later item t, each with probability (t-1)/t; the product from i+1 to n telescopes to i/n, and multiplying by 1/i gives exactly 1/n. The general case is the same argument with k/i. The practical caveat worth volunteering: it is uniform over items, which is what you want for an unbiased evaluation sample and what you do not want when rare classes must be over-represented.",
+        "star_framework_tip": "Offer the telescoping proof unprompted - it is short and it is the follow-up they were about to ask.",
+        "common_pitfalls": [
+          "Taking the first k items, or sampling each item with a fixed probability, neither of which is uniform over an unknown-length stream",
+          "Describing the algorithm without being able to argue why the probability is uniform"
+        ],
+        "references": [
+          {
+            "title": "Vitter 1985 - Random Sampling with a Reservoir, ACM TOMS 11(1), 37-57",
+            "url": "https://doi.org/10.1145/3147.3165"
+          }
+        ]
+      },
+      {
+        "id": "ts_m2",
+        "question": "Edges arrive one at a time. Report the component count after each.",
+        "complexity": "Medium",
+        "core_intent": "Correct-but-wrongly-sized versus appropriately-sized data structures.",
+        "preparation_guide": "Union-find with a running counter; explain why re-running BFS is the trap.",
+        "explanation": "Union-find, not traversal. BFS or DFS gives components in O(V + E), but only for a graph you already hold; re-running it after every edge is O(E(V+E)), which is the trap the question sets. Union-find handles the incremental case natively: find walks to the set representative while compressing the path, and union links the smaller tree under the larger. With both optimizations each operation is effectively constant - O(alpha(n)) amortized, the inverse Ackermann bound from Tarjan 1975, at most 4 for any input size that exists. Keep a component counter initialized to n and decrement on every union that merges two distinct sets, so each report is O(1). The limitation to volunteer: union-find merges but never splits, so if edges could be removed it is the wrong tool and the problem becomes substantially harder.",
+        "star_framework_tip": "Name the no-deletion limitation unprompted - it is the difference between knowing the structure and knowing its boundary.",
+        "common_pitfalls": [
+          "Re-running a traversal per edge, which is correct but quadratically wrong-sized",
+          "Claiming union-find can also answer shortest-path queries, which it cannot"
+        ],
+        "references": [
+          {
+            "title": "Tarjan 1975 - Efficiency of a Good But Not Linear Set Union Algorithm, JACM 22(2), 215-225",
+            "url": "https://doi.org/10.1145/321879.321884"
+          },
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      },
+      {
+        "id": "ts_m3",
+        "question": "Top-100 most frequent, but the distinct keys no longer fit in memory.",
+        "complexity": "Medium",
+        "core_intent": "Where the straightforward design breaks, and whether the pivot is exact or approximate.",
+        "preparation_guide": "Shard by hash for an exact answer; count-min sketch only if memory is truly fixed.",
+        "explanation": "The binding constraint is the counting map, not the heap, so the pivot has to address counting. Exact option: shard by hash of the key across m partitions, count each partition independently, take a local top-100 from each, and merge. This is exact because every occurrence of a key hashes to the same shard, so no count is ever split across partitions - naming that reason is the scored part. Approximate option: a count-min sketch in fixed memory, which over-estimates but never under-estimates and whose error is bounded by the sketch width and depth. A third legitimate option is an external sort of the whole log followed by a run scan, at O(N log N) on the full log rather than O(N) on shards. Take the sharded exact version when the infrastructure allows it, and present the sketch as an approximation with its one-sided error rather than as a free alternative.",
+        "star_framework_tip": "Say why sharding preserves exactness - without that sentence the design sounds like a guess.",
+        "common_pitfalls": [
+          "Sampling the log and scaling counts, which loses exactly the rare-but-heavy tail the question is about",
+          "Presenting an approximate sketch as equivalent to the exact answer"
+        ],
+        "references": [
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      }
+    ],
+    "senior": [
+      {
+        "id": "ts_s1",
+        "question": "Find near-duplicate documents in a 100-million-document corpus.",
+        "complexity": "Hard",
+        "core_intent": "A data-scale problem whose stakes are ML stakes - training-corpus construction.",
+        "preparation_guide": "Split exact from near; then shingle, MinHash, LSH, with the memory arithmetic.",
+        "explanation": "Split the problem first. Exact duplicates: normalize, hash the content, group by hash - O(n) time and O(n) memory, and the only real design question is the normalization. Near-duplicates are the actual question, and all-pairs comparison is about 5 x 10^15 comparisons at 10^8 documents, so it is not a design. Three stages instead. (1) Shingle each document into overlapping w-token sequences, typically w of 5 to 9, so similarity becomes Jaccard overlap of sets. (2) MinHash - the probability that two sets share the same minimum hash value equals their Jaccard similarity exactly (Broder 1997), so keeping m minima gives a fixed-length signature estimating similarity with standard error about 1/sqrt(m). (3) LSH banding - split each signature into b bands of r rows, hash each band, and treat any band collision as a candidate pair; the candidate probability at similarity s is 1 - (1 - s^r)^b, a sharp S-curve whose midpoint sits near (1/b)^(1/r) and sets the threshold. Memory: 128 four-byte values times 10^8 documents is about 51 GB, so it shards. Verify candidates exactly before deleting anything.",
+        "star_framework_tip": "Do the all-pairs arithmetic out loud first - it is what justifies the entire three-stage design.",
+        "common_pitfalls": [
+          "Proposing embeddings without noting they measure semantic rather than lexical similarity, which is usually not what corpus dedup wants",
+          "Skipping the exact verification step and deleting on a probabilistic signal alone"
+        ],
+        "references": [
+          {
+            "title": "Broder 1997 - On the Resemblance and Containment of Documents",
+            "url": "https://doi.org/10.1109/SEQUEN.1997.666900"
+          },
+          {
+            "title": "Cormen, Leiserson, Rivest & Stein 2022 - Introduction to Algorithms, 4th edition",
+            "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/"
+          }
+        ]
+      },
+      {
+        "id": "ts_s2",
+        "question": "How would you test that your sampler is actually uniform?",
+        "complexity": "Hard",
+        "core_intent": "A statistics question inside a coding round - directly relevant to an Applied Scientist.",
+        "preparation_guide": "Empirical selection frequency against k/n, with a stated tolerance.",
+        "explanation": "Run the sampler many times over a fixed stream of known length n, record how often each item is selected, and compare the empirical selection frequency per item against the expected k/n. The comparison needs a tolerance rather than an eyeball: with T repetitions the count for a given item is binomial with p = k/n, so the standard error is sqrt(p(1-p)/T), and deviations should sit within a few of those. A chi-squared goodness-of-fit test over the item counts gives a single summary. Two design points worth adding: seed the generator so failures are reproducible, and test the boundary specifically - the very first k items and the very last item, since off-by-one errors in the replacement index show up there and nowhere else. This is the same instrument-validity discipline that applies to any evaluation measurement.",
+        "star_framework_tip": "Give the standard-error expression, not just 'check the frequencies' - the tolerance is what makes it a test.",
+        "common_pitfalls": [
+          "Running the sampler once and inspecting the output, which cannot distinguish uniform from biased",
+          "Comparing frequencies without a tolerance, so any deviation looks like a bug"
+        ],
+        "references": [
+          {
+            "title": "Vitter 1985 - Random Sampling with a Reservoir, ACM TOMS 11(1), 37-57",
+            "url": "https://doi.org/10.1145/3147.3165"
+          }
+        ]
+      },
+      {
+        "id": "ts_s3",
+        "question": "Walk a training corpus from raw documents to a deleted duplicate set, and say where you would be wrong.",
+        "complexity": "Hard",
+        "core_intent": "Synthesis - the algorithm, the pipeline, and the honest failure modes.",
+        "preparation_guide": "Pipeline plus failure modes; the failure modes are the scored half.",
+        "explanation": "Pipeline: normalize (case, whitespace, boilerplate stripping), hash for exact duplicates and collapse them, shingle the remainder, compute MinHash signatures, band them with LSH to produce candidate pairs, verify each candidate with an exact Jaccard computation on the shingle sets, then cluster the surviving pairs with union-find so that a duplicate group is deleted down to one representative - which is why union-find composes directly with MinHash candidates. Where I would be wrong: normalization that is too aggressive merges genuinely distinct documents; the banding threshold is a false-negative source that is invisible unless audited against a labelled sample; keeping the wrong representative can drop the highest-quality version of a document; near-duplicate removal changes the effective class distribution, so a downstream model can shift for reasons that have nothing to do with the model; and at 51 GB of signatures the whole thing is a distributed job whose shard boundaries must not split candidate buckets. I would audit a random sample of deleted pairs by hand before running it on the full corpus.",
+        "star_framework_tip": "Spend at least half the answer on the failure modes - that is the half that distinguishes a scientist from an implementer.",
+        "common_pitfalls": [
+          "Presenting the pipeline as reliable without naming the false-negative rate or auditing it",
+          "Ignoring the effect of dedup on the downstream data distribution"
+        ],
+        "references": [
+          {
+            "title": "Broder 1997 - On the Resemblance and Containment of Documents",
+            "url": "https://doi.org/10.1109/SEQUEN.1997.666900"
+          },
+          {
+            "title": "Tarjan 1975 - Efficiency of a Good But Not Linear Set Union Algorithm, JACM 22(2), 215-225",
+            "url": "https://doi.org/10.1145/321879.321884"
+          }
+        ]
+      }
+    ]
+  }
+}
