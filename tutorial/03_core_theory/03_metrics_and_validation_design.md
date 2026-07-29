@@ -30,9 +30,9 @@ Metric choice and split design answer the same question from two sides: *what do
 <details><summary>✅ Model answer</summary>
 
 - **Accuracy** fails under imbalance: a 99%-negative dataset gives a do-nothing classifier 99% accuracy. It also silently assumes FP and FN cost the same.
-- **Precision** (of predicted positives, how many are right) ignores what you missed — a model that predicts one confident positive can have precision 1.0 and be useless.
-- **Recall** (of true positives, how many you caught) ignores false alarms — predict everything positive and recall is 1.0.
-- **F1** balances the two, but it's the harmonic mean at *one threshold*, it ignores true negatives, and plain F1 weights precision and recall equally, which is itself a cost assumption ($F_\beta$ exists precisely to reweight).
+- **<abbr title="Precision: the fraction of positive predictions that are truly positive (TP / (TP + FP)). Measures freedom from false alarms.">Precision</abbr>** (of predicted positives, how many are right) ignores what you missed — a model that predicts one confident positive can have precision 1.0 and be useless.
+- **<abbr title="Recall (Sensitivity / True Positive Rate): the fraction of actual positive instances correctly caught by the model (TP / (TP + FN)).">Recall</abbr>** (of true positives, how many you caught) ignores false alarms — predict everything positive and recall is 1.0.
+- **<abbr title="F1 score: the harmonic mean of precision and recall, balancing false positives and false negatives at a specific decision threshold.">F1</abbr>** balances the two, but it's the harmonic mean at *one threshold*, it ignores true negatives, and plain F1 weights precision and recall equally, which is itself a cost assumption ($F_\beta$ exists precisely to reweight).
 
 The pattern for answering: **state who pays for FP vs. FN, then pick.** Fraud/medical screening → recall-heavy; spam-to-inbox or alert fatigue → precision-heavy.
 </details>
@@ -50,7 +50,7 @@ The pattern for answering: **state who pays for FP vs. FN, then pick.** Fraud/me
 
 <details><summary>✅ Model answer</summary>
 
-**PR-AUC.** ROC plots TPR vs. FPR; with a huge negative class, the false-positive *rate* stays tiny even when false positives outnumber true positives many times over, so the ROC curve looks excellent while the model is practically useless. Precision, by contrast, is computed *among predicted positives*, so it directly feels the flood of false alarms. Under heavy imbalance the PR curve tells you what a user of the alerts experiences; ROC tells you the ranking quality over the whole population.
+**<abbr title="PR-AUC (Precision-Recall Area Under Curve): integrates precision across all recall thresholds. Superior to ROC-AUC for heavily imbalanced datasets.">PR-AUC</abbr>.** <abbr title="ROC-AUC (Receiver Operating Characteristic Area Under Curve): plots True Positive Rate vs False Positive Rate across thresholds. Measures general ranking quality.">ROC</abbr> plots <abbr title="TPR (True Positive Rate): equivalent to recall, TP / (TP + FN).">TPR</abbr> vs. <abbr title="FPR (False Positive Rate): the fraction of negative instances incorrectly classified as positive (FP / (FP + TN)).">FPR</abbr>; with a huge negative class, the false-positive *rate* stays tiny even when false positives outnumber true positives many times over, so the ROC curve looks excellent while the model is practically useless. Precision, by contrast, is computed *among predicted positives*, so it directly feels the flood of false alarms. Under heavy imbalance the PR curve tells you what a user of the alerts experiences; ROC tells you the ranking quality over the whole population.
 
 One-line mechanism: **FPR divides by all negatives (huge denominator); precision divides by predicted positives (small denominator).**
 </details>
@@ -82,12 +82,12 @@ Match the split to how the model will meet new data:
 - **Grouped data** — multiple rows per user/patient/question — → split by **group**, or the model memorizes the entity and the score is fiction. My QQP case: duplicate pairs are transitive (A≈B, B≈C ⟹ A≈C), so a random pair-split leaks clusters across train/test; you must split by question cluster.
 - **Temporal data** → train on the past, test on the future; random splits let the model peek ahead.
 
-Then the leakage audit: **anything fitted must be fitted inside the training folds only** — normalization statistics, feature selection, vocabulary, imputation, even the calibration temperature. Fitting on the full set then cross-validating gives optimistic-but-wrong numbers.
+Then the leakage audit: **anything fitted must be fitted inside the training folds only** — normalization statistics, feature selection, vocabulary, imputation, even the calibration temperature. Fitting on the full set then <abbr title="Cross-validation: splitting data into k folds to iteratively train and validate, preventing evaluation on training data.">cross-validating</abbr> gives optimistic-but-wrong numbers.
 </details>
 
 <details><summary>🔁 The follow-up chain</summary>
 
-"When is k-fold the wrong tool entirely?" (large deep-learning runs — too expensive, use a fixed held-out split; and any temporal setting) → "What's the test set for, then?" (touched once, at the end, for the final honest number — every peek turns it into a validation set) → "How would you detect leakage after the fact?" (suspiciously high scores, feature importance dominated by an ID-like or future-derived feature, and a deployment drop far exceeding the validation gap).
+"When is k-fold the wrong tool entirely?" (large deep-learning runs — too expensive, use a fixed held-out split; and any temporal setting) → "What's the test set for, then?" (touched once, at the end, for the final honest number — every peek turns it into a validation set) → "How would you detect <abbr title="Data leakage: when information from outside the training dataset (e.g. test set, future time, or target proxies) corrupts the model during training.">leakage</abbr> after the fact?" (suspiciously high scores, feature importance dominated by an ID-like or future-derived feature, and a deployment drop far exceeding the validation gap).
 </details>
 
 <details><summary>📚 Deep-dive: your two projects as validation case studies</summary>

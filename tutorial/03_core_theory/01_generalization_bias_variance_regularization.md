@@ -35,7 +35,7 @@ For a target $y = f(x) + \varepsilon$ with $\mathbb{E}[\varepsilon]=0,\ \mathrm{
 
 $$\mathbb{E}\big[(y - \hat f(x))^2\big] = \underbrace{(f(x) - \mathbb{E}[\hat f(x)])^2}_{\text{Bias}^2} + \underbrace{\mathbb{E}\big[(\hat f(x) - \mathbb{E}[\hat f(x)])^2\big]}_{\text{Variance}} + \underbrace{\sigma^2}_{\text{noise}}$$
 
-**Bias** is the error from the model class being wrong on average; **variance** is how much the fit wobbles across different training samples; **noise** is the irreducible floor. Underfitting = high bias; overfitting = high variance.
+**Bias** is the error from the model class being wrong on average; **variance** is how much the fit wobbles across different training samples; **<abbr title="Irreducible noise (σ²): the variance of the random noise in the data-generating process. It represents the absolute error floor that no model can beat.">noise</abbr>** is the irreducible floor. <abbr title="Underfitting: when a model lacks capacity or training time to capture the underlying structure, causing high error on both training and test data (high bias).">Underfitting</abbr> = high bias; <abbr title="Overfitting: when a model learns noise and specific details of the training data rather than the general pattern, leading to high test error (high variance).">overfitting</abbr> = high variance.
 </details>
 
 <details><summary>🔁 The follow-up chain</summary>
@@ -45,7 +45,7 @@ $$\mathbb{E}\big[(y - \hat f(x))^2\big] = \underbrace{(f(x) - \mathbb{E}[\hat f(
 
 <details><summary>📚 Deep-dive: the U-curve and where it breaks</summary>
 
-Classic view: as capacity rises, bias falls and variance rises, so test error is U-shaped with a sweet spot in the middle. Modern over-parameterized networks show **double descent** (Belkin et al. 2019, https://arxiv.org/abs/1812.11118): past the interpolation threshold — where the model exactly fits the training set — test error *falls again*. The classic tradeoff still describes the under-parameterized regime; it just isn't the whole story for huge models. Saying this unprompted signals you know the frontier, not just the textbook.
+Classic view: as capacity rises, bias falls and variance rises, so test error is U-shaped with a sweet spot in the middle. Modern over-parameterized networks show **<abbr title="Double descent: a phenomenon where increasing model capacity or training time past the interpolation threshold causes test error to decrease again.">double descent</abbr>** (Belkin et al. 2019, https://arxiv.org/abs/1812.11118): past the <abbr title="Interpolation threshold: the point where model capacity is just large enough to achieve zero training error on the dataset.">interpolation threshold</abbr> — where the model exactly fits the training set — test error *falls again*. The classic tradeoff still describes the under-parameterized regime; it just isn't the whole story for huge models. Saying this unprompted signals you know the frontier, not just the textbook.
 </details>
 
 ---
@@ -56,14 +56,14 @@ Classic view: as capacity rises, bias falls and variance rises, so test error is
 
 <details><summary>✅ Model answer</summary>
 
-Regularization adds a penalty (or constraint) that **shrinks the hypothesis space toward simpler solutions**, trading a small increase in bias for a large decrease in variance. Mechanistically, an L2 penalty $\lambda\lVert w\rVert_2^2$ shrinks every weight toward zero, so the fit reacts less to any single training point — lower variance. You accept that the constrained solution can't perfectly match the data (a little bias) in exchange for a fit that generalizes.
+Regularization adds a penalty (or constraint) that **shrinks the hypothesis space toward simpler solutions**, trading a small increase in bias for a large decrease in variance. Mechanistically, an <abbr title="L2 regularization (Ridge): adding the sum of squared weights to the loss function, penalizing large weights and shrinking them smoothly toward zero.">L2 penalty</abbr> $\lambda\lVert w\rVert_2^2$ shrinks every weight toward zero, so the fit reacts less to any single training point — lower variance. You accept that the constrained solution can't perfectly match the data (a little bias) in exchange for a fit that generalizes.
 
 The sharpest framing: **a penalty on the weights is a prior belief about the weights** (Drill 3).
 </details>
 
 <details><summary>🔁 The follow-up chain</summary>
 
-"L1 vs L2 — practical difference?" (L1 drives weights *exactly* to zero → feature selection / sparsity; L2 shrinks but rarely zeroes) → "Name a regularizer with no penalty term" (early stopping, dropout, data augmentation, batch norm's noise) → "How do you pick $\lambda$?" (cross-validation on the metric you actually care about, not the training loss).
+"L1 vs L2 — practical difference?" (<abbr title="L1 regularization (Lasso): adding the sum of absolute weight values to the loss, driving non-essential feature weights to exactly zero to create sparse models.">L1</abbr> drives weights *exactly* to zero → feature selection / sparsity; L2 shrinks but rarely zeroes) → "Name a regularizer with no penalty term" (<abbr title="Early stopping: halting training when validation performance starts to degrade, preventing over-optimization on the training set.">early stopping</abbr>, <abbr title="Dropout: randomly zeroing activations during training with probability p to prevent co-adaptation of features.">dropout</abbr>, <abbr title="Data augmentation: creating modified copies of existing training data (rotations, crops, flips) to artificially expand the training distribution.">data augmentation</abbr>, batch norm's noise) → "How do you pick $\lambda$?" (cross-validation on the metric you actually care about, not the training loss).
 </details>
 
 ---
@@ -80,12 +80,12 @@ Put a zero-mean Gaussian prior on the weights, $w \sim \mathcal{N}(0, \tau^2 I)$
 
 $$\hat w_{\text{MAP}} = \arg\max_w \; \log p(D\mid w) - \tfrac{1}{2\tau^2}\lVert w\rVert_2^2$$
 
-Negate to a minimization and the second term is exactly the L2 penalty with $\lambda = \frac{1}{2\tau^2}$. **So L2 = a Gaussian prior**, and a *stronger* penalty (larger $\lambda$) is a *tighter* prior (smaller $\tau^2$) — more confident that weights are near zero. Likewise **L1 = a Laplace prior**, whose sharp peak at zero is what produces sparsity.
+Negate to a minimization and the second term is exactly the L2 penalty with $\lambda = \frac{1}{2\tau^2}$. **So L2 = a <abbr title="Gaussian prior: assuming weights follow a normal distribution centered at zero. In MAP estimation, this manifests as an L2 norm penalty.">Gaussian prior</abbr>**, and a *stronger* penalty (larger $\lambda$) is a *tighter* prior (smaller $\tau^2$) — more confident that weights are near zero. Likewise **L1 = a <abbr title="Laplace prior: assuming weights follow a double-exponential distribution with a sharp spike at zero. In MAP, this produces an L1 penalty and sparse weights.">Laplace prior</abbr>**, whose sharp peak at zero is what produces sparsity.
 </details>
 
 <details><summary>🔁 The follow-up chain</summary>
 
-"So what's un-regularized MLE in this language?" (a flat/improper prior — no belief about the weights, so it overfits when data is scarce) → "Does this mean regularization is always Bayesian?" (early stopping and dropout regularize without corresponding to a clean prior, so no — but the penalty-based ones map cleanly) → "Why does a tighter prior help small data more?" (with little likelihood signal, the prior dominates; with abundant data it washes out).
+"So what's un-regularized <abbr title="MLE (Maximum Likelihood Estimation): finding parameters that maximize the likelihood of the observed data, assuming no prior beliefs (uniform prior).">MLE</abbr> in this language?" (a flat/improper prior — no belief about the weights, so it overfits when data is scarce) → "Does this mean regularization is always <abbr title="Bayesian estimation: treating parameters as random variables with prior distributions, updating beliefs with data via Bayes' theorem to form a posterior.">Bayesian</abbr>?" (early stopping and dropout regularize without corresponding to a clean prior, so no — but the penalty-based ones map cleanly) → "Why does a tighter prior help small data more?" (with little likelihood signal, the prior dominates; with abundant data it washes out).
 </details>
 
 ---

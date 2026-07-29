@@ -42,8 +42,8 @@ Attempt all three levels per topic, in order. Record your honest level. Stop whe
 
 1. Retrieved-but-ignored — specifically a *selection/grounding* failure. The distinguishing test is support: the claim is traceable to retrieved text, so it isn't hallucination (which requires support from nothing retrieved); the gold was present, so it isn't a miss. The practical consequence matters too: selection failures respond to reranking and source-discipline prompting; hallucination doesn't.
 2. Any defensible rule works if stated and defended: "any token overlap with the gold span" is permissive (inflates retrieved-but-ignored by counting fragments as sufficient); "full answer span present in one chunk" is strict (inflates retrieval-miss). The strongest move is naming the direction each rule biases your headline number.
-3. It's a *retrieved-but-insufficient* case, which a three-bucket taxonomy has no home for — it gets forced into "miss" or "ignored" and corrupts both. Admitting the taxonomy is incomplete for multi-hop is stronger than defending three buckets as exhaustive.
-4. Requires a stratified human audit: sample per bucket, relabel, report agreement. "Unaudited, and here's the audit I'd run" scores; "I didn't think about it" doesn't.
+3. It's a *retrieved-but-insufficient* case, which a three-bucket taxonomy has no home for — it gets forced into "miss" or "ignored" and corrupts both. Admitting the taxonomy is incomplete for <abbr title="Multi-hop question: a complex query requiring information to be retrieved from multiple distinct documents or passages and combined to generate the answer.">multi-hop</abbr> is stronger than defending three buckets as exhaustive.
+4. Requires a <abbr title="Stratified human audit: sampling human-labeled test items proportionately across different failure categories to estimate error rates with equal precision per category.">stratified human audit</abbr>: sample per bucket, relabel, report agreement. "Unaudited, and here's the audit I'd run" scores; "I didn't think about it" doesn't.
 5. Non-negotiable at the top level. If you can't produce real examples, you inspected aggregates, not answers — and "traced every wrong answer" is then an overclaim.
 </details>
 
@@ -121,7 +121,7 @@ Attempt all three levels per topic, in order. Record your honest level. Stop whe
 1. Retrieved-but-ignored. Mechanism: correct paraphrases are scored wrong; those examples usually *do* have gold in context, so they land in "ignored" — inflating exactly the bucket used to blame the generator. This is a self-serving bias in the direction of your own conclusion, which is why it must be volunteered.
 2. Roughly 15% of "wrong" answers were actually correct; they're concentrated where paraphrase is likely, so bucket shares shift non-uniformly — you can't just scale everything by 0.85. Correct answer: re-derive shares after removing audited false-wrongs, and state that CIs widen.
 3. No — self-preference/style bias: judges favor phrasings resembling their own generations, so a judge from the generator's family systematically under-flags its errors. Validity threat because judge error correlates with the thing being measured rather than being random noise.
-4. Stratified sample (e.g. 50/bucket), two annotators, report per-bucket agreement + Cohen's κ. Cheap because it's hundreds of items, decisive because it bounds the bucket that carries the conclusion.
+4. Stratified sample (e.g. 50/bucket), two annotators, report per-bucket agreement + <abbr title="Cohen's kappa (κ): a statistical measure of inter-annotator agreement for categorical items, accounting for agreement occurring by chance.">Cohen's κ</abbr>. Cheap because it's hundreds of items, decisive because it bounds the bucket that carries the conclusion.
 5. Probably not — a style change (quoted spans) breaks lexical judges and shifts LLM-judge behavior. Judges must be re-validated whenever answer style changes; otherwise pre/post numbers aren't comparable. Spotting that a *fix* invalidates the *measurement* is top-tier.
 </details>
 
@@ -148,7 +148,7 @@ Attempt all three levels per topic, in order. Record your honest level. Stop whe
 2. Predict the marginal class distribution always, with confidence equal to the base rate. Accuracy equals confidence in aggregate ⇒ ECE ≈ 0, skill = 0. Proper scoring rules (NLL, Brier) catch it because they reward sharpness too.
 3. The non-top-label probability vector (classwise calibration); within-bin cancellation of over/under-confidence; and anything about *which* examples are miscalibrated (a subgroup can be badly miscalibrated while aggregate ECE looks fine).
 4. Bootstrap the eval set per severity and compare CIs; also check per-severity n. Without this, "ECE rises with severity" is a claim about the estimator as much as the model.
-5. Under asymmetric error costs. A calibrated 90% means something very different when false negatives are catastrophic; expected-cost or risk–coverage curves serve the decision, ECE doesn't.
+5. Under asymmetric error costs. A calibrated 90% means something very different when false negatives are catastrophic; <abbr title="Expected-cost curve: a plot mapping decision thresholds to overall financial or operational cost, taking into account different penalties for false positives vs. false negatives.">expected-cost</abbr> or risk–coverage curves serve the decision, ECE doesn't.
 </details>
 
 ---

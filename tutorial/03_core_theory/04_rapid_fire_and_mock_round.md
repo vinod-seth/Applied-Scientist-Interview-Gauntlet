@@ -88,11 +88,11 @@ Breadth interviewers often finish by walking the whole chain in one question. Re
 
 <details><summary>✅ Model answer — the chain</summary>
 
-"A model generalizes when its **capacity** is matched to the data. Too little and it's biased; too much and it's high-variance — that's the bias–variance decomposition, plus an irreducible noise floor.
+"A model generalizes when its **capacity** is matched to the data. Too little and it's biased; too much and it's high-variance — that's the <abbr title="Bias-variance decomposition: splitting expected test error into squared bias, variance, and irreducible noise.">bias–variance decomposition</abbr>, plus an irreducible noise floor.
 
-**Regularization** is how I control that capacity without changing architecture: an L2 penalty shrinks weights toward zero, buying a large variance reduction for a little bias. And that penalty isn't arbitrary — it *is* a prior. L2 is a Gaussian prior on the weights, L1 a Laplace prior.
+**Regularization** is how I control that capacity without changing architecture: an L2 penalty shrinks weights toward zero, buying a large variance reduction for a little bias. And that penalty isn't arbitrary — it *is* a prior. L2 is a <abbr title="Gaussian prior: assuming weights follow a zero-mean normal distribution, producing L2 weight decay under MAP.">Gaussian prior</abbr> on the weights, L1 a <abbr title="Laplace prior: assuming weights follow a double-exponential distribution with a zero peak, producing L1 sparsity under MAP.">Laplace prior</abbr>.
 
-That connects directly to **estimation**: minimizing cross-entropy is maximizing likelihood, and adding the log-prior turns MLE into MAP. So 'regularized loss' and 'MAP estimate' are the same object seen from two directions.
+That connects directly to **estimation**: minimizing cross-entropy is maximizing likelihood, and adding the log-prior turns <abbr title="MLE (Maximum Likelihood Estimation): optimizing data likelihood under a uniform prior assumption.">MLE</abbr> into <abbr title="MAP (Maximum A Posteriori): optimizing data likelihood weighted by a prior distribution on parameters.">MAP</abbr>. So 'regularized loss' and 'MAP estimate' are the same object seen from two directions.
 
 Then the **optimizer** — SGD plus momentum, or AdamW — is just the machinery that walks that penalized objective downhill; the learning-rate schedule usually matters more than the choice itself.
 

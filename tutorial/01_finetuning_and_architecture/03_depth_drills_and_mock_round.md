@@ -37,7 +37,7 @@ Must include: quantile-based levels, normal-distribution assumption, blockwise a
 
 **Level 2 — Derive it**
 
-Starting from a standard normal distribution, explain why equal-probability-mass bins minimize expected quantization error. Then calculate the storage overhead of double quantization: block size 64, fp32 → 8-bit constants, in blocks of 256.
+Starting from a <abbr title="Standard normal distribution: a Gaussian with mean 0 and variance 1, the canonical bell curve.">standard normal distribution</abbr>, explain why equal-probability-mass bins minimize expected <abbr title="Quantization error: the difference between the original continuous value and the discrete level it maps to.">quantization error</abbr>. Then calculate the storage overhead of <abbr title="Double quantization: quantizing the per-block scaling constants themselves (fp32 → 8-bit), reducing their overhead from ~0.5 to ~0.127 bits per parameter.">double quantization</abbr>: block size 64, fp32 → 8-bit constants, in blocks of 256.
 
 <details>
 <summary>🔑 Level 2 check</summary>
@@ -51,7 +51,7 @@ Drill chain — answer each before reading the next:
 
 1. When does the normality assumption break, and what happens to NF4 quality?
 2. Why block size 64 and not 32 or 128? What's the trade-off curve?
-3. How does NF4 interact with outlier channels — when does int8 decomposition (LLM.int8()) win?
+3. How does NF4 interact with <abbr title="Outlier channels: specific feature dimensions in a weight matrix that have unusually large magnitudes, distorting blockwise quantization.">outlier channels</abbr> — when does <abbr title="LLM.int8(): a mixed-precision decomposition that keeps outlier channels in fp16 while quantizing the rest to int8. Better than NF4 when a few channels dominate.">int8 decomposition (LLM.int8())</abbr> win?
 4. If you dequantize to bf16 for compute, where does the quantization error enter the final output?
 5. Design an experiment to measure the accuracy cost of NF4 vs. fp16 on your specific ESCI task.
 
@@ -73,7 +73,7 @@ All five must be directionally correct and mechanistic, not hand-waved. If you h
 
 **Level 1 — State it:** State the LoRA decomposition for a weight matrix W, including the scaling factor. What do A and B initialize to?
 
-**Level 2 — Derive it:** Derive the trainable parameter count for your specific QLoRA setup: `[FILL: rank, target modules, model size]`. Then explain why α/r decouples the learning rate from the rank.
+**Level 2 — Derive it:** Derive the <abbr title="Trainable parameter count: the total number of LoRA adapter parameters that receive gradient updates, typically a fraction of total model parameters.">trainable parameter count</abbr> for your specific QLoRA setup: `[FILL: rank, target modules, model size]`. Then explain why α/r decouples the learning rate from the rank.
 
 **Level 3 — Defend it (5 follow-ups):**
 
@@ -99,7 +99,7 @@ All five must be directionally correct and mechanistic, not hand-waved. If you h
 
 **Level 1 — State it:** Name the four main consumers of GPU memory during full fine-tuning with AdamW.
 
-**Level 2 — Derive it:** Derive the byte counts for each consumer for Qwen2.5-1.5B in mixed-precision (bf16 weights, fp32 optimizer states). Show the total exceeds 16GB. Then show the QLoRA budget.
+**Level 2 — Derive it:** Derive the byte counts for each consumer for Qwen2.5-1.5B in <abbr title="Mixed-precision training: computing in bf16 for speed while keeping fp32 master copies of weights and optimizer states for numerical stability.">mixed-precision</abbr> (bf16 weights, fp32 optimizer states). Show the total exceeds 16GB. Then show the QLoRA budget.
 
 **Level 3 — Defend it (5 follow-ups):**
 
@@ -112,9 +112,9 @@ All five must be directionally correct and mechanistic, not hand-waved. If you h
 <details>
 <summary>🔑 Level 3 check</summary>
 
-1. The second-moment EMA (v_t) involves squaring gradients and dividing by their root. In fp16/bf16, the limited mantissa causes precision loss in the running average, leading to unstable updates — especially for parameters with small gradients. fp32 moments keep the optimization numerically stable.
+1. The <abbr title="Second-moment EMA (v_t): Adam's exponential moving average of squared gradients, used to normalize updates. Requires fp32 to avoid precision loss in the running average.">second-moment EMA</abbr> (v_t) involves squaring gradients and dividing by their root. In fp16/bf16, the limited <abbr title="Mantissa: the fractional part of a floating-point number that determines its precision. bf16 has only 7 mantissa bits vs. fp32's 23.">mantissa</abbr> causes precision loss in the running average, leading to unstable updates — especially for parameters with small gradients. fp32 moments keep the optimization numerically stable.
 2. Stores only the inputs to each checkpoint segment (every N transformer blocks, typically N=1). Discards intermediate activations. On the backward pass, recomputes the forward pass for each segment to regenerate the intermediates needed for gradient computation. Trade: ~30% extra compute for ~O(√L) memory (L = layers).
-3. Paged optimizers (BitsAndBytes) use CUDA unified memory: when GPU memory is full, optimizer states are automatically paged to CPU RAM. They trigger on memory-pressure events (allocation failures), not on a fixed schedule. This prevents OOM during batch-size spikes or long-sequence steps, but CPU-paged updates are slower. They don't reduce steady-state memory — they handle *spikes*.
+3. <abbr title="Paged optimizers: optimizer states held in CUDA unified memory that can spill to CPU RAM during memory-pressure events.">Paged optimizers</abbr> (BitsAndBytes) use <abbr title="CUDA unified memory: a memory management system where GPU and CPU share a single address space, allowing automatic data migration between them.">CUDA unified memory</abbr>: when GPU memory is full, optimizer states are automatically paged to CPU RAM. They trigger on memory-pressure events (allocation failures), not on a fixed schedule. This prevents OOM during batch-size spikes or long-sequence steps, but CPU-paged updates are slower. They don't reduce steady-state memory — they handle *spikes*.
 4. Rough estimate: per transformer block, the attention score matrix is seq_len² × n_heads × batch × 2 bytes (bf16); the hidden activations are batch × seq_len × d_model × 2 bytes; there are ~4 such tensors per block (input, post-attention, post-FFN, FFN intermediate at 4×d_model). Multiply by number of blocks. Without checkpointing, this often exceeds the weight memory.
 5. A 0.5B model has ~3× fewer parameters, so full FT budget: ~2 GB weights + 2 GB gradients + 8 GB optimizer = ~12 GB, leaving ~4 GB for activations. Feasible. Whether it's *better* depends on whether the 0.5B model's representations are as rich as 1.5B's for this task. The QLoRA approach bets that a larger base model's representations are worth the adapter constraint. This is an empirical question — and proposing it as an ablation is the right move.
 </details>
@@ -125,7 +125,7 @@ All five must be directionally correct and mechanistic, not hand-waved. If you h
 
 **Level 1 — State it:** Explain why you use the *last* non-padding token's hidden state for classification in a causal LM.
 
-**Level 2 — Derive it:** Compare the classification-head approach vs. the verbalizer approach. When does each win? Describe the padding-side bug and how to prevent it.
+**Level 2 — Derive it:** Compare the <abbr title="Classification-head approach: placing a linear projection on the last hidden state to produce class logits.">classification-head approach</abbr> vs. the <abbr title="Verbalizer approach: mapping each class label to a vocabulary token and reading the model's next-token logits as class scores.">verbalizer approach</abbr>. When does each win? Describe the <abbr title="Padding-side bug: when right-padding is used and the code naively takes the last position as the classification token, it reads the pad embedding instead of the real last token.">padding-side bug</abbr> and how to prevent it.
 
 **Level 3 — Defend it (5 follow-ups):**
 
@@ -163,7 +163,7 @@ All five must be directionally correct and mechanistic, not hand-waved. If you h
 
 1. Why θᵢ = 10000^(−2i/d)? What does the base 10000 control?
 2. What happens at inference positions beyond the training length?
-3. Compare RoPE to ALiBi (Press et al. 2021). When does ALiBi win?
+3. Compare RoPE to <abbr title="ALiBi (Attention with Linear Biases): adds a fixed linear penalty to attention scores based on token distance. No rotation, no learned embeddings — extrapolates to longer sequences by construction.">ALiBi</abbr> (Press et al. 2021). When does ALiBi win?
 4. "Can you make the RoPE frequencies learnable? What would that buy?"
 5. "You applied RoPE in an encoder. Most RoPE literature is on decoders. Does anything change?"
 
@@ -180,7 +180,7 @@ All five must be directionally correct and mechanistic, not hand-waved. If you h
 1. "At what depth does Post-LN typically fail without warmup?"
 2. "What does the final LayerNorm in a Pre-LN model have to absorb?"
 3. "RMSNorm vs. LayerNorm — what's dropped and does it matter?"
-4. "DeepNorm (Wang et al. 2022) claims to fix Post-LN for 1000+ layers. How?"
+4. "<abbr title="DeepNorm: a normalization strategy by Wang et al. (2022) that scales the residual connection by a depth-dependent constant, stabilizing Post-LN for 1000+ layers.">DeepNorm</abbr> (Wang et al. 2022) claims to fix Post-LN for 1000+ layers. How?"
 5. "Design an experiment to compare Pre-LN and Post-LN on your QQP task."
 
 ---
@@ -189,14 +189,14 @@ All five must be directionally correct and mechanistic, not hand-waved. If you h
 
 **Level 1 — State it:** State your loss function from memory. What is the temperature parameter?
 
-**Level 2 — Derive it:** Derive the gradient of InfoNCE w.r.t. the anchor embedding. Show why low temperature concentrates gradient on the hardest negative.
+**Level 2 — Derive it:** Derive the gradient of <abbr title="InfoNCE: the contrastive loss that scores the positive against all in-batch negatives via a temperature-scaled softmax over cosine similarities.">InfoNCE</abbr> w.r.t. the anchor embedding. Show why low temperature concentrates gradient on the hardest negative.
 
 **Level 3 — Defend it (5 follow-ups):**
 
 1. "QQP has ~37% duplicates. What's the false-negative contamination rate in a batch of 64?"
 2. "How would you mine hard negatives for QQP specifically?"
 3. "What's embedding collapse and how do you detect it during training?"
-4. "Compare your contrastive approach to cross-entropy on the binary QQP labels. When does each win?"
+4. "Compare your contrastive approach to <abbr title="Cross-entropy on binary labels: treating QQP as a standard binary classification problem (duplicate / not-duplicate) with sigmoid output. Simpler but doesn't learn a general embedding space.">cross-entropy on the binary QQP labels</abbr>. When does each win?"
 5. "If you switched from cosine similarity to dot product in your loss, what changes?"
 
 ---
@@ -245,7 +245,7 @@ Record both pitches back-to-back under time pressure, then review the delivery b
 
 > **Follow-up 3:** "You compared a 1.5B decoder with adapters to a 184M encoder with full fine-tuning. Walk me through every confound."
 
-*(Expecting: architecture (causal vs. bidirectional), parameter count, adaptation method (LoRA vs. full), pretraining data/objective, sequence length, hyperparameter tuning budget. Then: how to design the controlled version. Frame yours as an engineering comparison, not a scientific ablation.)*
+*(Expecting: architecture (causal vs. bidirectional), parameter count, adaptation method (LoRA vs. full), pretraining data/objective, sequence length, hyperparameter tuning budget. Then: how to design the controlled version. Frame yours as an engineering comparison, not a scientific <abbr title="Ablation: a controlled experiment that removes or changes exactly one factor to isolate its contribution.">ablation</abbr>.)*
 
 > **Follow-up 4:** "Fair. Now switch to the other project. Derive RoPE from the requirement."
 

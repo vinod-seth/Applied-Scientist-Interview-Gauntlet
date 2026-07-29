@@ -42,7 +42,7 @@ For a categorical model with softmax outputs, $-\log p(y_i\mid x_i,w)$ **is exac
 
 <details><summary>📚 Deep-dive: why NLL is the right objective</summary>
 
-Minimizing NLL is minimizing the KL divergence from the true conditional distribution to the model, up to a constant. It's a *proper scoring rule*: uniquely minimized when the model outputs the true probabilities — which is also why it (unlike accuracy) rewards calibrated confidence, tying back to Session 2's calibration work. Label smoothing modifies the target distribution to prevent the softmax from chasing infinite logits on one-hot targets.
+Minimizing NLL is minimizing the <abbr title="KL divergence (Kullback-Leibler divergence): a measure of how one probability distribution differs from a reference probability distribution.">KL divergence</abbr> from the true conditional distribution to the model, up to a constant. It's a *proper scoring rule*: uniquely minimized when the model outputs the true probabilities — which is also why it (unlike accuracy) rewards calibrated confidence, tying back to Session 2's calibration work. <abbr title="Label smoothing: replacing hard 0/1 one-hot targets with softened probabilities (e.g., 0.05/0.95) to prevent overconfidence.">Label smoothing</abbr> modifies the target distribution to prevent the softmax from chasing infinite logits on one-hot targets.
 </details>
 
 ---
@@ -62,10 +62,10 @@ flowchart LR
 <details><summary>✅ Model answer</summary>
 
 - **SGD:** $w \leftarrow w - \eta g$. Cheap and generalizes well, but noisy and slow through ravines/plateaus.
-- **+ Momentum:** accumulate a velocity $v \leftarrow \beta v + g$, step with $v$. Damps oscillation across steep directions, accelerates along consistent ones.
-- **+ RMSProp / Adagrad:** scale each parameter's step by $1/\sqrt{\text{running avg of } g^2}$ — a **per-parameter adaptive learning rate**, so rare/large-gradient params get smaller steps.
-- **Adam:** combines both — momentum (1st moment) *and* adaptive LR (2nd moment), with bias correction for the early steps.
-- **AdamW:** fixes a subtle bug — see Drill 3.
+- **+ <abbr title="Momentum: accumulating past gradients into a velocity vector to damp oscillations and accelerate along consistent directions.">Momentum</abbr>:** accumulate a velocity $v \leftarrow \beta v + g$, step with $v$. Damps oscillation across steep directions, accelerates along consistent ones.
+- **+ <abbr title="RMSProp: an adaptive learning rate algorithm that scales each parameter's step inversely by the square root of its running average of squared gradients.">RMSProp</abbr> / <abbr title="Adagrad: an adaptive gradient method that accumulates all past squared gradients per parameter, shrinking steps for frequently occurring features.">Adagrad</abbr>:** scale each parameter's step by $1/\sqrt{\text{running avg of } g^2}$ — a **per-parameter adaptive learning rate**, so rare/large-gradient params get smaller steps.
+- **<abbr title="Adam (Adaptive Moment Estimation): an optimization algorithm combining first-moment momentum and second-moment adaptive learning rates with bias correction.">Adam</abbr>:** combines both — momentum (1st moment) *and* adaptive LR (2nd moment), with bias correction for the early steps.
+- **<abbr title="AdamW: a variant of Adam that decouples weight decay from the adaptive gradient scaling, applying it directly to the parameters.">AdamW</abbr>:** fixes a subtle bug — see Drill 3.
 </details>
 
 <details><summary>🔁 The follow-up chain</summary>
@@ -81,7 +81,7 @@ flowchart LR
 
 <details><summary>✅ Model answer</summary>
 
-In plain Adam, people implement weight decay by adding an L2 term to the loss — so the decay gradient gets **run through Adam's per-parameter $1/\sqrt{v}$ scaling** along with everything else. That means parameters with large historical gradients get *less* effective decay: the regularization strength becomes coupled to the gradient history, which is not what you want. **AdamW decouples it** — it applies the weight decay directly to the weights as a separate shrinkage step, $w \leftarrow w - \eta\lambda w$, outside the adaptive scaling:
+In plain Adam, people implement weight decay by adding an L2 term to the loss — so the decay gradient gets **run through Adam's per-parameter $1/\sqrt{v}$ scaling** along with everything else. That means parameters with large historical gradients get *less* effective decay: the regularization strength becomes coupled to the gradient history, which is not what you want. **AdamW decouples it** — it applies the <abbr title="Weight decay: directly reducing parameters by a factor λ each step, keeping weight magnitudes small to improve generalization.">weight decay</abbr> directly to the weights as a separate shrinkage step, $w \leftarrow w - \eta\lambda w$, outside the adaptive scaling:
 
 $$w \leftarrow w - \eta\Big(\hat m/(\sqrt{\hat v}+\epsilon) + \lambda w\Big)$$
 
@@ -148,8 +148,8 @@ Q: Why does the learning-rate schedule often matter more than the optimizer choi
 A: The peak LR sets the size of every step, and the schedule controls exploration early versus fine-tuning late, so it frequently dominates final quality. A standard recipe is linear warmup (small LR for the first few % of steps, because early gradients and Adam's variance estimate are noisy) followed by cosine decay to near zero. Too-high LR diverges or finds sharp minima; too-low wastes compute and can get stuck.
 [[Vanishing/exploding gradients]]
 R: mechanism
-Q: What causes vanishing or exploding gradients, and how do you fix each?
-A: Backprop multiplies Jacobians layer by layer; if their spectral norms are consistently <1 the product shrinks toward zero (vanishing), if >1 it blows up (exploding). Vanishing starves early layers of signal; exploding causes NaNs and loss spikes. Fixes: residual connections and normalization keep the effective product near 1, careful initialization (He/Xavier) sets the starting scale, gradient clipping caps the exploding case, and non-saturating activations (ReLU family) avoid the flat regions that zero the gradient.
+Q: What causes <abbr title="Vanishing / exploding gradients: when gradients exponentially shrink to zero or grow to infinity during backpropagation through deep networks, starving or destabilizing updates.">vanishing or exploding gradients</abbr>, and how do you fix each?
+A: Backprop multiplies Jacobians layer by layer; if their <abbr title="Spectral norm: the maximum singular value of a matrix, measuring its maximum stretching factor on any vector.">spectral norms</abbr> are consistently <1 the product shrinks toward zero (vanishing), if >1 it blows up (exploding). Vanishing starves early layers of signal; exploding causes NaNs and loss spikes. Fixes: residual connections and normalization keep the effective product near 1, careful initialization (He/Xavier) sets the starting scale, <abbr title="Gradient clipping: capping gradient vectors at a maximum norm threshold during optimization to prevent exploding updates.">gradient clipping</abbr> caps the exploding case, and non-saturating activations (ReLU family) avoid the flat regions that zero the gradient.
 ```
 
 ---
